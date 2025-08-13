@@ -1,7 +1,6 @@
 import React from 'react';
 import { Person } from '../types/organigramme';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
-import { Badge } from './ui/badge';
 import { Edit2, Linkedin } from 'lucide-react';
 
 interface PersonCardProps {
@@ -9,9 +8,16 @@ interface PersonCardProps {
   onClick: (person: Person) => void;
   isAdmin: boolean;
   onEdit?: (person: Person) => void;
+  compact?: boolean;
 }
 
-export const PersonCard: React.FC<PersonCardProps> = ({ person, onClick, isAdmin, onEdit }) => {
+export const PersonCard: React.FC<PersonCardProps> = ({ 
+  person, 
+  onClick, 
+  isAdmin, 
+  onEdit,
+  compact = false 
+}) => {
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     onClick(person);
@@ -29,12 +35,34 @@ export const PersonCard: React.FC<PersonCardProps> = ({ person, onClick, isAdmin
     }
   };
 
+  if (compact) {
+    return (
+      <button
+        onClick={handleClick}
+        className="inline-flex items-center gap-2 px-3 py-1.5 text-sm bg-card hover:bg-accent/50 border border-border rounded-md transition-colors"
+      >
+        <Avatar className="w-6 h-6">
+          <AvatarImage src={person.photo} alt={`${person.firstName} ${person.lastName}`} />
+          <AvatarFallback className="text-xs bg-primary/10">
+            {person.firstName.charAt(0)}
+          </AvatarFallback>
+        </Avatar>
+        <span className="font-medium truncate">
+          {person.firstName} {person.lastName}
+        </span>
+        {person.linkedin && (
+          <Linkedin className="w-3 h-3 text-muted-foreground opacity-60" />
+        )}
+      </button>
+    );
+  }
+
   return (
     <div className="person-card group" onClick={handleClick}>
       <div className="flex items-center gap-3">
         <Avatar className="person-avatar">
           <AvatarImage src={person.photo} alt={`${person.firstName} ${person.lastName}`} />
-          <AvatarFallback className="bg-gradient-to-br from-primary/20 to-accent/20 text-foreground font-semibold">
+          <AvatarFallback className="bg-primary/10 text-foreground font-semibold">
             {person.firstName.charAt(0)}{person.lastName?.charAt(0) || ''}
           </AvatarFallback>
         </Avatar>
@@ -67,26 +95,7 @@ export const PersonCard: React.FC<PersonCardProps> = ({ person, onClick, isAdmin
           </div>
           
           {person.role && (
-            <p className="text-xs text-muted-foreground mb-1 truncate">{person.role}</p>
-          )}
-          
-          {person.missions && person.missions.length > 0 && (
-            <div className="flex flex-wrap gap-1">
-              {person.missions.slice(0, 2).map((mission, index) => (
-                <Badge 
-                  key={index} 
-                  variant="secondary" 
-                  className="text-xs px-1 py-0 h-4"
-                >
-                  {mission}
-                </Badge>
-              ))}
-              {person.missions.length > 2 && (
-                <Badge variant="outline" className="text-xs px-1 py-0 h-4">
-                  +{person.missions.length - 2}
-                </Badge>
-              )}
-            </div>
+            <p className="text-xs text-muted-foreground truncate">{person.role}</p>
           )}
         </div>
       </div>

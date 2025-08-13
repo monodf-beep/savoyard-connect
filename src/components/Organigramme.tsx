@@ -86,61 +86,59 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
   }, []);
 
   const totalMembers = data.people.length;
-  const totalSections = sections.length;
 
   return (
-    <div className="organigramme-container max-w-7xl mx-auto p-6">
-      {/* Header */}
+    <div className="organigramme-container max-w-6xl mx-auto p-4">
+      {/* Header épuré */}
       <div className="mb-8 text-center">
-        <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent mb-4">
+        <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent mb-2">
           Institut de la Langue Savoyarde
         </h1>
-        <p className="text-muted-foreground mb-6">Organigramme synthétique - Mise à jour consolidée</p>
+        <p className="text-sm text-muted-foreground mb-4">Organigramme synthétique</p>
         
-        <div className="flex flex-wrap items-center justify-center gap-3 mb-6">
-          <Badge variant="secondary" className="px-3 py-1">
-            {totalMembers} membres actifs
-          </Badge>
-          <Badge variant="outline" className="px-3 py-1">
-            {totalSections} sections principales
-          </Badge>
+        <div className="flex flex-wrap items-center justify-center gap-2 mb-4">
+          <span className="text-xs bg-secondary/50 px-2 py-1 rounded-md">
+            {totalMembers} membres
+          </span>
         </div>
 
-        {/* Controls */}
-        <div className="flex flex-wrap items-center justify-center gap-3">
+        {/* Controls compacts */}
+        <div className="flex flex-wrap items-center justify-center gap-2">
           <Button 
             onClick={expandAll}
             variant="outline"
+            size="sm"
             className="expand-collapse-btn"
           >
-            <Expand className="w-4 h-4 mr-2" />
+            <Expand className="w-3 h-3 mr-1" />
             Tout déplier
           </Button>
           
           <Button 
             onClick={collapseAll}
             variant="outline"
+            size="sm"
             className="expand-collapse-btn"
           >
-            <Shrink className="w-4 h-4 mr-2" />
+            <Shrink className="w-3 h-3 mr-1" />
             Tout replier
           </Button>
 
-          {/* Mode administrateur (pour WordPress) */}
           <Button
             onClick={toggleAdminMode}
             variant={adminMode.isActive ? "default" : "outline"}
-            className="ml-2"
+            size="sm"
+            className="ml-1"
           >
             {adminMode.isActive ? (
               <>
-                <Eye className="w-4 h-4 mr-2" />
-                Mode Visiteur
+                <Eye className="w-3 h-3 mr-1" />
+                Visiteur
               </>
             ) : (
               <>
-                <Settings className="w-4 h-4 mr-2" />
-                Mode Admin
+                <Settings className="w-3 h-3 mr-1" />
+                Admin
               </>
             )}
           </Button>
@@ -148,19 +146,17 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
       </div>
 
       {adminMode.isActive && (
-        <div className="mb-6 p-4 bg-accent/10 border border-accent/20 rounded-lg">
-          <div className="flex items-center gap-2 mb-2">
-            <Settings className="w-4 h-4 text-accent" />
+        <div className="mb-4 p-3 bg-accent/10 border border-accent/20 rounded-md">
+          <div className="flex items-center gap-2 text-sm">
+            <Settings className="w-3 h-3 text-accent" />
             <span className="font-medium text-accent">Mode Administrateur</span>
+            <span className="text-xs text-muted-foreground">• Cliquez sur les icônes d'édition</span>
           </div>
-          <p className="text-sm text-muted-foreground">
-            Vous pouvez maintenant modifier les informations en cliquant sur l'icône d'édition de chaque personne.
-          </p>
         </div>
       )}
 
-      {/* Sections */}
-      <div className="space-y-6">
+      {/* Sections épurées */}
+      <div className="space-y-4">
         {sections.map(section => (
           <SectionCard
             key={section.id}

@@ -130,61 +130,58 @@ Couleurs inspirées de l'identité savoyarde avec des touches modernes
 }
 
 @layer components {
-  /* Styles pour l'organigramme */
+  /* Styles pour l'organigramme épuré */
   .organigramme-container {
     @apply transition-all duration-300 ease-in-out;
   }
 
   .section-header {
-    @apply relative overflow-hidden rounded-xl p-4 transition-all duration-300 cursor-pointer;
+    @apply relative overflow-hidden rounded-lg p-4 transition-all duration-200 cursor-pointer;
     background: var(--gradient-bureau);
-    box-shadow: var(--shadow-soft);
+    border: 1px solid hsl(var(--border));
   }
 
   .section-header:hover {
-    box-shadow: var(--shadow-medium);
     transform: translateY(-1px);
+    border-color: hsl(var(--primary) / 0.3);
   }
 
   .section-header.bureau {
     background: var(--gradient-bureau);
-    border-left: 4px solid hsl(var(--savoie-red));
+    border-left: 3px solid hsl(var(--savoie-red));
   }
 
   .section-header.conseil {
     background: var(--gradient-conseil);
-    border-left: 4px solid hsl(var(--savoie-blue));
+    border-left: 3px solid hsl(var(--savoie-blue));
   }
 
   .section-header.commission {
     background: var(--gradient-commission);
-    border-left: 4px solid hsl(var(--savoie-green));
+    border-left: 3px solid hsl(var(--savoie-green));
   }
 
   .section-header.groupe {
     background: var(--gradient-groupe);
-    border-left: 4px solid hsl(var(--savoie-gold));
+    border-left: 3px solid hsl(var(--savoie-gold));
   }
 
   .person-card {
-    @apply relative p-3 rounded-lg border border-border bg-card transition-all duration-300 cursor-pointer;
-    box-shadow: var(--shadow-soft);
+    @apply relative p-2 rounded-md bg-card transition-all duration-200 cursor-pointer;
+    border: 1px solid hsl(var(--border));
   }
 
   .person-card:hover {
-    box-shadow: var(--shadow-medium);
-    transform: translateY(-2px) scale(1.02);
-    border-color: hsl(var(--primary));
+    border-color: hsl(var(--primary) / 0.4);
+    background: hsl(var(--accent) / 0.1);
   }
 
   .person-avatar {
-    @apply w-12 h-12 rounded-full border-2 border-primary/20 transition-all duration-300;
-    box-shadow: var(--shadow-soft);
+    @apply w-8 h-8 rounded-full border border-primary/20 transition-all duration-200;
   }
 
   .person-avatar:hover {
-    box-shadow: var(--shadow-person);
-    transform: scale(1.1);
+    border-color: hsl(var(--primary) / 0.6);
   }
 
   .admin-controls {
@@ -201,15 +198,15 @@ Couleurs inspirées de l'identité savoyarde avec des touches modernes
   }
 
   .modal-content {
-    @apply bg-card rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto;
-    box-shadow: var(--shadow-strong);
+    @apply bg-card rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto;
+    box-shadow: 0 20px 40px hsl(220 15% 15% / 0.2);
     animation: modalSlideIn 0.3s ease-out;
   }
 
   @keyframes modalSlideIn {
     from {
       opacity: 0;
-      transform: scale(0.9) translateY(-20px);
+      transform: scale(0.95) translateY(-10px);
     }
     to {
       opacity: 1;
@@ -218,14 +215,12 @@ Couleurs inspirées de l'identité savoyarde avec des touches modernes
   }
 
   .expand-collapse-btn {
-    @apply px-4 py-2 rounded-lg font-medium transition-all duration-200;
+    @apply px-3 py-1.5 rounded-md font-medium transition-all duration-200 text-sm;
     background: var(--gradient-savoie);
     color: hsl(var(--primary-foreground));
-    box-shadow: var(--shadow-soft);
   }
 
   .expand-collapse-btn:hover {
-    box-shadow: var(--shadow-medium);
     transform: translateY(-1px);
   }
 }
