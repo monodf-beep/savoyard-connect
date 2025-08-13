@@ -1,9 +1,11 @@
 import React, { useState, useCallback } from 'react';
 import { OrganigrammeData, Person, Section, AdminMode } from '../types/organigramme';
 import { SectionCard } from './SectionCard';
-import { PersonModal } from './PersonModal';
+import { PersonSidebar } from './PersonSidebar';
+import { PersonForm } from './PersonForm';
+import { SectionForm } from './SectionForm';
 import { Button } from './ui/button';
-import { Settings, Eye, ExpandIcon as Expand, ShrinkIcon as Shrink } from 'lucide-react';
+import { Settings, Eye, ExpandIcon as Expand, ShrinkIcon as Shrink, Plus, UserPlus, FolderPlus } from 'lucide-react';
 import { Badge } from './ui/badge';
 
 interface OrganigrammeProps {
@@ -18,9 +20,14 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
   onDataChange
 }) => {
   const [sections, setSections] = useState<Section[]>(data.sections);
+  const [people, setPeople] = useState<Person[]>(data.people);
   const [selectedPerson, setSelectedPerson] = useState<Person | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [adminMode, setAdminMode] = useState<AdminMode>({ isActive: isAdminMode });
+  const [isPersonFormOpen, setIsPersonFormOpen] = useState(false);
+  const [isSectionFormOpen, setIsSectionFormOpen] = useState(false);
+  const [editingPerson, setEditingPerson] = useState<Person | null>(null);
+  const [editingSection, setEditingSection] = useState<Section | null>(null);
 
   const toggleSection = useCallback((sectionId: string) => {
     const updateSectionRecursively = (sections: Section[]): Section[] => {
@@ -67,28 +74,129 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
 
   const handlePersonClick = useCallback((person: Person) => {
     setSelectedPerson(person);
-    setIsModalOpen(true);
+    setIsSidebarOpen(true);
   }, []);
 
-  const handleCloseModal = useCallback(() => {
-    setIsModalOpen(false);
+  const handleCloseSidebar = useCallback(() => {
+    setIsSidebarOpen(false);
     setSelectedPerson(null);
   }, []);
 
   const handleEditPerson = useCallback((person: Person) => {
-    setAdminMode(prev => ({ ...prev, selectedPerson: person }));
-    // Ici vous pourriez ouvrir un modal d'édition
-    console.log('Éditer personne:', person);
+    setEditingPerson(person);
+    setIsPersonFormOpen(true);
+    setIsSidebarOpen(false);
   }, []);
+
+  const handleAddPerson = useCallback(() => {
+    setEditingPerson(null);
+    setIsPersonFormOpen(true);
+  }, []);
+
+  const handleSavePerson = useCallback((person: Person) => {
+    setPeople(prev => {
+      const existing = prev.find(p => p.id === person.id);
+      if (existing) {
+        return prev.map(p => p.id === person.id ? person : p);
+      } else {
+        return [...prev, person];
+      }
+    });
+
+    // Update sections to reflect changes
+    setSections(prev => updateSectionsWithPerson(prev, person));
+    
+    if (onDataChange) {
+      const newData = {
+        people: people.map(p => p.id === person.id ? person : p),
+        sections: sections
+      };
+      if (!people.find(p => p.id === person.id)) {
+        newData.people.push(person);
+      }
+      onDataChange(newData);
+    }
+  }, [people, sections, onDataChange]);
+
+  const handleDeletePerson = useCallback((personId: string) => {
+    setPeople(prev => prev.filter(p => p.id !== personId));
+    setSections(prev => removeSectionMember(prev, personId));
+    
+    if (onDataChange) {
+      onDataChange({
+        people: people.filter(p => p.id !== personId),
+        sections: sections
+      });
+    }
+  }, [people, sections, onDataChange]);
+
+  const handleAddSection = useCallback(() => {
+    setEditingSection(null);
+    setIsSectionFormOpen(true);
+  }, []);
+
+  const handleSaveSection = useCallback((sectionData: Omit<Section, 'members' | 'subsections'>) => {
+    const newSection: Section = {
+      ...sectionData,
+      members: [],
+      subsections: []
+    };
+
+    setSections(prev => {
+      const existing = prev.find(s => s.id === sectionData.id);
+      if (existing) {
+        return prev.map(s => s.id === sectionData.id ? { ...s, ...sectionData } : s);
+      } else {
+        return [...prev, newSection];
+      }
+    });
+
+    if (onDataChange) {
+      onDataChange({
+        people,
+        sections: sections.map(s => s.id === sectionData.id ? { ...s, ...sectionData } : s)
+      });
+    }
+  }, [people, sections, onDataChange]);
+
+  const handleDeleteSection = useCallback((sectionId: string) => {
+    setSections(prev => prev.filter(s => s.id !== sectionId));
+    
+    if (onDataChange) {
+      onDataChange({
+        people,
+        sections: sections.filter(s => s.id !== sectionId)
+      });
+    }
+  }, [people, sections, onDataChange]);
+
+  // Helper functions
+  const updateSectionsWithPerson = (sections: Section[], person: Person): Section[] => {
+    return sections.map(section => ({
+      ...section,
+      members: section.members.map(m => m.id === person.id ? person : m),
+      subsections: section.subsections ? updateSectionsWithPerson(section.subsections, person) : undefined
+    }));
+  };
+
+  const removeSectionMember = (sections: Section[], personId: string): Section[] => {
+    return sections.map(section => ({
+      ...section,
+      members: section.members.filter(m => m.id !== personId),
+      subsections: section.subsections ? removeSectionMember(section.subsections, personId) : undefined
+    }));
+  };
+
 
   const toggleAdminMode = useCallback(() => {
     setAdminMode(prev => ({ ...prev, isActive: !prev.isActive }));
   }, []);
 
-  const totalMembers = data.people.length;
+  const totalMembers = people.length;
 
   return (
-    <div className="organigramme-container max-w-6xl mx-auto p-4">
+    <div className="flex min-h-screen w-full">
+      <div className={`organigramme-container transition-all duration-300 ${isSidebarOpen ? 'mr-96' : ''} flex-1 max-w-6xl mx-auto p-4`}>
       {/* Header épuré */}
       <div className="mb-8 text-center">
         <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent mb-2">
@@ -123,6 +231,29 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
             <Shrink className="w-3 h-3 mr-1" />
             Tout replier
           </Button>
+
+          {adminMode.isActive && (
+            <>
+              <Button
+                onClick={handleAddPerson}
+                variant="outline"
+                size="sm"
+                className="ml-2"
+              >
+                <UserPlus className="w-3 h-3 mr-1" />
+                Ajouter personne
+              </Button>
+              
+              <Button
+                onClick={handleAddSection}
+                variant="outline"
+                size="sm"
+              >
+                <FolderPlus className="w-3 h-3 mr-1" />
+                Ajouter section
+              </Button>
+            </>
+          )}
 
           <Button
             onClick={toggleAdminMode}
@@ -169,11 +300,32 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
         ))}
       </div>
 
-      {/* Modal */}
-      <PersonModal
+      </div>
+
+      {/* Sidebar */}
+      <PersonSidebar
         person={selectedPerson}
-        isOpen={isModalOpen}
-        onClose={handleCloseModal}
+        isOpen={isSidebarOpen}
+        onClose={handleCloseSidebar}
+        isAdmin={adminMode.isActive}
+        onEdit={handleEditPerson}
+      />
+
+      {/* Forms */}
+      <PersonForm
+        person={editingPerson}
+        isOpen={isPersonFormOpen}
+        onClose={() => setIsPersonFormOpen(false)}
+        onSave={handleSavePerson}
+        onDelete={handleDeletePerson}
+      />
+
+      <SectionForm
+        section={editingSection}
+        isOpen={isSectionFormOpen}
+        onClose={() => setIsSectionFormOpen(false)}
+        onSave={handleSaveSection}
+        onDelete={handleDeleteSection}
       />
     </div>
   );

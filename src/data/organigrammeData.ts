@@ -1,4 +1,5 @@
 import { OrganigrammeData, Person } from '../types/organigramme';
+import defaultProfile from '../assets/default-profile.jpg';
 
 // Base de données unifiée des personnes
 export const people: Person[] = [
@@ -10,7 +11,8 @@ export const people: Person[] = [
     role: 'Président',
     missions: ['Direction générale', 'Représentation institutionnelle'],
     linkedin: '',
-    description: 'Président de l\'Institut de la Langue Savoyarde'
+    description: 'Président de l\'Institut de la Langue Savoyarde',
+    photo: defaultProfile
   },
   { 
     id: 'alain', 
@@ -19,7 +21,8 @@ export const people: Person[] = [
     role: 'Vice-président',
     missions: ['Pédagogie', 'Formation'],
     linkedin: '',
-    description: 'Vice-président et responsable de la commission Pédagogie'
+    description: 'Vice-président et responsable de la commission Pédagogie',
+    photo: defaultProfile
   },
   { 
     id: 'marc', 
@@ -28,7 +31,8 @@ export const people: Person[] = [
     role: 'Vice-président',
     missions: ['Développement stratégique'],
     linkedin: '',
-    description: 'Vice-président de l\'Institut'
+    description: 'Vice-président de l\'Institut',
+    photo: defaultProfile
   },
   { 
     id: 'franck', 
@@ -37,7 +41,8 @@ export const people: Person[] = [
     role: 'Secrétaire & Responsable des opérations',
     missions: ['Opérations', 'Coordination', 'Littérature', 'Toponymie', 'Pédagogie', 'Néologisme', 'Communication'],
     linkedin: '',
-    description: 'Secrétaire et coordinateur opérationnel'
+    description: 'Secrétaire et coordinateur opérationnel',
+    photo: defaultProfile
   },
   { 
     id: 'benjamin', 
@@ -46,7 +51,8 @@ export const people: Person[] = [
     role: 'Trésorier',
     missions: ['Gestion financière', 'Budget'],
     linkedin: '',
-    description: 'Trésorier de l\'Institut'
+    description: 'Trésorier de l\'Institut',
+    photo: defaultProfile
   },
   
   // Conseil d'administration
