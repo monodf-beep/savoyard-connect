@@ -52,6 +52,11 @@ export default {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
 				},
+				// Couleurs spécifiques Savoie
+				'savoie-red': 'hsl(var(--savoie-red))',
+				'savoie-gold': 'hsl(var(--savoie-gold))',
+				'savoie-blue': 'hsl(var(--savoie-blue))',
+				'savoie-green': 'hsl(var(--savoie-green))',
 				sidebar: {
 					DEFAULT: 'hsl(var(--sidebar-background))',
 					foreground: 'hsl(var(--sidebar-foreground))',

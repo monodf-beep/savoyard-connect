@@ -2,41 +2,66 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
+/* Design system pour l'organigramme Institut de la Langue Savoyarde 
+Couleurs inspirées de l'identité savoyarde avec des touches modernes
 */
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --background: 0 0% 98%;
+    --foreground: 220 15% 15%;
 
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 220 15% 15%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 220 15% 15%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 355 85% 45%;
+    --primary-foreground: 0 0% 98%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 210 15% 92%;
+    --secondary-foreground: 220 15% 25%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 210 15% 95%;
+    --muted-foreground: 220 10% 50%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 25 95% 53%;
+    --accent-foreground: 220 15% 15%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --border: 220 13% 88%;
+    --input: 220 13% 88%;
+    --ring: 355 85% 45%;
 
-    --radius: 0.5rem;
+    --radius: 0.75rem;
+
+    /* Couleurs spécifiques organigramme */
+    --savoie-red: 355 85% 45%;
+    --savoie-gold: 25 95% 53%;
+    --savoie-blue: 220 60% 50%;
+    --savoie-green: 140 45% 45%;
+    
+    /* Gradients savoyards */
+    --gradient-savoie: linear-gradient(135deg, hsl(var(--savoie-red)), hsl(var(--savoie-gold)));
+    --gradient-bureau: linear-gradient(135deg, hsl(var(--savoie-red) / 0.1), hsl(var(--savoie-red) / 0.05));
+    --gradient-conseil: linear-gradient(135deg, hsl(var(--savoie-blue) / 0.1), hsl(var(--savoie-blue) / 0.05));
+    --gradient-commission: linear-gradient(135deg, hsl(var(--savoie-green) / 0.1), hsl(var(--savoie-green) / 0.05));
+    --gradient-groupe: linear-gradient(135deg, hsl(var(--savoie-gold) / 0.1), hsl(var(--savoie-gold) / 0.05));
+
+    /* Animations et transitions */
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-bounce: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    
+    /* Ombres élégantes */
+    --shadow-soft: 0 2px 10px hsl(220 15% 15% / 0.08);
+    --shadow-medium: 0 4px 20px hsl(220 15% 15% / 0.12);
+    --shadow-strong: 0 8px 30px hsl(220 15% 15% / 0.16);
+    --shadow-person: 0 0 0 3px hsl(var(--primary) / 0.2);
+
+    --radius: 0.75rem;
 
     --sidebar-background: 0 0% 98%;
 
@@ -101,5 +126,106 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+@layer components {
+  /* Styles pour l'organigramme */
+  .organigramme-container {
+    @apply transition-all duration-300 ease-in-out;
+  }
+
+  .section-header {
+    @apply relative overflow-hidden rounded-xl p-4 transition-all duration-300 cursor-pointer;
+    background: var(--gradient-bureau);
+    box-shadow: var(--shadow-soft);
+  }
+
+  .section-header:hover {
+    box-shadow: var(--shadow-medium);
+    transform: translateY(-1px);
+  }
+
+  .section-header.bureau {
+    background: var(--gradient-bureau);
+    border-left: 4px solid hsl(var(--savoie-red));
+  }
+
+  .section-header.conseil {
+    background: var(--gradient-conseil);
+    border-left: 4px solid hsl(var(--savoie-blue));
+  }
+
+  .section-header.commission {
+    background: var(--gradient-commission);
+    border-left: 4px solid hsl(var(--savoie-green));
+  }
+
+  .section-header.groupe {
+    background: var(--gradient-groupe);
+    border-left: 4px solid hsl(var(--savoie-gold));
+  }
+
+  .person-card {
+    @apply relative p-3 rounded-lg border border-border bg-card transition-all duration-300 cursor-pointer;
+    box-shadow: var(--shadow-soft);
+  }
+
+  .person-card:hover {
+    box-shadow: var(--shadow-medium);
+    transform: translateY(-2px) scale(1.02);
+    border-color: hsl(var(--primary));
+  }
+
+  .person-avatar {
+    @apply w-12 h-12 rounded-full border-2 border-primary/20 transition-all duration-300;
+    box-shadow: var(--shadow-soft);
+  }
+
+  .person-avatar:hover {
+    box-shadow: var(--shadow-person);
+    transform: scale(1.1);
+  }
+
+  .admin-controls {
+    @apply opacity-0 transition-opacity duration-200;
+  }
+
+  .person-card:hover .admin-controls {
+    @apply opacity-100;
+  }
+
+  .modal-overlay {
+    @apply fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4;
+    backdrop-filter: blur(4px);
+  }
+
+  .modal-content {
+    @apply bg-card rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto;
+    box-shadow: var(--shadow-strong);
+    animation: modalSlideIn 0.3s ease-out;
+  }
+
+  @keyframes modalSlideIn {
+    from {
+      opacity: 0;
+      transform: scale(0.9) translateY(-20px);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
+  }
+
+  .expand-collapse-btn {
+    @apply px-4 py-2 rounded-lg font-medium transition-all duration-200;
+    background: var(--gradient-savoie);
+    color: hsl(var(--primary-foreground));
+    box-shadow: var(--shadow-soft);
+  }
+
+  .expand-collapse-btn:hover {
+    box-shadow: var(--shadow-medium);
+    transform: translateY(-1px);
   }
 }

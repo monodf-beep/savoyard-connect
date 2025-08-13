@@ -1,12 +1,17 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { Organigramme } from '../components/Organigramme';
+import { organigrammeData } from '../data/organigrammeData';
 
 const Index = () => {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
-      </div>
+    <div className="min-h-screen bg-background">
+      <Organigramme 
+        data={organigrammeData} 
+        isAdminMode={false}
+        onDataChange={(newData) => {
+          // Ici vous pourriez sauvegarder les données via API WordPress
+          console.log('Données mises à jour:', newData);
+        }}
+      />
     </div>
   );
 };
