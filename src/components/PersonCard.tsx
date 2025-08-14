@@ -9,6 +9,7 @@ interface PersonCardProps {
   isAdmin: boolean;
   onEdit?: (person: Person) => void;
   compact?: boolean;
+  isBureau?: boolean;
 }
 
 export const PersonCard: React.FC<PersonCardProps> = ({ 
@@ -16,7 +17,8 @@ export const PersonCard: React.FC<PersonCardProps> = ({
   onClick, 
   isAdmin, 
   onEdit,
-  compact = false 
+  compact = false,
+  isBureau = false
 }) => {
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -39,15 +41,17 @@ export const PersonCard: React.FC<PersonCardProps> = ({
     return (
       <button
         onClick={handleClick}
-        className="inline-flex items-center gap-2 px-3 py-1.5 text-sm bg-card hover:bg-accent/50 border border-border rounded-md transition-colors"
+        className={`inline-flex items-center gap-2 text-sm bg-card hover:bg-accent/50 border border-border rounded-md transition-colors ${
+          isBureau ? 'px-4 py-2' : 'px-3 py-1.5'
+        }`}
       >
-        <Avatar className="w-6 h-6">
+        <Avatar className={isBureau ? "w-7 h-7" : "w-6 h-6"}>
           <AvatarImage src={person.photo} alt={`${person.firstName} ${person.lastName}`} />
           <AvatarFallback className="text-xs bg-primary/10">
             {person.firstName.charAt(0)}
           </AvatarFallback>
         </Avatar>
-        <span className="font-medium truncate">
+        <span className={`font-medium truncate ${isBureau ? 'text-base' : ''}`}>
           {person.firstName} {person.lastName}
         </span>
         {person.linkedin && (
