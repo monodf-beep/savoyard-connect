@@ -28,6 +28,7 @@ export const PersonForm: React.FC<PersonFormProps> = ({
     lastName: person?.lastName || '',
     role: person?.role || '',
     description: person?.description || '',
+    missionDescription: person?.missionDescription || '',
     linkedin: person?.linkedin || '',
     instagram: person?.instagram || '',
     missions: person?.missions || [],
@@ -46,6 +47,7 @@ export const PersonForm: React.FC<PersonFormProps> = ({
       lastName: formData.lastName || '',
       role: formData.role,
       description: formData.description,
+      missionDescription: formData.missionDescription,
       linkedin: formData.linkedin,
       instagram: formData.instagram,
       missions: formData.missions || [],
@@ -164,7 +166,18 @@ export const PersonForm: React.FC<PersonFormProps> = ({
           </div>
 
           <div>
-            <Label>Missions & Responsabilités</Label>
+            <Label htmlFor="missionDescription">Description des missions</Label>
+            <Textarea
+              id="missionDescription"
+              value={formData.missionDescription}
+              onChange={(e) => setFormData(prev => ({ ...prev, missionDescription: e.target.value }))}
+              rows={3}
+              placeholder="Décrivez les missions et responsabilités..."
+            />
+          </div>
+
+          <div>
+            <Label>Missions & Responsabilités (mots-clés)</Label>
             <div className="space-y-2">
               <div className="flex gap-2">
                 <Input

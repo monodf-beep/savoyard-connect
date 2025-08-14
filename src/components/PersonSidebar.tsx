@@ -104,23 +104,30 @@ export const PersonSidebar: React.FC<PersonSidebarProps> = ({
             </div>
           )}
 
-          {person.missions && person.missions.length > 0 && (
+          {(person.missionDescription || (person.missions && person.missions.length > 0)) && (
             <div>
               <h3 className="font-semibold text-base mb-3 flex items-center gap-2">
                 <MapPin className="w-4 h-4 text-primary" />
                 Missions & Responsabilités
               </h3>
-              <div className="flex flex-wrap gap-2">
-                {person.missions.map((mission, index) => (
-                  <Badge 
-                    key={index} 
-                    variant="secondary" 
-                    className="px-2 py-1 text-xs"
-                  >
-                    {mission}
-                  </Badge>
-                ))}
-              </div>
+              {person.missionDescription && (
+                <p className="text-muted-foreground leading-relaxed text-sm mb-3">
+                  {person.missionDescription}
+                </p>
+              )}
+              {person.missions && person.missions.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {person.missions.map((mission, index) => (
+                    <Badge 
+                      key={index} 
+                      variant="secondary" 
+                      className="px-2 py-1 text-xs"
+                    >
+                      {mission}
+                    </Badge>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 

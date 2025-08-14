@@ -5,6 +5,7 @@ export interface Person {
   photo?: string;
   role?: string;
   missions?: string[];
+  missionDescription?: string;
   linkedin?: string;
   instagram?: string;
   description?: string;
