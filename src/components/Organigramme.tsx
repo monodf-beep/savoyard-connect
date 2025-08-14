@@ -4,9 +4,8 @@ import { SectionCard } from './SectionCard';
 import { PersonSidebar } from './PersonSidebar';
 import { PersonForm } from './PersonForm';
 import { SectionForm } from './SectionForm';
-import { OrganigrammeFlow } from './OrganigrammeFlow';
 import { Button } from './ui/button';
-import { Settings, Eye, ExpandIcon as Expand, ShrinkIcon as Shrink, Plus, UserPlus, FolderPlus, Shuffle } from 'lucide-react';
+import { Settings, Eye, ExpandIcon as Expand, ShrinkIcon as Shrink, Plus, UserPlus, FolderPlus } from 'lucide-react';
 import { Badge } from './ui/badge';
 
 interface OrganigrammeProps {
@@ -29,7 +28,6 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
   const [isSectionFormOpen, setIsSectionFormOpen] = useState(false);
   const [editingPerson, setEditingPerson] = useState<Person | null>(null);
   const [editingSection, setEditingSection] = useState<Section | null>(null);
-  const [isReorganizing, setIsReorganizing] = useState(false);
 
   const toggleSection = useCallback((sectionId: string) => {
     const updateSectionRecursively = (sections: Section[]): Section[] => {
@@ -172,17 +170,6 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
     }
   }, [people, sections, onDataChange]);
 
-  const handleSectionsReorder = useCallback((reorderedSections: Section[]) => {
-    setSections(reorderedSections);
-    
-    if (onDataChange) {
-      onDataChange({
-        people,
-        sections: reorderedSections
-      });
-    }
-  }, [people, onDataChange]);
-
   // Helper functions
   const updateSectionsWithPerson = (sections: Section[], person: Person): Section[] => {
     return sections.map(section => ({
@@ -260,15 +247,6 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
                 <FolderPlus className="w-3 h-3 mr-1" />
                 Ajouter section
               </Button>
-              
-              <Button
-                onClick={() => setIsReorganizing(!isReorganizing)}
-                variant={isReorganizing ? "default" : "outline"}
-                size="sm"
-              >
-                <Shuffle className="w-3 h-3 mr-1" />
-                {isReorganizing ? "Terminer" : "Réorganiser"}
-              </Button>
             </>
           )}
 
@@ -303,31 +281,19 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
         </div>
       )}
 
-      {/* Sections épurées ou mode réorganisation */}
-      {adminMode.isActive && isReorganizing ? (
-        <div className="mb-4">
-          <OrganigrammeFlow
-            sections={sections}
-            people={people}
-            onSectionsReorder={handleSectionsReorder}
+      {/* Sections épurées */}
+      <div className="space-y-4">
+        {sections.map(section => (
+          <SectionCard
+            key={section.id}
+            section={section}
+            onToggle={toggleSection}
             onPersonClick={handlePersonClick}
+            isAdmin={adminMode.isActive}
             onEditPerson={handleEditPerson}
           />
-        </div>
-      ) : (
-        <div className="space-y-4">
-          {sections.map(section => (
-            <SectionCard
-              key={section.id}
-              section={section}
-              onToggle={toggleSection}
-              onPersonClick={handlePersonClick}
-              isAdmin={adminMode.isActive}
-              onEditPerson={handleEditPerson}
-            />
-          ))}
-        </div>
-      )}
+        ))}
+      </div>
 
       </div>
 
