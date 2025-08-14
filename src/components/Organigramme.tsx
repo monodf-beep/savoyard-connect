@@ -198,25 +198,20 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
     <div className="flex min-h-screen w-full">
       <div className={`organigramme-container transition-all duration-300 ${isSidebarOpen ? 'mr-96' : ''} flex-1 max-w-6xl mx-auto p-4`}>
       {/* Header épuré */}
-      <div className="mb-8 text-center">
-        <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent mb-2">
-          Institut de la Langue Savoyarde
-        </h1>
-        <p className="text-sm text-muted-foreground mb-4">Organigramme synthétique</p>
-        
+      <div className="mb-6 text-center">
         <div className="flex flex-wrap items-center justify-center gap-2 mb-4">
           <span className="text-xs bg-secondary/50 px-2 py-1 rounded-md">
             {totalMembers} membres
           </span>
         </div>
 
-        {/* Controls compacts */}
-        <div className="flex flex-wrap items-center justify-center gap-2">
+        {/* Controls compacts et discrets */}
+        <div className="flex flex-wrap items-center justify-center gap-1">
           <Button 
             onClick={expandAll}
-            variant="outline"
+            variant="ghost"
             size="sm"
-            className="expand-collapse-btn"
+            className="text-xs text-muted-foreground hover:text-foreground"
           >
             <Expand className="w-3 h-3 mr-1" />
             Tout déplier
@@ -224,9 +219,9 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
           
           <Button 
             onClick={collapseAll}
-            variant="outline"
+            variant="ghost"
             size="sm"
-            className="expand-collapse-btn"
+            className="text-xs text-muted-foreground hover:text-foreground"
           >
             <Shrink className="w-3 h-3 mr-1" />
             Tout replier
