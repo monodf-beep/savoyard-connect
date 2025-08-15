@@ -245,6 +245,7 @@ export const people: Person[] = [
 
 export const organigrammeData: OrganigrammeData = {
   people,
+  jobPostings: [], // Tableau vide par défaut, peut être peuplé plus tard
   sections: [
     {
       id: 'bureau',

@@ -109,7 +109,8 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
     if (onDataChange) {
       const newData = {
         people: people.map(p => p.id === person.id ? person : p),
-        sections: sections
+        sections: sections,
+        jobPostings: data.jobPostings || []
       };
       if (!people.find(p => p.id === person.id)) {
         newData.people.push(person);
@@ -125,7 +126,8 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
     if (onDataChange) {
       onDataChange({
         people: people.filter(p => p.id !== personId),
-        sections: sections
+        sections: sections,
+        jobPostings: data.jobPostings || []
       });
     }
   }, [people, sections, onDataChange]);
@@ -154,7 +156,8 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
     if (onDataChange) {
       onDataChange({
         people,
-        sections: sections.map(s => s.id === sectionData.id ? { ...s, ...sectionData } : s)
+        sections: sections.map(s => s.id === sectionData.id ? { ...s, ...sectionData } : s),
+        jobPostings: data.jobPostings || []
       });
     }
   }, [people, sections, onDataChange]);
@@ -165,7 +168,8 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
     if (onDataChange) {
       onDataChange({
         people,
-        sections: sections.filter(s => s.id !== sectionId)
+        sections: sections.filter(s => s.id !== sectionId),
+        jobPostings: data.jobPostings || []
       });
     }
   }, [people, sections, onDataChange]);
@@ -203,6 +207,15 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
           <span className="text-xs bg-secondary/50 px-2 py-1 rounded-md">
             {totalMembers} membres
           </span>
+          <Button
+            onClick={() => window.location.href = '/jobs'}
+            variant="outline"
+            size="sm"
+            className="text-xs"
+          >
+            <UserPlus className="w-3 h-3 mr-1" />
+            Postes vacants
+          </Button>
         </div>
 
         {/* Controls compacts et discrets */}

@@ -11,6 +11,19 @@ export interface Person {
   description?: string;
 }
 
+export interface JobPosting {
+  id: string;
+  title: string;
+  department: string;
+  description: string;
+  requirements: string[];
+  location: string;
+  type: 'CDI' | 'CDD' | 'Stage' | 'Freelance';
+  applicationUrl: string;
+  publishedDate: string;
+  isActive: boolean;
+}
+
 export interface Section {
   id: string;
   title: string;
@@ -24,10 +37,12 @@ export interface Section {
 export interface OrganigrammeData {
   sections: Section[];
   people: Person[];
+  jobPostings: JobPosting[];
 }
 
 export interface AdminMode {
   isActive: boolean;
   selectedPerson?: Person;
   selectedSection?: Section;
+  selectedJobPosting?: JobPosting;
 }
