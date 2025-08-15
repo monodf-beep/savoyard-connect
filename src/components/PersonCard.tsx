@@ -9,6 +9,7 @@ interface PersonCardProps {
   isAdmin: boolean;
   onEdit?: (person: Person) => void;
   compact?: boolean;
+  isBureau?: boolean;
 }
 
 export const PersonCard: React.FC<PersonCardProps> = ({ 
@@ -16,7 +17,8 @@ export const PersonCard: React.FC<PersonCardProps> = ({
   onClick, 
   isAdmin, 
   onEdit,
-  compact = false 
+  compact = false,
+  isBureau = false 
 }) => {
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -36,22 +38,30 @@ export const PersonCard: React.FC<PersonCardProps> = ({
   };
 
   if (compact) {
+    const compactClass = isBureau 
+      ? "inline-flex items-center gap-3 px-4 py-2 text-base bg-card hover:bg-accent/50 border border-border rounded-lg transition-colors"
+      : "inline-flex items-center gap-2 px-3 py-1.5 text-sm bg-card hover:bg-accent/50 border border-border rounded-md transition-colors";
+    
+    const avatarClass = isBureau ? "w-8 h-8" : "w-6 h-6";
+    const textClass = isBureau ? "font-semibold" : "font-medium";
+    const iconClass = isBureau ? "w-4 h-4" : "w-3 h-3";
+    
     return (
       <button
         onClick={handleClick}
-        className="inline-flex items-center gap-2 px-3 py-1.5 text-sm bg-card hover:bg-accent/50 border border-border rounded-md transition-colors"
+        className={compactClass}
       >
-        <Avatar className="w-6 h-6">
+        <Avatar className={avatarClass}>
           <AvatarImage src={person.photo} alt={`${person.firstName} ${person.lastName}`} />
           <AvatarFallback className="text-xs bg-primary/10">
             {person.firstName.charAt(0)}
           </AvatarFallback>
         </Avatar>
-        <span className="font-medium truncate">
+        <span className={`${textClass} truncate`}>
           {person.firstName} {person.lastName}
         </span>
         {person.linkedin && (
-          <Linkedin className="w-3 h-3 text-muted-foreground opacity-60" />
+          <Linkedin className={`${iconClass} text-muted-foreground opacity-60`} />
         )}
       </button>
     );
