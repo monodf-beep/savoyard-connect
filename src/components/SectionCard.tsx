@@ -71,7 +71,6 @@ export const SectionCard: React.FC<SectionCardProps> = ({
                     isAdmin={isAdmin}
                     onEdit={onEditPerson}
                     compact={true}
-                    isBureau={section.type === 'bureau'}
                   />
                 ))}
               </div>
