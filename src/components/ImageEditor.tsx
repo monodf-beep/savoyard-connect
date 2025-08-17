@@ -30,32 +30,50 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({
   useEffect(() => {
     if (!canvasRef.current || !isOpen) return;
 
+    console.log('Initializing canvas...');
+    
     const canvas = new FabricCanvas(canvasRef.current, {
       width: 600,
       height: 400,
       backgroundColor: '#f8f9fa',
     });
 
+    console.log('Canvas created:', canvas);
     setFabricCanvas(canvas);
 
     // Load initial image if provided
     if (initialImageUrl) {
+      console.log('Loading initial image:', initialImageUrl);
       loadImageFromUrl(initialImageUrl, canvas);
+    } else {
+      console.log('No initial image URL provided');
     }
 
     return () => {
+      console.log('Disposing canvas');
       canvas.dispose();
     };
   }, [isOpen, initialImageUrl]);
 
   const loadImageFromUrl = (url: string, canvas: FabricCanvas) => {
+    console.log('Loading image from URL:', url);
+    
+    if (!url) {
+      console.log('No URL provided');
+      return;
+    }
+
     util.loadImage(url, { crossOrigin: 'anonymous' })
       .then((img) => {
+        console.log('Image loaded successfully:', img);
+        
         const fabricImg = new FabricImage(img, {
           selectable: true,
           moveable: true,
           scalable: true,
         });
+
+        console.log('FabricImage created:', fabricImg);
 
         // Scale image to fit canvas
         const canvasWidth = canvas.getWidth();
@@ -63,9 +81,14 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({
         const imgWidth = fabricImg.width!;
         const imgHeight = fabricImg.height!;
 
+        console.log('Canvas dimensions:', canvasWidth, 'x', canvasHeight);
+        console.log('Image dimensions:', imgWidth, 'x', imgHeight);
+
         const scaleX = canvasWidth / imgWidth;
         const scaleY = canvasHeight / imgHeight;
         const scale = Math.min(scaleX, scaleY, 1);
+
+        console.log('Scale calculated:', scale);
 
         fabricImg.scale(scale);
         
@@ -77,25 +100,40 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({
           top: (canvasHeight - scaledHeight) / 2
         });
 
+        console.log('Image positioned and scaled');
+
         canvas.clear();
         canvas.add(fabricImg);
         canvas.renderAll();
         setOriginalImage(fabricImg);
+        
+        console.log('Image added to canvas');
         toast.success('Image chargée !');
       })
-      .catch(() => {
-        toast.error('Erreur lors du chargement de l\'image');
+      .catch((error) => {
+        console.error('Error loading image:', error);
+        toast.error('Erreur lors du chargement de l\'image: ' + error.message);
       });
   };
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (!file || !fabricCanvas) return;
+    if (!file || !fabricCanvas) {
+      console.log('No file selected or canvas not ready');
+      return;
+    }
 
+    console.log('File selected:', file.name, file.type);
+    
     const reader = new FileReader();
     reader.onload = (e) => {
       const imageUrl = e.target?.result as string;
+      console.log('File read as data URL, length:', imageUrl.length);
       loadImageFromUrl(imageUrl, fabricCanvas);
+    };
+    reader.onerror = (error) => {
+      console.error('FileReader error:', error);
+      toast.error('Erreur lors de la lecture du fichier');
     };
     reader.readAsDataURL(file);
   };
