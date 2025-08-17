@@ -7,6 +7,7 @@ import { SectionForm } from './SectionForm';
 import { Button } from './ui/button';
 import { Settings, Eye, ExpandIcon as Expand, ShrinkIcon as Shrink, Plus, UserPlus, FolderPlus } from 'lucide-react';
 import { Badge } from './ui/badge';
+import { useIsWordPressAdmin } from '../utils/wordpress';
 
 interface OrganigrammeProps {
   data: OrganigrammeData;
@@ -23,6 +24,7 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
   const [people, setPeople] = useState<Person[]>(data.people);
   const [selectedPerson, setSelectedPerson] = useState<Person | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const isWPAdmin = useIsWordPressAdmin();
   const [adminMode, setAdminMode] = useState<AdminMode>({ isActive: isAdminMode });
   const [isPersonFormOpen, setIsPersonFormOpen] = useState(false);
   const [isSectionFormOpen, setIsSectionFormOpen] = useState(false);
@@ -263,24 +265,27 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
             </>
           )}
 
-          <Button
-            onClick={toggleAdminMode}
-            variant={adminMode.isActive ? "default" : "outline"}
-            size="sm"
-            className="ml-1"
-          >
-            {adminMode.isActive ? (
-              <>
-                <Eye className="w-3 h-3 mr-1" />
-                Visiteur
-              </>
-            ) : (
-              <>
-                <Settings className="w-3 h-3 mr-1" />
-                Admin
-              </>
-            )}
-          </Button>
+          {/* Bouton Admin visible uniquement dans WordPress admin */}
+          {isWPAdmin && (
+            <Button
+              onClick={toggleAdminMode}
+              variant={adminMode.isActive ? "default" : "outline"}
+              size="sm"
+              className="ml-1"
+            >
+              {adminMode.isActive ? (
+                <>
+                  <Eye className="w-3 h-3 mr-1" />
+                  Visiteur
+                </>
+              ) : (
+                <>
+                  <Settings className="w-3 h-3 mr-1" />
+                  Admin
+                </>
+              )}
+            </Button>
+          )}
         </div>
       </div>
 
