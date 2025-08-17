@@ -4,8 +4,9 @@ import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Textarea } from './ui/textarea';
-import { X, Plus, Trash2 } from 'lucide-react';
+import { X, Plus, Trash2, ImageIcon } from 'lucide-react';
 import { Badge } from './ui/badge';
+import { ImageEditor } from './ImageEditor';
 
 interface PersonFormProps {
   person?: Person | null;
@@ -36,6 +37,7 @@ export const PersonForm: React.FC<PersonFormProps> = ({
   });
 
   const [newMission, setNewMission] = useState('');
+  const [isImageEditorOpen, setIsImageEditorOpen] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -135,13 +137,33 @@ export const PersonForm: React.FC<PersonFormProps> = ({
           </div>
 
           <div>
-            <Label htmlFor="photo">URL Photo</Label>
-            <Input
-              id="photo"
-              value={formData.photo}
-              onChange={(e) => setFormData(prev => ({ ...prev, photo: e.target.value }))}
-              placeholder="https://..."
-            />
+            <Label htmlFor="photo">Photo</Label>
+            <div className="space-y-2">
+              <Input
+                id="photo"
+                value={formData.photo}
+                onChange={(e) => setFormData(prev => ({ ...prev, photo: e.target.value }))}
+                placeholder="URL de l'image ou utilisez l'éditeur..."
+              />
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setIsImageEditorOpen(true)}
+                className="w-full"
+              >
+                <ImageIcon className="w-4 h-4 mr-2" />
+                Ouvrir l'éditeur d'image
+              </Button>
+              {formData.photo && (
+                <div className="mt-2">
+                  <img
+                    src={formData.photo}
+                    alt="Aperçu"
+                    className="w-20 h-20 object-cover rounded-lg border border-border"
+                  />
+                </div>
+              )}
+            </div>
           </div>
 
           <div>
@@ -236,6 +258,16 @@ export const PersonForm: React.FC<PersonFormProps> = ({
           </div>
         </form>
       </div>
+
+      <ImageEditor
+        isOpen={isImageEditorOpen}
+        onClose={() => setIsImageEditorOpen(false)}
+        onSave={(imageUrl) => {
+          setFormData(prev => ({ ...prev, photo: imageUrl }));
+          setIsImageEditorOpen(false);
+        }}
+        initialImageUrl={formData.photo}
+      />
     </div>
   );
 };
