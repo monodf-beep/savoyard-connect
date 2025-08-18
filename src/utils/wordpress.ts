@@ -1,7 +1,12 @@
 /**
- * Vérifie si l'utilisateur est actuellement sur l'interface d'administration WordPress
+ * Vérifie si l'utilisateur est actuellement sur l'interface d'administration WordPress ou sur Lovable
  */
 export const isWordPressAdmin = (): boolean => {
+  // Vérifier si on est sur lovable.dev
+  if (window.location.href.includes('lovable.dev')) {
+    return true;
+  }
+  
   // Vérifier si on est dans un iframe (le cas typique quand intégré dans WordPress)
   if (window.self !== window.top) {
     try {
