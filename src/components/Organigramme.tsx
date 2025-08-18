@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { OrganigrammeData, Person, Section, AdminMode } from '../types/organigramme';
+import { Person, Section, AdminMode } from '../types/organigramme';
 import { SectionCard } from './SectionCard';
 import { PersonSidebar } from './PersonSidebar';
 import { PersonForm } from './PersonForm';
@@ -8,20 +8,16 @@ import { Button } from './ui/button';
 import { Settings, Eye, ExpandIcon as Expand, ShrinkIcon as Shrink, Plus, UserPlus, FolderPlus } from 'lucide-react';
 import { Badge } from './ui/badge';
 import { useIsWordPressAdmin } from '../utils/wordpress';
+import { useOrganigramme } from '../hooks/useOrganigramme';
 
 interface OrganigrammeProps {
-  data: OrganigrammeData;
   isAdminMode?: boolean;
-  onDataChange?: (data: OrganigrammeData) => void;
 }
 
 export const Organigramme: React.FC<OrganigrammeProps> = ({
-  data,
-  isAdminMode = false,
-  onDataChange
+  isAdminMode = false
 }) => {
-  const [sections, setSections] = useState<Section[]>(data.sections);
-  const [people, setPeople] = useState<Person[]>(data.people);
+  const { data, loading, savePerson, deletePerson, saveSection, deleteSection, updateSectionExpansion } = useOrganigramme();
   const [selectedPerson, setSelectedPerson] = useState<Person | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const isWPAdmin = useIsWordPressAdmin();
@@ -31,48 +27,51 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
   const [editingPerson, setEditingPerson] = useState<Person | null>(null);
   const [editingSection, setEditingSection] = useState<Section | null>(null);
 
-  const toggleSection = useCallback((sectionId: string) => {
-    const updateSectionRecursively = (sections: Section[]): Section[] => {
-      return sections.map(section => {
+  const toggleSection = useCallback(async (sectionId: string) => {
+    const findSectionRecursively = (sections: Section[]): Section | null => {
+      for (const section of sections) {
         if (section.id === sectionId) {
-          return { ...section, isExpanded: !section.isExpanded };
+          return section;
         }
         if (section.subsections) {
-          return {
-            ...section,
-            subsections: updateSectionRecursively(section.subsections)
-          };
+          const found = findSectionRecursively(section.subsections);
+          if (found) return found;
         }
-        return section;
-      });
+      }
+      return null;
     };
 
-    setSections(updateSectionRecursively(sections));
-  }, [sections]);
+    const targetSection = findSectionRecursively(data.sections);
+    if (targetSection) {
+      await updateSectionExpansion(sectionId, !targetSection.isExpanded);
+    }
+  }, [data.sections, updateSectionExpansion]);
 
-  const expandAll = useCallback(() => {
-    const expandSectionRecursively = (sections: Section[]): Section[] => {
-      return sections.map(section => ({
-        ...section,
-        isExpanded: true,
-        subsections: section.subsections ? expandSectionRecursively(section.subsections) : undefined
-      }));
+  const expandAll = useCallback(async () => {
+    const expandSectionRecursively = async (sections: Section[]) => {
+      for (const section of sections) {
+        await updateSectionExpansion(section.id, true);
+        if (section.subsections) {
+          await expandSectionRecursively(section.subsections);
+        }
+      }
     };
+    
+    await expandSectionRecursively(data.sections);
+  }, [data.sections, updateSectionExpansion]);
 
-    setSections(expandSectionRecursively(sections));
-  }, []);
-
-  const collapseAll = useCallback(() => {
-    const collapseSectionRecursively = (sections: Section[]): Section[] => {
-      return sections.map(section => ({
-        ...section,
-        isExpanded: false,
-        subsections: section.subsections ? collapseSectionRecursively(section.subsections) : undefined
-      }));
+  const collapseAll = useCallback(async () => {
+    const collapseSectionRecursively = async (sections: Section[]) => {
+      for (const section of sections) {
+        await updateSectionExpansion(section.id, false);
+        if (section.subsections) {
+          await collapseSectionRecursively(section.subsections);
+        }
+      }
     };
-
-    setSections(collapseSectionRecursively(sections));
-  }, []);
+    
+    await collapseSectionRecursively(data.sections);
+  }, [data.sections, updateSectionExpansion]);
 
   const handlePersonClick = useCallback((person: Person) => {
     setSelectedPerson(person);
@@ -95,110 +94,67 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
     setIsPersonFormOpen(true);
   }, []);
 
-  const handleSavePerson = useCallback((person: Person) => {
-    setPeople(prev => {
-      const existing = prev.find(p => p.id === person.id);
-      if (existing) {
-        return prev.map(p => p.id === person.id ? person : p);
-      } else {
-        return [...prev, person];
-      }
-    });
-
-    // Update sections to reflect changes
-    setSections(prev => updateSectionsWithPerson(prev, person));
-    
-    if (onDataChange) {
-      const newData = {
-        people: people.map(p => p.id === person.id ? person : p),
-        sections: sections,
-        jobPostings: data.jobPostings || []
-      };
-      if (!people.find(p => p.id === person.id)) {
-        newData.people.push(person);
-      }
-      onDataChange(newData);
+  const handleSavePerson = useCallback(async (person: Person) => {
+    try {
+      await savePerson(person);
+      setIsPersonFormOpen(false);
+      setEditingPerson(null);
+    } catch (error) {
+      console.error('Erreur lors de la sauvegarde:', error);
     }
-  }, [people, sections, onDataChange]);
+  }, [savePerson]);
 
-  const handleDeletePerson = useCallback((personId: string) => {
-    setPeople(prev => prev.filter(p => p.id !== personId));
-    setSections(prev => removeSectionMember(prev, personId));
-    
-    if (onDataChange) {
-      onDataChange({
-        people: people.filter(p => p.id !== personId),
-        sections: sections,
-        jobPostings: data.jobPostings || []
-      });
+  const handleDeletePerson = useCallback(async (personId: string) => {
+    try {
+      await deletePerson(personId);
+      setIsPersonFormOpen(false);
+      setEditingPerson(null);
+    } catch (error) {
+      console.error('Erreur lors de la suppression:', error);
     }
-  }, [people, sections, onDataChange]);
+  }, [deletePerson]);
 
   const handleAddSection = useCallback(() => {
     setEditingSection(null);
     setIsSectionFormOpen(true);
   }, []);
 
-  const handleSaveSection = useCallback((sectionData: Omit<Section, 'members' | 'subsections'>) => {
-    const newSection: Section = {
-      ...sectionData,
-      members: [],
-      subsections: []
-    };
-
-    setSections(prev => {
-      const existing = prev.find(s => s.id === sectionData.id);
-      if (existing) {
-        return prev.map(s => s.id === sectionData.id ? { ...s, ...sectionData } : s);
-      } else {
-        return [...prev, newSection];
-      }
-    });
-
-    if (onDataChange) {
-      onDataChange({
-        people,
-        sections: sections.map(s => s.id === sectionData.id ? { ...s, ...sectionData } : s),
-        jobPostings: data.jobPostings || []
-      });
+  const handleSaveSection = useCallback(async (sectionData: Omit<Section, 'members' | 'subsections'>) => {
+    try {
+      await saveSection(sectionData);
+      setIsSectionFormOpen(false);
+      setEditingSection(null);
+    } catch (error) {
+      console.error('Erreur lors de la sauvegarde:', error);
     }
-  }, [people, sections, onDataChange]);
+  }, [saveSection]);
 
-  const handleDeleteSection = useCallback((sectionId: string) => {
-    setSections(prev => prev.filter(s => s.id !== sectionId));
-    
-    if (onDataChange) {
-      onDataChange({
-        people,
-        sections: sections.filter(s => s.id !== sectionId),
-        jobPostings: data.jobPostings || []
-      });
+  const handleDeleteSection = useCallback(async (sectionId: string) => {
+    try {
+      await deleteSection(sectionId);
+      setIsSectionFormOpen(false);
+      setEditingSection(null);
+    } catch (error) {
+      console.error('Erreur lors de la suppression:', error);
     }
-  }, [people, sections, onDataChange]);
-
-  // Helper functions
-  const updateSectionsWithPerson = (sections: Section[], person: Person): Section[] => {
-    return sections.map(section => ({
-      ...section,
-      members: section.members.map(m => m.id === person.id ? person : m),
-      subsections: section.subsections ? updateSectionsWithPerson(section.subsections, person) : undefined
-    }));
-  };
-
-  const removeSectionMember = (sections: Section[], personId: string): Section[] => {
-    return sections.map(section => ({
-      ...section,
-      members: section.members.filter(m => m.id !== personId),
-      subsections: section.subsections ? removeSectionMember(section.subsections, personId) : undefined
-    }));
-  };
-
+  }, [deleteSection]);
 
   const toggleAdminMode = useCallback(() => {
     setAdminMode(prev => ({ ...prev, isActive: !prev.isActive }));
   }, []);
 
-  const totalMembers = people.length;
+  const totalMembers = data.people.length;
+
+  if (loading) {
+    return (
+      <div className="flex min-h-screen w-full items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Chargement de l'organigramme...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen w-full">
@@ -301,7 +257,7 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
 
       {/* Sections épurées */}
       <div className="space-y-4">
-        {sections.map(section => (
+        {data.sections.map(section => (
           <SectionCard
             key={section.id}
             section={section}
