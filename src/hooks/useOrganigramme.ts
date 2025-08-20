@@ -55,7 +55,8 @@ export const useOrganigramme = () => {
               lastName: person.last_name,
               photo: person.avatar_url || '',
               role: person.title || '',
-              description: person.bio || ''
+              description: person.bio || '',
+              sectionId: person.section_id
             })) || [],
             subsections: buildSectionHierarchy(sections, section.id)
           }));
@@ -68,7 +69,8 @@ export const useOrganigramme = () => {
         lastName: person.last_name,
         photo: person.avatar_url || '',
         role: person.title || '',
-        description: person.bio || ''
+        description: person.bio || '',
+        sectionId: person.section_id
       })) || [];
       const formattedJobs = jobsData?.map(job => ({
         id: job.id,
@@ -99,6 +101,8 @@ export const useOrganigramme = () => {
   // Sauvegarder une personne
   const savePerson = async (person: Person) => {
     try {
+      console.log('Sauvegarde de la personne:', person);
+      
       const { data: savedPerson, error } = await supabase
         .from('people')
         .upsert({
@@ -107,13 +111,15 @@ export const useOrganigramme = () => {
           last_name: person.lastName,
           title: person.role,
           bio: person.description,
-          avatar_url: person.photo
+          avatar_url: person.photo,
+          section_id: person.sectionId || null // Ajouter section_id si disponible
         })
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
 
+      console.log('Personne sauvegardée:', savedPerson);
       toast.success('Personne sauvegardée avec succès');
       await loadData(); // Recharger les données
       return savedPerson;
@@ -154,7 +160,7 @@ export const useOrganigramme = () => {
           is_expanded: section.isExpanded
         })
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
 

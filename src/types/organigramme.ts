@@ -9,6 +9,7 @@ export interface Person {
   linkedin?: string;
   instagram?: string;
   description?: string;
+  sectionId?: string; // Ajouter section_id
 }
 
 export interface JobPosting {
