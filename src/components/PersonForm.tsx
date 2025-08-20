@@ -4,9 +4,11 @@ import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Textarea } from './ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { X, Plus, Trash2, ImageIcon } from 'lucide-react';
 import { Badge } from './ui/badge';
 import { ImageEditor } from './ImageEditor';
+import { useOrganigramme } from '../hooks/useOrganigramme';
 
 interface PersonFormProps {
   person?: Person | null;
@@ -33,11 +35,34 @@ export const PersonForm: React.FC<PersonFormProps> = ({
     linkedin: person?.linkedin || '',
     instagram: person?.instagram || '',
     missions: person?.missions || [],
-    photo: person?.photo || ''
+    photo: person?.photo || '',
+    sectionId: person?.sectionId || ''
   });
 
   const [newMission, setNewMission] = useState('');
   const [isImageEditorOpen, setIsImageEditorOpen] = useState(false);
+  const { data } = useOrganigramme();
+
+  // Fonction pour récupérer toutes les sections (y compris sous-sections)
+  const getAllSections = () => {
+    const sections: { id: string; title: string; level: number }[] = [];
+    
+    const addSectionsRecursively = (sectionList: any[], level = 0) => {
+      sectionList.forEach(section => {
+        sections.push({
+          id: section.id,
+          title: section.title,
+          level
+        });
+        if (section.subsections) {
+          addSectionsRecursively(section.subsections, level + 1);
+        }
+      });
+    };
+    
+    addSectionsRecursively(data.sections);
+    return sections;
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -53,7 +78,8 @@ export const PersonForm: React.FC<PersonFormProps> = ({
       linkedin: formData.linkedin,
       instagram: formData.instagram,
       missions: formData.missions || [],
-      photo: formData.photo
+      photo: formData.photo,
+      sectionId: formData.sectionId
     };
 
     onSave(personData);
@@ -126,6 +152,24 @@ export const PersonForm: React.FC<PersonFormProps> = ({
             />
           </div>
 
+          <div>
+            <Label htmlFor="section">Section</Label>
+            <Select 
+              value={formData.sectionId} 
+              onValueChange={(value) => setFormData(prev => ({ ...prev, sectionId: value }))}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Choisir une section..." />
+              </SelectTrigger>
+              <SelectContent>
+                {getAllSections().map((section) => (
+                  <SelectItem key={section.id} value={section.id}>
+                    {"  ".repeat(section.level)}{section.title}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
           <div>
             <Label htmlFor="description">Description</Label>
             <Textarea
