@@ -44,7 +44,7 @@ export const PersonForm: React.FC<PersonFormProps> = ({
     if (!formData.firstName) return;
 
     const personData: Person = {
-      id: formData.id || formData.firstName.toLowerCase().replace(/\s+/g, '-'),
+      id: formData.id || crypto.randomUUID(),
       firstName: formData.firstName,
       lastName: formData.lastName || '',
       role: formData.role,
