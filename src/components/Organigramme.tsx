@@ -221,27 +221,25 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
             </>
           )}
 
-          {/* Bouton Admin visible uniquement dans WordPress admin */}
-          {isWPAdmin && (
-            <Button
-              onClick={toggleAdminMode}
-              variant={adminMode.isActive ? "default" : "outline"}
-              size="sm"
-              className="ml-1"
-            >
-              {adminMode.isActive ? (
-                <>
-                  <Eye className="w-3 h-3 mr-1" />
-                  Visiteur
-                </>
-              ) : (
-                <>
-                  <Settings className="w-3 h-3 mr-1" />
-                  Admin
-                </>
-              )}
-            </Button>
-          )}
+          {/* Bouton Admin */}
+          <Button
+            onClick={toggleAdminMode}
+            variant={adminMode.isActive ? "default" : "outline"}
+            size="sm"
+            className="ml-1"
+          >
+            {adminMode.isActive ? (
+              <>
+                <Eye className="w-3 h-3 mr-1" />
+                Visiteur
+              </>
+            ) : (
+              <>
+                <Settings className="w-3 h-3 mr-1" />
+                Admin
+              </>
+            )}
+          </Button>
         </div>
       </div>
 
