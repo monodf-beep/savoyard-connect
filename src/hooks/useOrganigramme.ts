@@ -14,9 +14,11 @@ export const useOrganigramme = () => {
   // Charger les données depuis Supabase
   const loadData = async () => {
     try {
+      console.log('Début du chargement des données...');
       setLoading(true);
       
       // Charger les sections
+      console.log('Chargement des sections...');
       const { data: sectionsData, error: sectionsError } = await supabase
         .from('sections')
         .select('*')
@@ -85,11 +87,13 @@ export const useOrganigramme = () => {
         isActive: job.status === 'active'
       })) || [];
 
+      console.log('Formatage terminé, mise à jour de l\'état...');
       setData({
         sections: formattedSections,
         people: formattedPeople,
         jobPostings: formattedJobs
       });
+      console.log('État mis à jour avec:', { sectionsCount: formattedSections.length, peopleCount: formattedPeople.length });
     } catch (error) {
       console.error('Erreur lors du chargement des données:', error);
       toast.error('Erreur lors du chargement des données');
