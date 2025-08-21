@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Person } from '../types/organigramme';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -42,6 +42,40 @@ export const PersonForm: React.FC<PersonFormProps> = ({
   const [newMission, setNewMission] = useState('');
   const [isImageEditorOpen, setIsImageEditorOpen] = useState(false);
   const { data } = useOrganigramme();
+
+  // Mettre à jour le formulaire quand les données de la personne changent
+  useEffect(() => {
+    if (person) {
+      setFormData({
+        id: person.id || '',
+        firstName: person.firstName || '',
+        lastName: person.lastName || '',
+        role: person.role || '',
+        description: person.description || '',
+        missionDescription: person.missionDescription || '',
+        linkedin: person.linkedin || '',
+        instagram: person.instagram || '',
+        missions: person.missions || [],
+        photo: person.photo || '',
+        sectionId: person.sectionId || ''
+      });
+    } else {
+      // Réinitialiser le formulaire pour une nouvelle personne
+      setFormData({
+        id: '',
+        firstName: '',
+        lastName: '',
+        role: '',
+        description: '',
+        missionDescription: '',
+        linkedin: '',
+        instagram: '',
+        missions: [],
+        photo: '',
+        sectionId: ''
+      });
+    }
+  }, [person]);
 
   // Fonction pour récupérer toutes les sections (y compris sous-sections)
   const getAllSections = () => {
