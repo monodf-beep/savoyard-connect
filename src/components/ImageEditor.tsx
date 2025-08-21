@@ -75,7 +75,7 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({
 
         console.log('FabricImage created:', fabricImg);
 
-        // Scale image to fit canvas
+        // Scale image to fit canvas while maintaining aspect ratio
         const canvasWidth = canvas.getWidth();
         const canvasHeight = canvas.getHeight();
         const imgWidth = fabricImg.width!;
@@ -84,32 +84,43 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({
         console.log('Canvas dimensions:', canvasWidth, 'x', canvasHeight);
         console.log('Image dimensions:', imgWidth, 'x', imgHeight);
 
-        const scaleX = canvasWidth / imgWidth;
-        const scaleY = canvasHeight / imgHeight;
+        // Calculate scale to fit image in canvas with padding
+        const padding = 20;
+        const availableWidth = canvasWidth - (padding * 2);
+        const availableHeight = canvasHeight - (padding * 2);
+        
+        const scaleX = availableWidth / imgWidth;
+        const scaleY = availableHeight / imgHeight;
         const scale = Math.min(scaleX, scaleY, 1);
 
         console.log('Scale calculated:', scale);
 
         fabricImg.scale(scale);
         
-        // Center the image manually
+        // Center the image
         const scaledWidth = imgWidth * scale;
         const scaledHeight = imgHeight * scale;
         fabricImg.set({
           left: (canvasWidth - scaledWidth) / 2,
-          top: (canvasHeight - scaledHeight) / 2
+          top: (canvasHeight - scaledHeight) / 2,
+          originX: 'left',
+          originY: 'top'
         });
 
         console.log('Image positioned and scaled');
 
+        // Clear canvas and add image
         canvas.clear();
+        canvas.backgroundColor = '#ffffff'; // Set white background
         canvas.add(fabricImg);
         canvas.setActiveObject(fabricImg);
+        canvas.centerObject(fabricImg); // Additional centering
         canvas.renderAll();
         setOriginalImage(fabricImg);
         
         console.log('Image added to canvas and set as active object');
         console.log('Image bounds:', fabricImg.getBoundingRect());
+        console.log('Canvas objects count:', canvas.size());
         toast.success('Image chargée !');
       })
       .catch((error) => {
