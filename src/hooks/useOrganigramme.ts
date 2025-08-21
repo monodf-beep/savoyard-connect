@@ -121,7 +121,11 @@ export const useOrganigramme = () => {
 
       console.log('Personne sauvegardée:', savedPerson);
       toast.success('Personne sauvegardée avec succès');
-      await loadData(); // Recharger les données
+      
+      // Recharger les données et vérifier qu'elles sont bien mises à jour
+      console.log('Rechargement des données...');
+      await loadData();
+      console.log('Données rechargées');
       return savedPerson;
     } catch (error) {
       console.error('Erreur lors de la sauvegarde:', error);
