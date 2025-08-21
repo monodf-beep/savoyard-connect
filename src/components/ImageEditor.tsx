@@ -104,10 +104,12 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({
 
         canvas.clear();
         canvas.add(fabricImg);
+        canvas.setActiveObject(fabricImg);
         canvas.renderAll();
         setOriginalImage(fabricImg);
         
-        console.log('Image added to canvas');
+        console.log('Image added to canvas and set as active object');
+        console.log('Image bounds:', fabricImg.getBoundingRect());
         toast.success('Image chargée !');
       })
       .catch((error) => {
