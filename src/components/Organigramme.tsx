@@ -143,8 +143,30 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
     setAdminMode(prev => ({ ...prev, isActive: !prev.isActive }));
   }, []);
 
-  // Compter uniquement les membres assignés à des sections pour éviter les doublons
-  const totalMembers = data.people.filter(person => person.sectionId).length;
+  // Compter les membres uniques à travers toutes les sections
+  const getAllMembers = (sections: Section[]): Person[] => {
+    const members: Person[] = [];
+    const addedIds = new Set<string>();
+    
+    const collectMembers = (sectionList: Section[]) => {
+      sectionList.forEach(section => {
+        section.members.forEach(member => {
+          if (!addedIds.has(member.id)) {
+            members.push(member);
+            addedIds.add(member.id);
+          }
+        });
+        if (section.subsections) {
+          collectMembers(section.subsections);
+        }
+      });
+    };
+    
+    collectMembers(sections);
+    return members;
+  };
+  
+  const totalMembers = getAllMembers(data.sections).length;
 
   if (loading) {
     return (

@@ -63,7 +63,6 @@ export type Database = {
           id: string
           last_name: string
           phone: string | null
-          section_id: string | null
           title: string | null
           updated_at: string | null
         }
@@ -76,7 +75,6 @@ export type Database = {
           id?: string
           last_name: string
           phone?: string | null
-          section_id?: string | null
           title?: string | null
           updated_at?: string | null
         }
@@ -89,13 +87,43 @@ export type Database = {
           id?: string
           last_name?: string
           phone?: string | null
-          section_id?: string | null
           title?: string | null
           updated_at?: string | null
         }
+        Relationships: []
+      }
+      section_members: {
+        Row: {
+          created_at: string | null
+          id: string
+          person_id: string
+          role: string | null
+          section_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          person_id: string
+          role?: string | null
+          section_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          person_id?: string
+          role?: string | null
+          section_id?: string
+        }
         Relationships: [
           {
-            foreignKeyName: "people_section_id_fkey"
+            foreignKeyName: "section_members_person_id_fkey"
+            columns: ["person_id"]
+            isOneToOne: false
+            referencedRelation: "people"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "section_members_section_id_fkey"
             columns: ["section_id"]
             isOneToOne: false
             referencedRelation: "sections"

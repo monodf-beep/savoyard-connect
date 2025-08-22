@@ -34,6 +34,13 @@ export const useOrganigramme = () => {
       
       if (peopleError) throw peopleError;
 
+      // Charger les liaisons section-membres
+      const { data: sectionMembersData, error: sectionMembersError } = await supabase
+        .from('section_members')
+        .select('*');
+      
+      if (sectionMembersError) throw sectionMembersError;
+
       // Charger les offres d'emploi
       const { data: jobsData, error: jobsError } = await supabase
         .from('job_postings')
@@ -46,22 +53,31 @@ export const useOrganigramme = () => {
       const buildSectionHierarchy = (sections: any[], parentId: string | null = null): Section[] => {
         return sections
           .filter(section => section.parent_id === parentId)
-          .map(section => ({
-            id: section.id,
-            title: section.title,
-            type: 'bureau' as const,
-            isExpanded: section.is_expanded,
-            members: peopleData?.filter(person => person.section_id === section.id).map(person => ({
-              id: person.id,
-              firstName: person.first_name,
-              lastName: person.last_name,
-              photo: person.avatar_url || '',
-              role: person.title || '',
-              description: person.bio || '',
-              sectionId: person.section_id
-            })) || [],
-            subsections: buildSectionHierarchy(sections, section.id)
-          }));
+          .map(section => {
+            // Récupérer les membres de cette section via la table de liaison
+            const sectionMembers = sectionMembersData?.filter(sm => sm.section_id === section.id) || [];
+            const members = sectionMembers.map(sm => {
+              const person = peopleData?.find(p => p.id === sm.person_id);
+              return person ? {
+                id: person.id,
+                firstName: person.first_name,
+                lastName: person.last_name,
+                photo: person.avatar_url || '',
+                role: sm.role || person.title || '',
+                description: person.bio || '',
+                sectionId: section.id
+              } : null;
+            }).filter(Boolean);
+
+            return {
+              id: section.id,
+              title: section.title,
+              type: 'bureau' as const,
+              isExpanded: section.is_expanded,
+              members: members as Person[],
+              subsections: buildSectionHierarchy(sections, section.id)
+            };
+          });
       };
 
       const formattedSections = buildSectionHierarchy(sectionsData || []);
@@ -71,8 +87,7 @@ export const useOrganigramme = () => {
         lastName: person.last_name,
         photo: person.avatar_url || '',
         role: person.title || '',
-        description: person.bio || '',
-        sectionId: person.section_id
+        description: person.bio || ''
       })) || [];
       const formattedJobs = jobsData?.map(job => ({
         id: job.id,
@@ -115,8 +130,7 @@ export const useOrganigramme = () => {
           last_name: person.lastName,
           title: person.role,
           bio: person.description,
-          avatar_url: person.photo,
-          section_id: person.sectionId || null // Ajouter section_id si disponible
+          avatar_url: person.photo
         })
         .select()
         .maybeSingle();
