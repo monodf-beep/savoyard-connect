@@ -143,7 +143,8 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
     setAdminMode(prev => ({ ...prev, isActive: !prev.isActive }));
   }, []);
 
-  const totalMembers = data.people.length;
+  // Compter uniquement les membres assignés à des sections pour éviter les doublons
+  const totalMembers = data.people.filter(person => person.sectionId).length;
 
   if (loading) {
     return (
