@@ -63,7 +63,7 @@ export const SectionCard: React.FC<SectionCardProps> = ({
           <div className="mt-4 space-y-4">
             {/* Affichage compact des membres principaux */}
             {(section.members.length > 0 || (section.vacantPositions && section.vacantPositions.length > 0)) && (
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-2 items-stretch">
                 {section.members.map(person => (
                   <PersonCard
                     key={person.id}
@@ -132,7 +132,7 @@ export const SectionCard: React.FC<SectionCardProps> = ({
       {section.isExpanded && hasContent && (
         <div className="mt-2 ml-6 space-y-2">
           {(section.members.length > 0 || (section.vacantPositions && section.vacantPositions.length > 0)) && (
-            <div className="flex flex-wrap gap-1">
+            <div className="flex flex-wrap gap-1 items-stretch">
               {section.members.map(person => (
                 <PersonCard
                   key={person.id}

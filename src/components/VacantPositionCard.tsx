@@ -25,10 +25,10 @@ export const VacantPositionCard: React.FC<VacantPositionCardProps> = ({
   if (compact) {
     return (
       <div className="relative group">
-        <div className="flex items-center justify-center p-3 border-2 border-dashed border-muted-foreground/30 rounded-lg bg-muted/20 hover:border-primary/50 hover:bg-primary/5 transition-colors cursor-pointer min-h-[44px]">
+        <div className="flex items-center justify-center border-2 border-dashed border-muted-foreground/30 rounded-lg bg-muted/20 hover:border-primary/50 hover:bg-primary/5 transition-colors cursor-pointer h-[44px] px-3">
           <div className="text-center">
             <UserPlus className="w-4 h-4 mx-auto mb-1 text-muted-foreground" />
-            <span className="text-xs text-muted-foreground font-medium">
+            <span className="text-xs text-muted-foreground font-medium truncate whitespace-nowrap">
               {position.title}
             </span>
           </div>

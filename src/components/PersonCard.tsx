@@ -39,8 +39,8 @@ export const PersonCard: React.FC<PersonCardProps> = ({
 
   if (compact) {
     const compactClass = isBureau 
-      ? "inline-flex items-center gap-3 px-4 py-2 text-base bg-card hover:bg-accent/50 border border-border rounded-lg transition-colors min-h-[44px]"
-      : "inline-flex items-center gap-2 px-3 py-1.5 text-sm bg-card hover:bg-accent/50 border border-border rounded-md transition-colors min-h-[44px]";
+      ? "inline-flex items-center gap-3 px-4 py-2 text-base bg-card hover:bg-accent/50 border border-border rounded-lg transition-colors h-[44px]"
+      : "inline-flex items-center gap-2 px-3 py-1.5 text-sm bg-card hover:bg-accent/50 border border-border rounded-md transition-colors h-[44px]";
     
     const avatarClass = isBureau ? "w-8 h-8" : "w-6 h-6";
     const textClass = isBureau ? "font-semibold" : "font-medium";
@@ -57,7 +57,7 @@ export const PersonCard: React.FC<PersonCardProps> = ({
             {person.firstName.charAt(0)}
           </AvatarFallback>
         </Avatar>
-        <span className={`${textClass} truncate`}>
+        <span className={`${textClass} truncate whitespace-nowrap`}>
           {person.firstName} {person.lastName}
         </span>
         {person.linkedin && (
