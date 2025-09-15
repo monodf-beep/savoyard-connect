@@ -32,13 +32,11 @@ export const VacantPositionCard: React.FC<VacantPositionCardProps> = ({
   if (compact) {
     return (
       <div className="relative group">
-        <div className="flex items-center justify-center border-2 border-dashed border-muted-foreground/30 rounded-lg bg-muted/20 hover:border-primary/50 hover:bg-primary/5 transition-colors cursor-pointer h-[44px] px-3" onClick={handleClick}>
-          <div className="text-center">
-            <UserPlus className="w-4 h-4 mx-auto mb-1 text-muted-foreground" />
-            <span className="text-xs text-muted-foreground font-medium truncate whitespace-nowrap">
-              {position.title}
-            </span>
-          </div>
+        <div className="inline-flex items-center gap-2 px-3 py-1.5 text-sm bg-gradient-to-r from-accent/20 to-primary/10 border border-dashed border-primary/40 rounded-md transition-all duration-200 hover:border-primary hover:shadow-sm hover:scale-[1.02] cursor-pointer h-[44px]" onClick={handleClick}>
+          <UserPlus className="w-4 h-4 text-primary/70" />
+          <span className="font-medium text-foreground/80 truncate whitespace-nowrap">
+            {position.title}
+          </span>
         </div>
         
         {isAdmin && onEdit && (
@@ -59,17 +57,20 @@ export const VacantPositionCard: React.FC<VacantPositionCardProps> = ({
   }
 
   return (
-    <div className="relative group border-2 border-dashed border-muted-foreground/30 rounded-lg p-4 bg-muted/20 hover:border-primary/50 hover:bg-primary/5 transition-colors cursor-pointer" onClick={handleClick}>
+    <div className="relative group border-2 border-dashed border-primary/40 rounded-lg p-4 bg-gradient-to-br from-accent/10 to-primary/5 hover:border-primary hover:shadow-lg hover:shadow-primary/10 transition-all duration-300 cursor-pointer" onClick={handleClick}>
       <div className="flex items-start gap-3">
-        <div className="p-2 rounded-full bg-muted">
-          <UserPlus className="w-4 h-4 text-muted-foreground" />
+        <div className="p-2 rounded-full bg-primary/10 border border-primary/20">
+          <UserPlus className="w-4 h-4 text-primary" />
         </div>
         <div className="flex-1">
-          <h3 className="font-medium text-sm">{position.title}</h3>
+          <h3 className="font-semibold text-sm text-foreground">{position.title}</h3>
           {position.description && (
             <p className="text-xs text-muted-foreground mt-1">{position.description}</p>
           )}
-          <span className="text-xs text-muted-foreground/70 mt-2 block">Poste vacant</span>
+          <span className="inline-flex items-center gap-1 text-xs text-primary/70 mt-2 font-medium">
+            <div className="w-1.5 h-1.5 rounded-full bg-primary/50"></div>
+            Poste vacant
+          </span>
         </div>
       </div>
       
