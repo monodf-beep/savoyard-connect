@@ -55,38 +55,62 @@ export type Database = {
       }
       people: {
         Row: {
+          adresse: string | null
           avatar_url: string | null
           bio: string | null
+          competences: string[] | null
           created_at: string | null
+          date_entree: string | null
           email: string | null
+          experience: string | null
           first_name: string
+          formation: string | null
+          hobbies: string | null
           id: string
+          langues: string[] | null
           last_name: string
           phone: string | null
+          specialite: string | null
           title: string | null
           updated_at: string | null
         }
         Insert: {
+          adresse?: string | null
           avatar_url?: string | null
           bio?: string | null
+          competences?: string[] | null
           created_at?: string | null
+          date_entree?: string | null
           email?: string | null
+          experience?: string | null
           first_name: string
+          formation?: string | null
+          hobbies?: string | null
           id?: string
+          langues?: string[] | null
           last_name: string
           phone?: string | null
+          specialite?: string | null
           title?: string | null
           updated_at?: string | null
         }
         Update: {
+          adresse?: string | null
           avatar_url?: string | null
           bio?: string | null
+          competences?: string[] | null
           created_at?: string | null
+          date_entree?: string | null
           email?: string | null
+          experience?: string | null
           first_name?: string
+          formation?: string | null
+          hobbies?: string | null
           id?: string
+          langues?: string[] | null
           last_name?: string
           phone?: string | null
+          specialite?: string | null
           title?: string | null
           updated_at?: string | null
         }

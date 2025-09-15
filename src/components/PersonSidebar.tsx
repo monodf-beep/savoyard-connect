@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { Person } from '../types/organigramme';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { Badge } from './ui/badge';
-import { X, Linkedin, MapPin, Edit } from 'lucide-react';
+import { X, Linkedin, MapPin, Edit, Mail, Phone, Calendar, User, BookOpen, Briefcase, Star, Globe } from 'lucide-react';
 import { Button } from './ui/button';
 
 interface PersonSidebarProps {
@@ -97,13 +97,139 @@ export const PersonSidebar: React.FC<PersonSidebarProps> = ({
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-4 space-y-6">
+          
+          {/* Informations de contact */}
+          {(person.email || person.phone || person.adresse) && (
+            <div>
+              <h3 className="font-semibold text-base mb-3 flex items-center gap-2">
+                <Mail className="w-4 h-4 text-primary" />
+                Contact
+              </h3>
+              <div className="space-y-2">
+                {person.email && (
+                  <div className="flex items-center gap-2 text-sm">
+                    <Mail className="w-3 h-3 text-muted-foreground" />
+                    <a href={`mailto:${person.email}`} className="text-primary hover:underline">
+                      {person.email}
+                    </a>
+                  </div>
+                )}
+                {person.phone && (
+                  <div className="flex items-center gap-2 text-sm">
+                    <Phone className="w-3 h-3 text-muted-foreground" />
+                    <span className="text-muted-foreground">{person.phone}</span>
+                  </div>
+                )}
+                {person.adresse && (
+                  <div className="flex items-center gap-2 text-sm">
+                    <MapPin className="w-3 h-3 text-muted-foreground" />
+                    <span className="text-muted-foreground">{person.adresse}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Spécialité en badge */}
+          {person.specialite && (
+            <div>
+              <Badge variant="outline" className="text-sm">
+                <Star className="w-3 h-3 mr-1" />
+                {person.specialite}
+              </Badge>
+            </div>
+          )}
+
+          {/* Description */}
           {person.description && (
             <div>
-              <h3 className="font-semibold text-base mb-3">À propos</h3>
+              <h3 className="font-semibold text-base mb-3 flex items-center gap-2">
+                <User className="w-4 h-4 text-primary" />
+                À propos
+              </h3>
               <p className="text-muted-foreground leading-relaxed text-sm">{person.description}</p>
             </div>
           )}
 
+          {/* Formation */}
+          {person.formation && (
+            <div>
+              <h3 className="font-semibold text-base mb-3 flex items-center gap-2">
+                <BookOpen className="w-4 h-4 text-primary" />
+                Formation
+              </h3>
+              <p className="text-muted-foreground leading-relaxed text-sm">{person.formation}</p>
+            </div>
+          )}
+
+          {/* Expérience */}
+          {person.experience && (
+            <div>
+              <h3 className="font-semibold text-base mb-3 flex items-center gap-2">
+                <Briefcase className="w-4 h-4 text-primary" />
+                Expérience
+              </h3>
+              <p className="text-muted-foreground leading-relaxed text-sm">{person.experience}</p>
+            </div>
+          )}
+
+          {/* Compétences */}
+          {person.competences && person.competences.length > 0 && (
+            <div>
+              <h3 className="font-semibold text-base mb-3">Compétences</h3>
+              <div className="flex flex-wrap gap-2">
+                {person.competences.map((competence, index) => (
+                  <Badge key={index} variant="secondary" className="text-xs">
+                    {competence}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Langues */}
+          {person.langues && person.langues.length > 0 && (
+            <div>
+              <h3 className="font-semibold text-base mb-3 flex items-center gap-2">
+                <Globe className="w-4 h-4 text-primary" />
+                Langues
+              </h3>
+              <div className="flex flex-wrap gap-2">
+                {person.langues.map((langue, index) => (
+                  <Badge key={index} variant="outline" className="text-xs">
+                    {langue}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Date d'entrée */}
+          {person.dateEntree && (
+            <div>
+              <h3 className="font-semibold text-base mb-3 flex items-center gap-2">
+                <Calendar className="w-4 h-4 text-primary" />
+                Membre depuis
+              </h3>
+              <p className="text-muted-foreground text-sm">
+                {new Date(person.dateEntree).toLocaleDateString('fr-FR', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric'
+                })}
+              </p>
+            </div>
+          )}
+
+          {/* Centres d'intérêt */}
+          {person.hobbies && (
+            <div>
+              <h3 className="font-semibold text-base mb-3">Centres d'intérêt</h3>
+              <p className="text-muted-foreground leading-relaxed text-sm">{person.hobbies}</p>
+            </div>
+          )}
+
+          {/* Missions & Responsabilités */}
           {(person.missionDescription || (person.missions && person.missions.length > 0)) && (
             <div>
               <h3 className="font-semibold text-base mb-3 flex items-center gap-2">
@@ -120,7 +246,7 @@ export const PersonSidebar: React.FC<PersonSidebarProps> = ({
                   {person.missions.map((mission, index) => (
                     <Badge 
                       key={index} 
-                      variant="secondary" 
+                      variant="default" 
                       className="px-2 py-1 text-xs"
                     >
                       {mission}
@@ -131,6 +257,7 @@ export const PersonSidebar: React.FC<PersonSidebarProps> = ({
             </div>
           )}
 
+          {/* Liens externes */}
           {person.linkedin && (
             <div>
               <h3 className="font-semibold text-base mb-3">Liens externes</h3>
@@ -146,6 +273,7 @@ export const PersonSidebar: React.FC<PersonSidebarProps> = ({
             </div>
           )}
 
+          {/* Instagram */}
           {person.instagram && (
             <div>
               <h3 className="font-semibold text-base mb-3">Publication Instagram</h3>

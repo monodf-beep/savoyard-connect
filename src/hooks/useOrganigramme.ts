@@ -65,7 +65,17 @@ export const useOrganigramme = () => {
                 photo: person.avatar_url || '',
                 role: sm.role || person.title || '',
                 description: person.bio || '',
-                sectionId: section.id
+                sectionId: section.id,
+                email: person.email || '',
+                phone: person.phone || '',
+                formation: person.formation || '',
+                experience: person.experience || '',
+                competences: person.competences || [],
+                dateEntree: person.date_entree || '',
+                adresse: person.adresse || '',
+                specialite: person.specialite || '',
+                langues: person.langues || [],
+                hobbies: person.hobbies || ''
               } : null;
             }).filter(Boolean);
 
@@ -87,7 +97,17 @@ export const useOrganigramme = () => {
         lastName: person.last_name,
         photo: person.avatar_url || '',
         role: person.title || '',
-        description: person.bio || ''
+        description: person.bio || '',
+        email: person.email || '',
+        phone: person.phone || '',
+        formation: person.formation || '',
+        experience: person.experience || '',
+        competences: person.competences || [],
+        dateEntree: person.date_entree || '',
+        adresse: person.adresse || '',
+        specialite: person.specialite || '',
+        langues: person.langues || [],
+        hobbies: person.hobbies || ''
       })) || [];
       const formattedJobs = jobsData?.map(job => ({
         id: job.id,

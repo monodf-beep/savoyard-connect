@@ -36,10 +36,22 @@ export const PersonForm: React.FC<PersonFormProps> = ({
     instagram: person?.instagram || '',
     missions: person?.missions || [],
     photo: person?.photo || '',
-    sectionId: person?.sectionId || ''
+    sectionId: person?.sectionId || '',
+    email: person?.email || '',
+    phone: person?.phone || '',
+    formation: person?.formation || '',
+    experience: person?.experience || '',
+    competences: person?.competences || [],
+    dateEntree: person?.dateEntree || '',
+    adresse: person?.adresse || '',
+    specialite: person?.specialite || '',
+    langues: person?.langues || [],
+    hobbies: person?.hobbies || ''
   });
 
   const [newMission, setNewMission] = useState('');
+  const [newCompetence, setNewCompetence] = useState('');
+  const [newLangue, setNewLangue] = useState('');
   const [isImageEditorOpen, setIsImageEditorOpen] = useState(false);
   const { data } = useOrganigramme();
 
@@ -57,7 +69,17 @@ export const PersonForm: React.FC<PersonFormProps> = ({
         instagram: person.instagram || '',
         missions: person.missions || [],
         photo: person.photo || '',
-        sectionId: person.sectionId || ''
+        sectionId: person.sectionId || '',
+        email: person.email || '',
+        phone: person.phone || '',
+        formation: person.formation || '',
+        experience: person.experience || '',
+        competences: person.competences || [],
+        dateEntree: person.dateEntree || '',
+        adresse: person.adresse || '',
+        specialite: person.specialite || '',
+        langues: person.langues || [],
+        hobbies: person.hobbies || ''
       });
     } else {
       // Réinitialiser le formulaire pour une nouvelle personne
@@ -72,7 +94,17 @@ export const PersonForm: React.FC<PersonFormProps> = ({
         instagram: '',
         missions: [],
         photo: '',
-        sectionId: ''
+        sectionId: '',
+        email: '',
+        phone: '',
+        formation: '',
+        experience: '',
+        competences: [],
+        dateEntree: '',
+        adresse: '',
+        specialite: '',
+        langues: [],
+        hobbies: ''
       });
     }
   }, [person]);

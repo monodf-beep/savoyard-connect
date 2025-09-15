@@ -9,7 +9,18 @@ export interface Person {
   linkedin?: string;
   instagram?: string;
   description?: string;
-  sectionId?: string; // Ajouter section_id
+  sectionId?: string;
+  // Nouvelles informations détaillées
+  email?: string;
+  phone?: string;
+  formation?: string;
+  experience?: string;
+  competences?: string[];
+  dateEntree?: string;
+  adresse?: string;
+  specialite?: string;
+  langues?: string[];
+  hobbies?: string;
 }
 
 export interface JobPosting {
