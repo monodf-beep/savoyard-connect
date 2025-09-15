@@ -41,8 +41,6 @@ export const VacantPositionsSidebar: React.FC<VacantPositionsSidebarProps> = ({
     };
   }, [isOpen, onClose]);
 
-  if (!isOpen) return null;
-
   return (
     <>
       {/* Overlay */}
