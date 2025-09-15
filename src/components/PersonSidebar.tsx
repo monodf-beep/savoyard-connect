@@ -18,7 +18,7 @@ const PersonSections: React.FC<{ personId: string }> = ({ personId }) => {
         const member = section.members?.find((m: any) => m.id === personId);
         if (member) {
           sections.push({
-            title: parentTitle ? `${parentTitle} > ${section.title}` : section.title,
+            title: section.title,
             role: member.role || 'Membre'
           });
         }
