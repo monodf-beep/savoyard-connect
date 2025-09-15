@@ -3,7 +3,7 @@ import { Canvas as FabricCanvas, FabricImage, Rect, util } from 'fabric';
 import { Button } from './ui/button';
 import { Label } from './ui/label';
 import { Slider } from './ui/slider';
-import { X, RotateCcw, Check, Upload, ZoomIn, ZoomOut, Crop } from 'lucide-react';
+import { X, RotateCcw, Check, Upload, ZoomIn, ZoomOut, Crop, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface ImageEditorProps {
@@ -26,6 +26,9 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({
   const [isCropMode, setIsCropMode] = useState(false);
   const [cropRect, setCropRect] = useState<Rect | null>(null);
   const [originalImage, setOriginalImage] = useState<FabricImage | null>(null);
+  const [isLoadingImage, setIsLoadingImage] = useState(false);
+  const MAX_FILE_MB = 5;
+  const ACCEPTED_TYPES = ['image/jpeg','image/png','image/webp'];
 
   useEffect(() => {
     if (!canvasRef.current || !isOpen) return;
@@ -55,97 +58,110 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({
     };
   }, [isOpen, initialImageUrl]);
 
-  const loadImageFromUrl = (url: string, canvas: FabricCanvas) => {
+  const loadImageFromUrl = async (url: string, canvas: FabricCanvas) => {
     console.log('Loading image from URL:', url);
-    
     if (!url) {
       console.log('No URL provided');
       return;
     }
 
-    util.loadImage(url, { crossOrigin: 'anonymous' })
-      .then((img) => {
-        console.log('Image loaded successfully:', img);
-        
-        const fabricImg = new FabricImage(img, {
-          selectable: true,
-          moveable: true,
-          scalable: true,
-        });
+    try {
+      const img = await util.loadImage(url, { crossOrigin: 'anonymous' });
+      console.log('Image loaded successfully:', img);
 
-        console.log('FabricImage created:', fabricImg);
-
-        // Scale image to fit canvas while maintaining aspect ratio
-        const canvasWidth = canvas.getWidth();
-        const canvasHeight = canvas.getHeight();
-        const imgWidth = fabricImg.width!;
-        const imgHeight = fabricImg.height!;
-
-        console.log('Canvas dimensions:', canvasWidth, 'x', canvasHeight);
-        console.log('Image dimensions:', imgWidth, 'x', imgHeight);
-
-        // Calculate scale to fit image in canvas with padding
-        const padding = 20;
-        const availableWidth = canvasWidth - (padding * 2);
-        const availableHeight = canvasHeight - (padding * 2);
-        
-        const scaleX = availableWidth / imgWidth;
-        const scaleY = availableHeight / imgHeight;
-        const scale = Math.min(scaleX, scaleY, 1);
-
-        console.log('Scale calculated:', scale);
-
-        fabricImg.scale(scale);
-        
-        // Center the image
-        const scaledWidth = imgWidth * scale;
-        const scaledHeight = imgHeight * scale;
-        fabricImg.set({
-          left: (canvasWidth - scaledWidth) / 2,
-          top: (canvasHeight - scaledHeight) / 2,
-          originX: 'left',
-          originY: 'top'
-        });
-
-        console.log('Image positioned and scaled');
-
-        // Clear canvas and add image
-        canvas.clear();
-        canvas.backgroundColor = '#ffffff'; // Set white background
-        canvas.add(fabricImg);
-        canvas.setActiveObject(fabricImg);
-        canvas.centerObject(fabricImg); // Additional centering
-        canvas.renderAll();
-        setOriginalImage(fabricImg);
-        
-        console.log('Image added to canvas and set as active object');
-        console.log('Image bounds:', fabricImg.getBoundingRect());
-        console.log('Canvas objects count:', canvas.size());
-        toast.success('Image chargée !');
-      })
-      .catch((error) => {
-        console.error('Error loading image:', error);
-        toast.error('Erreur lors du chargement de l\'image: ' + error.message);
+      const fabricImg = new FabricImage(img, {
+        selectable: true,
+        moveable: true,
+        scalable: true,
       });
+
+      // Scale image to fit canvas while maintaining aspect ratio
+      const canvasWidth = canvas.getWidth();
+      const canvasHeight = canvas.getHeight();
+      const imgWidth = fabricImg.width!;
+      const imgHeight = fabricImg.height!;
+
+      const padding = 20;
+      const availableWidth = canvasWidth - padding * 2;
+      const availableHeight = canvasHeight - padding * 2;
+
+      const scaleX = availableWidth / imgWidth;
+      const scaleY = availableHeight / imgHeight;
+      const scale = Math.min(scaleX, scaleY, 1);
+
+      fabricImg.scale(scale);
+
+      const scaledWidth = imgWidth * scale;
+      const scaledHeight = imgHeight * scale;
+      fabricImg.set({
+        left: (canvasWidth - scaledWidth) / 2,
+        top: (canvasHeight - scaledHeight) / 2,
+        originX: 'left',
+        originY: 'top',
+      });
+
+      // Clear canvas and add image
+      canvas.clear();
+      canvas.backgroundColor = '#ffffff';
+      canvas.add(fabricImg);
+      canvas.setActiveObject(fabricImg);
+      canvas.centerObject(fabricImg);
+      canvas.renderAll();
+      setOriginalImage(fabricImg);
+      toast.success('Image chargée !');
+    } catch (error: any) {
+      console.error('Error loading image:', error);
+      toast.error("Erreur lors du chargement de l'image: " + error.message);
+      throw error;
+    }
   };
 
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (!file || !fabricCanvas) {
-      console.log('No file selected or canvas not ready');
+
+    if (!file) return;
+
+    // Validate size and type
+    if (file.size > MAX_FILE_MB * 1024 * 1024) {
+      toast.error(`Fichier trop volumineux (max ${MAX_FILE_MB} Mo)`);
+      return;
+    }
+    if (!ACCEPTED_TYPES.includes(file.type)) {
+      toast.error('Format non supporté. Formats acceptés: JPG, PNG, WebP');
       return;
     }
 
-    console.log('File selected:', file.name, file.type);
-    
+    // Ensure canvas exists (race condition fix)
+    let targetCanvas = fabricCanvas;
+    if (!targetCanvas && canvasRef.current) {
+      targetCanvas = new FabricCanvas(canvasRef.current, {
+        width: 600,
+        height: 400,
+        backgroundColor: '#f8f9fa',
+      });
+      setFabricCanvas(targetCanvas);
+    }
+    if (!targetCanvas) {
+      toast.error('Canvas non prêt. Réessayez.');
+      return;
+    }
+
+    setIsLoadingImage(true);
+
     const reader = new FileReader();
-    reader.onload = (e) => {
+    reader.onload = async (e) => {
       const imageUrl = e.target?.result as string;
-      console.log('File read as data URL, length:', imageUrl.length);
-      loadImageFromUrl(imageUrl, fabricCanvas);
+      try {
+        await loadImageFromUrl(imageUrl, targetCanvas!);
+      } catch (err) {
+        // handled in loader
+      } finally {
+        setIsLoadingImage(false);
+      }
     };
     reader.onerror = (error) => {
       console.error('FileReader error:', error);
+      setIsLoadingImage(false);
       toast.error('Erreur lors de la lecture du fichier');
     };
     reader.readAsDataURL(file);
@@ -294,7 +310,13 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({
               <div className="absolute inset-4 flex flex-col items-center justify-center text-center text-muted-foreground pointer-events-none">
                 <Upload className="w-16 h-16 mx-auto mb-4 opacity-50" />
                 <p className="text-lg font-medium mb-2">Aucune image chargée</p>
-                <p className="text-sm">Utilisez le bouton "Choisir un fichier" pour commencer</p>
+                <p className="text-sm">Utilisez le bouton \"Choisir un fichier\" pour commencer</p>
+              </div>
+            )}
+            {isLoadingImage && (
+              <div className="absolute inset-0 bg-background/60 backdrop-blur-sm flex items-center justify-center z-10 rounded-lg">
+                <Loader2 className="w-6 h-6 animate-spin text-primary mr-2" />
+                <span className="text-sm">Chargement de l'image...</span>
               </div>
             )}
           </div>
@@ -308,7 +330,7 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({
                 <input
                   ref={fileInputRef}
                   type="file"
-                  accept="image/*"
+                  accept={ACCEPTED_TYPES.join(',')}
                   onChange={handleFileUpload}
                   className="hidden"
                 />
@@ -320,6 +342,9 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({
                   <Upload className="w-4 h-4 mr-2" />
                   Choisir un fichier
                 </Button>
+                <p className="text-xs text-muted-foreground mt-2">
+                  Formats: JPG, PNG, WebP • Max {MAX_FILE_MB} Mo
+                </p>
               </div>
 
               {/* Zoom controls */}
