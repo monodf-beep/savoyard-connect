@@ -40,9 +40,6 @@ export const VacantPositionCard: React.FC<VacantPositionCardProps> = ({
           <span className="font-medium text-foreground/80 truncate whitespace-nowrap">
             {position.title}
           </span>
-          {position.externalLink && (
-            <ExternalLink className="w-3 h-3 text-primary/50" />
-          )}
         </div>
         
         {isAdmin && onEdit && (
