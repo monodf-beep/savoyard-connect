@@ -225,35 +225,41 @@ Couleurs inspirées de l'identité savoyarde avec des touches modernes
   }
 }
 
-/* Flash highlight animation */
-@keyframes flash-highlight {
-  0% { 
-    background-color: hsla(var(--primary), 0.3);
-    box-shadow: 0 0 0 4px hsla(var(--primary), 0.6);
-    border: 2px solid hsla(var(--primary), 0.8);
+/* Flash highlight */
+@keyframes flash-ring {
+  0% {
+    box-shadow: 0 0 0 0 hsla(var(--primary), 0.55), 0 0 0 8px hsla(var(--primary), 0.25);
   }
-  50% { 
-    background-color: hsla(var(--primary), 0.4);
-    box-shadow: 0 0 0 16px hsla(var(--primary), 0.3);
-    border: 2px solid hsla(var(--primary), 1);
+  35% {
+    box-shadow: 0 0 0 6px hsla(var(--primary), 0.5), 0 0 0 24px hsla(var(--primary), 0.18);
   }
-  100% { 
-    background-color: transparent;
-    box-shadow: 0 0 0 0 hsla(var(--primary), 0);
-    border: 2px solid transparent;
+  100% {
+    box-shadow: 0 0 0 0 hsla(var(--primary), 0), 0 0 0 0 hsla(var(--primary), 0);
   }
+}
+
+@keyframes flash-overlay {
+  0% { opacity: 0.22; }
+  35% { opacity: 0.32; }
+  100% { opacity: 0; }
 }
 
 .flash-highlight {
-  animation: flash-highlight 2.5s ease-out;
-  border-radius: 12px;
   position: relative;
-  z-index: 1;
+  border-radius: 14px;
+  animation: flash-ring 1.6s ease-out;
+  outline: 2px solid hsl(var(--primary));
+  outline-offset: 6px;
 }
 
-.flash-highlight .section-header,
-.flash-highlight .person-card,
-.flash-highlight .vacant-position-card {
-  position: relative;
-  z-index: 2;
+.flash-highlight::after {
+  content: "";
+  position: absolute;
+  inset: -8px;
+  border-radius: 16px;
+  background: hsl(var(--primary));
+  opacity: 0;
+  pointer-events: none;
+  mix-blend-mode: multiply;
+  animation: flash-overlay 1.6s ease-out;
 }
