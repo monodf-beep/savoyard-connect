@@ -196,6 +196,44 @@ export type Database = {
           },
         ]
       }
+      vacant_positions: {
+        Row: {
+          created_at: string
+          description: string | null
+          external_link: string | null
+          id: string
+          section_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          external_link?: string | null
+          id?: string
+          section_id: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          external_link?: string | null
+          id?: string
+          section_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vacant_positions_section_id_fkey"
+            columns: ["section_id"]
+            isOneToOne: false
+            referencedRelation: "sections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

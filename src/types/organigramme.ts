@@ -41,6 +41,7 @@ export interface VacantPosition {
   sectionId: string;
   title: string;
   description?: string;
+  externalLink?: string;
 }
 
 export interface Section {

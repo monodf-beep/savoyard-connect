@@ -5,6 +5,7 @@ import { PersonSidebar } from './PersonSidebar';
 import { VacantPositionsSidebar } from './VacantPositionsSidebar';
 import { PersonForm } from './PersonForm';
 import { SectionForm } from './SectionForm';
+import { VacantPositionForm } from './VacantPositionForm';
 import { Button } from './ui/button';
 import { Settings, Eye, ExpandIcon as Expand, ShrinkIcon as Shrink, Plus, UserPlus, FolderPlus } from 'lucide-react';
 import { Badge } from './ui/badge';
@@ -19,7 +20,7 @@ interface OrganigrammeProps {
 export const Organigramme: React.FC<OrganigrammeProps> = ({
   isAdminMode = false
 }) => {
-  const { data, loading, savePerson, deletePerson, saveSection, deleteSection, updateSectionExpansion, refetch } = useOrganigramme();
+  const { data, loading, savePerson, deletePerson, saveSection, deleteSection, updateSectionExpansion, saveVacantPosition, updateVacantPosition, deleteVacantPosition, refetch } = useOrganigramme();
   const [selectedPerson, setSelectedPerson] = useState<Person | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isVacantPositionsSidebarOpen, setIsVacantPositionsSidebarOpen] = useState(false);
@@ -29,6 +30,8 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
   const [isSectionFormOpen, setIsSectionFormOpen] = useState(false);
   const [editingPerson, setEditingPerson] = useState<Person | null>(null);
   const [editingSection, setEditingSection] = useState<Section | null>(null);
+  const [isVacantPositionFormOpen, setIsVacantPositionFormOpen] = useState(false);
+  const [editingVacantPosition, setEditingVacantPosition] = useState<VacantPosition | null>(null);
 
   // Listen for custom events to open vacant positions sidebar
   React.useEffect(() => {
@@ -245,6 +248,41 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
     }
   }, [deleteSection]);
 
+  // Handlers pour les postes vacants
+  const handleAddVacantPosition = useCallback(() => {
+    setEditingVacantPosition(null);
+    setIsVacantPositionFormOpen(true);
+  }, []);
+
+  const handleEditVacantPosition = useCallback((position: VacantPosition) => {
+    setEditingVacantPosition(position);
+    setIsVacantPositionFormOpen(true);
+  }, []);
+
+  const handleSaveVacantPosition = useCallback(async (positionData: Omit<VacantPosition, 'id'>) => {
+    try {
+      if (editingVacantPosition) {
+        await updateVacantPosition(editingVacantPosition.id, positionData);
+      } else {
+        await saveVacantPosition(positionData);
+      }
+      setIsVacantPositionFormOpen(false);
+      setEditingVacantPosition(null);
+    } catch (error) {
+      console.error('Erreur lors de la sauvegarde:', error);
+    }
+  }, [editingVacantPosition, saveVacantPosition, updateVacantPosition]);
+
+  const handleDeleteVacantPosition = useCallback(async (positionId: string) => {
+    try {
+      await deleteVacantPosition(positionId);
+      setIsVacantPositionFormOpen(false);
+      setEditingVacantPosition(null);
+    } catch (error) {
+      console.error('Erreur lors de la suppression:', error);
+    }
+  }, [deleteVacantPosition]);
+
   const toggleAdminMode = useCallback(() => {
     setAdminMode(prev => ({ ...prev, isActive: !prev.isActive }));
   }, []);
@@ -347,6 +385,15 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
                 <FolderPlus className="w-3 h-3 mr-1" />
                 Ajouter section
               </Button>
+              
+              <Button
+                onClick={handleAddVacantPosition}
+                variant="outline"
+                size="sm"
+              >
+                <UserPlus className="w-3 h-3 mr-1" />
+                Ajouter poste vacant
+              </Button>
             </>
           )}
 
@@ -392,6 +439,7 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
             onPersonClick={handlePersonClick}
             isAdmin={adminMode.isActive}
             onEditPerson={handleEditPerson}
+            onEditVacantPosition={handleEditVacantPosition}
           />
         ))}
       </div>
@@ -422,6 +470,14 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
         onClose={() => setIsSectionFormOpen(false)}
         onSave={handleSaveSection}
         onDelete={handleDeleteSection}
+      />
+
+      <VacantPositionForm
+        position={editingVacantPosition}
+        isOpen={isVacantPositionFormOpen}
+        onClose={() => setIsVacantPositionFormOpen(false)}
+        onSave={handleSaveVacantPosition}
+        onDelete={handleDeleteVacantPosition}
       />
 
       <VacantPositionsSidebar

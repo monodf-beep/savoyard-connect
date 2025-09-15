@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { OrganigrammeData, Person, Section, JobPosting } from '@/types/organigramme';
+import { OrganigrammeData, Person, Section, JobPosting, VacantPosition } from '@/types/organigramme';
 import { toast } from 'sonner';
 
 export const useOrganigramme = () => {
@@ -50,6 +50,14 @@ export const useOrganigramme = () => {
       
       if (jobsError) throw jobsError;
 
+      // Charger les postes vacants
+      const { data: vacantPositionsData, error: vacantPositionsError } = await supabase
+        .from('vacant_positions')
+        .select('*')
+        .order('created_at');
+      
+      if (vacantPositionsError) throw vacantPositionsError;
+
       // Construire la hiérarchie des sections
       const buildSectionHierarchy = (sections: any[], parentId: string | null = null): Section[] => {
         return sections
@@ -86,13 +94,13 @@ export const useOrganigramme = () => {
               type: 'bureau' as const,
               isExpanded: section.is_expanded,
               members: members as Person[],
-              // Ajouter quelques postes vacants de démonstration
-              vacantPositions: section.title === 'Conseil d\'administration' ? [
-                { id: 'vacant-1', sectionId: section.id, title: 'Trésorier adjoint', description: 'Poste de trésorier adjoint pour assister dans la gestion financière' },
-                { id: 'vacant-2', sectionId: section.id, title: 'Administrateur', description: 'Membre du conseil d\'administration' }
-              ] : section.title === 'Commission Pédagogie' ? [
-                { id: 'vacant-3', sectionId: section.id, title: 'Formateur', description: 'Formateur en langue savoyarde' }
-              ] : [],
+              vacantPositions: vacantPositionsData?.filter(vp => vp.section_id === section.id).map(vp => ({
+                id: vp.id,
+                sectionId: vp.section_id,
+                title: vp.title,
+                description: vp.description,
+                externalLink: vp.external_link
+              })) || [],
               subsections: buildSectionHierarchy(sections, section.id)
             };
           });
@@ -283,6 +291,78 @@ export const useOrganigramme = () => {
     }
   };
 
+  // Sauvegarder un poste vacant
+  const saveVacantPosition = async (position: Omit<VacantPosition, 'id'>) => {
+    try {
+      const { data: savedPosition, error } = await supabase
+        .from('vacant_positions')
+        .insert({
+          section_id: position.sectionId,
+          title: position.title,
+          description: position.description,
+          external_link: position.externalLink
+        })
+        .select()
+        .maybeSingle();
+
+      if (error) throw error;
+
+      toast.success('Poste vacant créé avec succès');
+      await loadData(); // Recharger les données
+      return savedPosition;
+    } catch (error) {
+      console.error('Erreur lors de la sauvegarde:', error);
+      toast.error('Erreur lors de la sauvegarde');
+      throw error;
+    }
+  };
+
+  // Mettre à jour un poste vacant
+  const updateVacantPosition = async (positionId: string, position: Omit<VacantPosition, 'id'>) => {
+    try {
+      const { data: updatedPosition, error } = await supabase
+        .from('vacant_positions')
+        .update({
+          section_id: position.sectionId,
+          title: position.title,
+          description: position.description,
+          external_link: position.externalLink
+        })
+        .eq('id', positionId)
+        .select()
+        .maybeSingle();
+
+      if (error) throw error;
+
+      toast.success('Poste vacant modifié avec succès');
+      await loadData(); // Recharger les données
+      return updatedPosition;
+    } catch (error) {
+      console.error('Erreur lors de la modification:', error);
+      toast.error('Erreur lors de la modification');
+      throw error;
+    }
+  };
+
+  // Supprimer un poste vacant
+  const deleteVacantPosition = async (positionId: string) => {
+    try {
+      const { error } = await supabase
+        .from('vacant_positions')
+        .delete()
+        .eq('id', positionId);
+
+      if (error) throw error;
+
+      toast.success('Poste vacant supprimé avec succès');
+      await loadData(); // Recharger les données
+    } catch (error) {
+      console.error('Erreur lors de la suppression:', error);
+      toast.error('Erreur lors de la suppression');
+      throw error;
+    }
+  };
+
   useEffect(() => {
     loadData();
   }, []);
@@ -295,6 +375,9 @@ export const useOrganigramme = () => {
     saveSection,
     deleteSection,
     updateSectionExpansion,
+    saveVacantPosition,
+    updateVacantPosition,
+    deleteVacantPosition,
     refetch: loadData
   };
 };

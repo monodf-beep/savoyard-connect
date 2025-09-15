@@ -1,12 +1,13 @@
 import React from 'react';
 import { Button } from './ui/button';
-import { UserPlus, Edit2 } from 'lucide-react';
+import { UserPlus, Edit2, ExternalLink } from 'lucide-react';
 
 interface VacantPosition {
   id: string;
   sectionId: string;
   title: string;
   description?: string;
+  externalLink?: string;
 }
 
 interface VacantPositionCardProps {
@@ -25,7 +26,11 @@ export const VacantPositionCard: React.FC<VacantPositionCardProps> = ({
   compact = false 
 }) => {
   const handleClick = () => {
-    if (!isAdmin && onClick) {
+    if (isAdmin && onEdit) {
+      onEdit(position);
+    } else if (position.externalLink) {
+      window.open(position.externalLink, '_blank');
+    } else if (onClick) {
       onClick(position);
     }
   };
@@ -37,6 +42,9 @@ export const VacantPositionCard: React.FC<VacantPositionCardProps> = ({
           <span className="font-medium text-foreground/80 truncate whitespace-nowrap">
             {position.title}
           </span>
+          {position.externalLink && (
+            <ExternalLink className="w-3 h-3 text-primary/50" />
+          )}
         </div>
         
         {isAdmin && onEdit && (
@@ -63,13 +71,18 @@ export const VacantPositionCard: React.FC<VacantPositionCardProps> = ({
           <UserPlus className="w-4 h-4 text-primary" />
         </div>
         <div className="flex-1">
-          <h3 className="font-semibold text-sm text-foreground">{position.title}</h3>
+          <div className="flex items-center gap-2">
+            <h3 className="font-semibold text-sm text-foreground">{position.title}</h3>
+            {position.externalLink && (
+              <ExternalLink className="w-3 h-3 text-primary/70" />
+            )}
+          </div>
           {position.description && (
             <p className="text-xs text-muted-foreground mt-1">{position.description}</p>
           )}
           <span className="inline-flex items-center gap-1 text-xs text-primary/70 mt-2 font-medium">
             <div className="w-1.5 h-1.5 rounded-full bg-primary/50"></div>
-            Poste vacant
+            {position.externalLink ? 'Postuler en ligne' : 'Poste vacant'}
           </span>
         </div>
       </div>

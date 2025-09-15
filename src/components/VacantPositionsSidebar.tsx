@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
-import { X, UserPlus, MapPin } from 'lucide-react';
+import { X, UserPlus, MapPin, ExternalLink } from 'lucide-react';
 
 interface VacantPosition {
   id: string;
@@ -9,6 +9,7 @@ interface VacantPosition {
   sectionTitle: string;
   title: string;
   description?: string;
+  externalLink?: string;
 }
 
 interface VacantPositionsSidebarProps {
@@ -94,7 +95,7 @@ export const VacantPositionsSidebar: React.FC<VacantPositionsSidebarProps> = ({
               {positions.map((position, index) => (
                 <div
                   key={position.id}
-                  onClick={() => onPositionClick(position)}
+                  onClick={() => position.externalLink ? window.open(position.externalLink, '_blank') : onPositionClick(position)}
                   className="p-4 border border-border rounded-lg hover:bg-muted/50 cursor-pointer transition-colors group"
                 >
                   <div className="flex items-start gap-3">
@@ -102,7 +103,12 @@ export const VacantPositionsSidebar: React.FC<VacantPositionsSidebarProps> = ({
                       <UserPlus className="w-4 h-4 text-primary" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-sm mb-1">{position.title}</h3>
+                      <div className="flex items-center gap-2 mb-1">
+                        <h3 className="font-semibold text-sm">{position.title}</h3>
+                        {position.externalLink && (
+                          <ExternalLink className="w-3 h-3 text-primary/70" />
+                        )}
+                      </div>
                       {position.description && (
                         <p className="text-xs text-muted-foreground mb-2 line-clamp-2">
                           {position.description}
@@ -113,6 +119,11 @@ export const VacantPositionsSidebar: React.FC<VacantPositionsSidebarProps> = ({
                         <Badge variant="outline" className="text-xs">
                           {position.sectionTitle}
                         </Badge>
+                        {position.externalLink && (
+                          <Badge variant="secondary" className="text-xs">
+                            Postuler en ligne
+                          </Badge>
+                        )}
                       </div>
                     </div>
                   </div>

@@ -10,16 +10,18 @@ interface SectionCardProps {
   onPersonClick: (person: Person) => void;
   isAdmin: boolean;
   onEditPerson?: (person: Person) => void;
+  onEditVacantPosition?: (position: VacantPosition) => void;
   level?: number;
 }
 
-export const SectionCard: React.FC<SectionCardProps> = ({
-  section,
-  onToggle,
-  onPersonClick,
-  isAdmin,
+export const SectionCard: React.FC<SectionCardProps> = ({ 
+  section, 
+  onToggle, 
+  onPersonClick, 
+  isAdmin, 
   onEditPerson,
-  level = 0
+  onEditVacantPosition,
+  level = 0 
 }) => {
   const handleToggle = () => {
     onToggle(section.id);
@@ -82,6 +84,7 @@ export const SectionCard: React.FC<SectionCardProps> = ({
                     key={position.id}
                     position={position}
                     isAdmin={isAdmin}
+                    onEdit={onEditVacantPosition}
                     compact={true}
                     onClick={!isAdmin ? (pos) => {
                       // Trigger vacant positions sidebar
@@ -104,6 +107,7 @@ export const SectionCard: React.FC<SectionCardProps> = ({
                     onPersonClick={onPersonClick}
                     isAdmin={isAdmin}
                     onEditPerson={onEditPerson}
+                    onEditVacantPosition={onEditVacantPosition}
                     level={level + 1}
                   />
                 ))}
@@ -155,6 +159,7 @@ export const SectionCard: React.FC<SectionCardProps> = ({
                   key={position.id}
                   position={position}
                   isAdmin={isAdmin}
+                  onEdit={onEditVacantPosition}
                   compact={true}
                   onClick={!isAdmin ? (pos) => {
                     // Trigger vacant positions sidebar
@@ -176,6 +181,7 @@ export const SectionCard: React.FC<SectionCardProps> = ({
                   onPersonClick={onPersonClick}
                   isAdmin={isAdmin}
                   onEditPerson={onEditPerson}
+                  onEditVacantPosition={onEditVacantPosition}
                   level={level + 1}
                 />
               ))}
