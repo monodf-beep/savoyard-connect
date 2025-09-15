@@ -164,9 +164,23 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
     // Fermer le sidebar des postes vacants
     setIsVacantPositionsSidebarOpen(false);
     
-    // Ici on pourrait ajouter une logique pour faire défiler jusqu'à la section
-    // et la mettre en évidence temporairement
-    console.log('Navigation vers la section:', position.sectionTitle);
+    // Attendre que le sidebar se ferme avant de naviguer
+    setTimeout(() => {
+      const sectionElement = document.getElementById(`section-${position.sectionId}`);
+      if (sectionElement) {
+        // Faire défiler jusqu'à la section
+        sectionElement.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'center' 
+        });
+        
+        // Ajouter un effet flash
+        sectionElement.classList.add('flash-highlight');
+        setTimeout(() => {
+          sectionElement.classList.remove('flash-highlight');
+        }, 2000);
+      }
+    }, 300);
   }, []);
 
   // Gérer l'ouverture du sidebar des postes vacants

@@ -32,7 +32,7 @@ export const SectionCard: React.FC<SectionCardProps> = ({
   // Pour les sections principales, affichage plus épuré
   if (isMainSection) {
     return (
-      <div className="mb-6">
+      <div className="mb-6" id={`section-${section.id}`}>
         <div 
           className={`section-header ${section.type} ${hasContent ? 'cursor-pointer' : 'cursor-default'}`}
           onClick={hasContent ? handleToggle : undefined}
@@ -115,7 +115,7 @@ export const SectionCard: React.FC<SectionCardProps> = ({
 
   // Pour les sous-sections, affichage encore plus minimaliste
   return (
-    <div className="mb-3" style={{ marginLeft: `${marginLeft}px` }}>
+    <div className="mb-3" style={{ marginLeft: `${marginLeft}px` }} id={`section-${section.id}`}>
       <div 
         className="flex items-center justify-between p-3 border border-border rounded-lg hover:bg-accent/20 transition-colors cursor-pointer"
         onClick={handleToggle}
