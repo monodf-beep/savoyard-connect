@@ -195,7 +195,7 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({
       originX: 'center',
       originY: 'center',
       fill: 'transparent',
-      stroke: '#007bff',
+      stroke: 'hsl(var(--primary))',
       strokeWidth: 2,
       strokeDashArray: [10, 5],
       selectable: false,
@@ -207,6 +207,16 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({
     setPreviewCircle(circle);
     canvas.renderAll();
   };
+
+  React.useEffect(() => {
+    if (fabricCanvas) {
+      try {
+        addPreviewCircle(fabricCanvas);
+      } catch (e) {
+        console.warn('Preview circle init failed', e);
+      }
+    }
+  }, [fabricCanvas]);
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -354,6 +364,7 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({
         });
         fabricCanvas.clear();
         fabricCanvas.add(newFabricImg);
+        addPreviewCircle(fabricCanvas);
         fabricCanvas.renderAll();
         
         setOriginalImage(newFabricImg);
@@ -421,6 +432,8 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({
           <div className="flex-1 p-4 bg-muted/20 relative flex items-center justify-center">
             <canvas
               ref={canvasRef}
+              width={600}
+              height={400}
               className="border border-border rounded-lg shadow-lg bg-background"
             />
             {previewUrl && (
