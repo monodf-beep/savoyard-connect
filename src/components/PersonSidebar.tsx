@@ -42,16 +42,12 @@ const PersonSections: React.FC<{ personId: string }> = ({ personId }) => {
         <Users className="w-4 h-4 text-primary" />
         Participe à
       </h3>
-      <div className="space-y-1">
+      <div className="flex flex-wrap gap-2">
         {personSections.map((section, index) => (
-          <div key={index} className="flex items-center justify-between">
-            <span className="text-sm text-foreground">{section.title}</span>
-            {section.role !== 'Membre' && (
-              <Badge variant="outline" className="text-xs ml-2">
-                {section.role}
-              </Badge>
-            )}
-          </div>
+          <Badge key={index} variant="secondary" className="text-xs">
+            {section.title}
+            {section.role !== 'Membre' && ` (${section.role})`}
+          </Badge>
         ))}
       </div>
     </div>
