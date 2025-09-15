@@ -37,6 +37,9 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
   React.useEffect(() => {
     const handleOpenVacantPositions = (event: CustomEvent) => {
       if (!adminMode.isActive) {
+        // Fermer le panneau des personnes et ouvrir celui des postes vacants
+        setIsSidebarOpen(false);
+        setSelectedPerson(null);
         setIsVacantPositionsSidebarOpen(true);
       }
     };
@@ -98,6 +101,9 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
   }, [refetch]);
 
   const handlePersonClick = useCallback((person: Person) => {
+    // Fermer le panneau des postes vacants s'il est ouvert
+    setIsVacantPositionsSidebarOpen(false);
+    // Ouvrir le panneau de la personne
     setSelectedPerson(person);
     setIsSidebarOpen(true);
   }, []);
@@ -218,7 +224,9 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
       // En mode admin, aller vers la page jobs
       window.location.href = '/jobs';
     } else {
-      // En mode lecture, ouvrir le sidebar
+      // En mode lecture, fermer le panneau des personnes et ouvrir le sidebar des postes vacants
+      setIsSidebarOpen(false);
+      setSelectedPerson(null);
       setIsVacantPositionsSidebarOpen(true);
     }
   }, [adminMode.isActive]);
