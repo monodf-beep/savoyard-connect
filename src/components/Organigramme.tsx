@@ -341,7 +341,11 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
             {totalMembers} membres
           </span>
           <Button
-            onClick={handleVacantPositionsClick}
+            onClick={() => {
+              setIsSidebarOpen(false);
+              setSelectedPerson(null);
+              setIsVacantPositionsSidebarOpen(true);
+            }}
             variant="outline"
             size="sm"
             className="text-xs"
