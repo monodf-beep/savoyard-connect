@@ -286,10 +286,18 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({
         <div className="flex flex-1 min-h-0">
           {/* Canvas area */}
           <div className="flex-1 p-4 flex items-center justify-center bg-muted/20">
-            <canvas
-              ref={canvasRef}
-              className="border border-border rounded-lg shadow-lg bg-background"
-            />
+            {!originalImage ? (
+              <div className="text-center text-muted-foreground">
+                <Upload className="w-16 h-16 mx-auto mb-4 opacity-50" />
+                <p className="text-lg font-medium mb-2">Aucune image chargée</p>
+                <p className="text-sm">Utilisez le bouton "Choisir un fichier" pour commencer</p>
+              </div>
+            ) : (
+              <canvas
+                ref={canvasRef}
+                className="border border-border rounded-lg shadow-lg bg-background"
+              />
+            )}
           </div>
 
           {/* Controls panel */}
