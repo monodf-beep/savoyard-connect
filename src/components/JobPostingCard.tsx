@@ -44,7 +44,7 @@ export const JobPostingCard: React.FC<JobPostingCardProps> = ({
   };
 
   return (
-    <Card className="group hover:shadow-md transition-all duration-200 hover:scale-[1.02] animate-fade-in">
+    <Card className="group hover:shadow-md transition-all duration-200 hover:scale-[1.02] animate-fade-in h-full flex flex-col">
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <div className="flex-1">
@@ -81,32 +81,34 @@ export const JobPostingCard: React.FC<JobPostingCardProps> = ({
         </div>
       </CardHeader>
       
-      <CardContent className="pt-0">
-        <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
-          {jobPosting.description}
-        </p>
-        
-        {jobPosting.requirements.length > 0 && (
-          <div className="mb-4">
-            <h4 className="text-sm font-medium mb-2">Compétences requises :</h4>
-            <div className="flex flex-wrap gap-1">
-              {jobPosting.requirements.slice(0, 3).map((req, index) => (
-                <Badge key={index} variant="outline" className="text-xs">
-                  {req}
-                </Badge>
-              ))}
-              {jobPosting.requirements.length > 3 && (
-                <Badge variant="outline" className="text-xs">
-                  +{jobPosting.requirements.length - 3} autres
-                </Badge>
-              )}
+      <CardContent className="pt-0 flex-1 flex flex-col">
+        <div className="flex-1">
+          <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+            {jobPosting.description}
+          </p>
+          
+          {jobPosting.requirements.length > 0 && (
+            <div className="mb-4">
+              <h4 className="text-sm font-medium mb-2">Compétences requises :</h4>
+              <div className="flex flex-wrap gap-1">
+                {jobPosting.requirements.slice(0, 3).map((req, index) => (
+                  <Badge key={index} variant="outline" className="text-xs">
+                    {req}
+                  </Badge>
+                ))}
+                {jobPosting.requirements.length > 3 && (
+                  <Badge variant="outline" className="text-xs">
+                    +{jobPosting.requirements.length - 3} autres
+                  </Badge>
+                )}
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
         
         <Button 
           onClick={handleApply}
-          className="w-full hover-scale"
+          className="w-full hover-scale mt-auto"
           size="sm"
         >
           <ExternalLink className="w-4 h-4 mr-2" />
