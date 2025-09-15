@@ -28,8 +28,6 @@ export const VacantPositionCard: React.FC<VacantPositionCardProps> = ({
   const handleClick = () => {
     if (isAdmin && onEdit) {
       onEdit(position);
-    } else if (position.externalLink) {
-      window.open(position.externalLink, '_blank');
     } else if (onClick) {
       onClick(position);
     }
