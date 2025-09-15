@@ -164,16 +164,16 @@ export const useOrganigramme = () => {
         .upsert({
           id: person.id,
           first_name: person.firstName,
-          last_name: person.lastName,
-          title: person.role,
-          bio: person.description,
-          avatar_url: person.photo,
-          email: person.email,
-          phone: person.phone,
-          linkedin: person.linkedin,
-          adresse: person.adresse,
-          competences: person.competences || [],
-          date_entree: person.dateEntree
+          last_name: person.lastName || '',
+          title: person.role || null,
+          bio: person.description || null,
+          avatar_url: person.photo || null,
+          email: person.email || null,
+          phone: person.phone || null,
+          linkedin: person.linkedin || null,
+          adresse: person.adresse || null,
+          competences: person.competences && person.competences.length > 0 ? person.competences : null,
+          date_entree: person.dateEntree && person.dateEntree !== '' ? person.dateEntree : null
         })
         .select()
         .maybeSingle();
