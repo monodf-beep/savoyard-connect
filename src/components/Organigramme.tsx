@@ -324,8 +324,8 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
   }
 
   return (
-    <div className="flex min-h-screen w-full">
-      <div className={`organigramme-container transition-all duration-300 ${isSidebarOpen || isVacantPositionsSidebarOpen ? 'mr-96' : ''} flex-1 max-w-6xl mx-auto p-4`}>
+    <div className="flex min-h-screen w-full relative">
+      <div className={`organigramme-container transition-all duration-300 ${(isSidebarOpen || isVacantPositionsSidebarOpen) ? 'pr-96 mr-96' : ''} flex-1 max-w-6xl mx-auto p-4`}>
       {/* Header épuré */}
       <div className="mb-6 text-center">
         <div className="flex flex-wrap items-center justify-center gap-2 mb-4">
