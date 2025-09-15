@@ -93,8 +93,8 @@ export const VacantPositionsSidebar: React.FC<VacantPositionsSidebarProps> = ({
               {positions.map((position, index) => (
                 <div
                   key={position.id}
-                  onClick={() => position.externalLink ? window.open(position.externalLink, '_blank') : onPositionClick(position)}
-                  className="p-4 border border-border rounded-lg hover:bg-muted/50 cursor-pointer transition-colors group"
+                  onClick={() => onPositionClick(position)}
+                  className="p-4 border border-border rounded-lg hover:bg-muted/50 cursor-pointer transition-colors group animate-fade-in"
                 >
                   <div className="flex items-start gap-3">
                     <div className="p-2 rounded-full bg-primary/10 group-hover:bg-primary/20 transition-colors">
@@ -103,24 +103,32 @@ export const VacantPositionsSidebar: React.FC<VacantPositionsSidebarProps> = ({
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
                         <h3 className="font-semibold text-sm">{position.title}</h3>
-                        {position.externalLink && (
-                          <ExternalLink className="w-3 h-3 text-primary/70" />
-                        )}
                       </div>
                       {position.description && (
                         <p className="text-xs text-muted-foreground mb-2 line-clamp-2">
                           {position.description}
                         </p>
                       )}
-                      <div className="flex items-center gap-2">
-                        <MapPin className="w-3 h-3 text-muted-foreground" />
-                        <Badge variant="outline" className="text-xs">
-                          {position.sectionTitle}
-                        </Badge>
-                        {position.externalLink && (
-                          <Badge variant="secondary" className="text-xs">
-                            Postuler en ligne
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <MapPin className="w-3 h-3 text-muted-foreground" />
+                          <Badge variant="outline" className="text-xs">
+                            {position.sectionTitle}
                           </Badge>
+                        </div>
+                        {position.externalLink && (
+                          <Button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              window.open(position.externalLink, '_blank');
+                            }}
+                            variant="ghost"
+                            size="sm"
+                            className="h-6 px-2 text-xs hover-scale"
+                          >
+                            <ExternalLink className="w-3 h-3 mr-1" />
+                            Voir l'annonce
+                          </Button>
                         )}
                       </div>
                     </div>
