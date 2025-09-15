@@ -5,7 +5,8 @@ import { JobPostingForm } from '../components/JobPostingForm';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
-import { Plus, Search, Briefcase } from 'lucide-react';
+import { Plus, Search, Briefcase, Settings } from 'lucide-react';
+import { useIsWordPressAdmin } from '../utils/wordpress';
 
 // Données de démonstration
 const initialJobPostings: JobPosting[] = [
@@ -49,7 +50,8 @@ const initialJobPostings: JobPosting[] = [
 
 const Jobs = () => {
   const [jobPostings, setJobPostings] = useState<JobPosting[]>(initialJobPostings);
-  const [isAdmin] = useState(false); // Pour la démo, changer en true pour tester le mode admin
+  const [isAdmin, setIsAdmin] = useState(false);
+  const isWPAdmin = useIsWordPressAdmin();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedJobPosting, setSelectedJobPosting] = useState<JobPosting | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -94,6 +96,10 @@ const Jobs = () => {
     setIsFormOpen(true);
   };
 
+  const toggleAdminMode = () => {
+    setIsAdmin(prev => !prev);
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
@@ -109,12 +115,25 @@ const Jobs = () => {
             </div>
           </div>
           
-          {isAdmin && (
-            <Button onClick={handleAddJobPosting}>
-              <Plus className="w-4 h-4 mr-2" />
-              Ajouter un poste
-            </Button>
-          )}
+          <div className="flex items-center gap-2">
+            {isWPAdmin && (
+              <Button
+                onClick={toggleAdminMode}
+                variant={isAdmin ? "default" : "outline"}
+                size="sm"
+              >
+                <Settings className="w-4 h-4 mr-2" />
+                Admin
+              </Button>
+            )}
+            
+            {isAdmin && (
+              <Button onClick={handleAddJobPosting}>
+                <Plus className="w-4 h-4 mr-2" />
+                Ajouter un poste
+              </Button>
+            )}
+          </div>
         </div>
 
         {/* Filtres */}
