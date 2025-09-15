@@ -159,42 +159,29 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
     return positions;
   }, [data.sections]);
 
-  const navigateToVacantPosition = useCallback(async (position: VacantPosition & { sectionTitle: string }) => {
+  // Fonction pour naviguer vers une section contenant un poste vacant
+  const navigateToVacantPosition = useCallback((position: VacantPosition & { sectionTitle: string }) => {
     // Fermer le sidebar des postes vacants
     setIsVacantPositionsSidebarOpen(false);
-
-    // Étendre la section cible (et ses parents si nécessaire)
-    const findPathToSection = (sections: Section[], targetId: string, path: string[] = []): string[] | null => {
-      for (const section of sections) {
-        const newPath = [...path, section.id];
-        if (section.id === targetId) return newPath;
-        if (section.subsections) {
-          const found = findPathToSection(section.subsections, targetId, newPath);
-          if (found) return found;
-        }
-      }
-      return null;
-    };
-
-    const path = findPathToSection(data.sections, position.sectionId) || [position.sectionId];
-    try {
-      for (const id of path) {
-        await updateSectionExpansion(id, true);
-      }
-    } catch (e) {
-      console.warn('Impossible d\'étendre entièrement la section:', e);
-    }
     
-    // Attendre un petit délai que le DOM se mette à jour puis faire défiler et flasher
+    // Attendre que le sidebar se ferme avant de naviguer
     setTimeout(() => {
       const sectionElement = document.getElementById(`section-${position.sectionId}`);
       if (sectionElement) {
-        sectionElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        // Faire défiler jusqu'à la section
+        sectionElement.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'center' 
+        });
+        
+        // Ajouter un effet flash
         sectionElement.classList.add('flash-highlight');
-        setTimeout(() => sectionElement.classList.remove('flash-highlight'), 1800);
+        setTimeout(() => {
+          sectionElement.classList.remove('flash-highlight');
+        }, 2000);
       }
-    }, 200);
-  }, [data.sections, updateSectionExpansion]);
+    }, 300);
+  }, []);
 
   // Gérer l'ouverture du sidebar des postes vacants
   const handleVacantPositionsClick = useCallback(() => {
@@ -272,9 +259,9 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
     );
   }
 
-    return (
-      <div className="flex min-h-screen w-full">
-      <div className={`organigramme-container transition-all duration-300 ${isSidebarOpen || isVacantPositionsSidebarOpen ? 'mr-96 pr-96' : ''} flex-1 max-w-6xl mx-auto p-4`}>
+  return (
+    <div className="flex min-h-screen w-full">
+      <div className={`organigramme-container transition-all duration-300 ${isSidebarOpen || isVacantPositionsSidebarOpen ? 'mr-96' : ''} flex-1 max-w-6xl mx-auto p-4`}>
       {/* Header épuré */}
       <div className="mb-6 text-center">
         <div className="flex flex-wrap items-center justify-center gap-2 mb-4">
