@@ -1,9 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Canvas as FabricCanvas, FabricImage, Rect, util } from 'fabric';
+import { Canvas as FabricCanvas, FabricImage, Rect, util, Circle as FabricCircle, Point } from 'fabric';
 import { Button } from './ui/button';
 import { Label } from './ui/label';
 import { Slider } from './ui/slider';
-import { X, RotateCcw, Check, Upload, ZoomIn, ZoomOut, Crop, Loader2, AlertCircle } from 'lucide-react';
+import { X, RotateCcw, Check, Upload, ZoomIn, ZoomOut, Crop, Loader2, AlertCircle, RotateCw } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface ImageEditorProps {
@@ -29,6 +29,7 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({
   const [isLoadingImage, setIsLoadingImage] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [previewCircle, setPreviewCircle] = useState<any>(null);
   const MAX_FILE_MB = 5;
   const ACCEPTED_TYPES = ['image/jpeg','image/jpg','image/png','image/webp'];
 
@@ -104,6 +105,7 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({
       canvas.centerObject(fabricImg);
       canvas.requestRenderAll();
       setOriginalImage(fabricImg);
+      addPreviewCircle(canvas);
       setPreviewUrl(null);
       toast.success('Image chargée !', {
         duration: 3000,
@@ -155,6 +157,7 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({
         canvas.centerObject(fabricImg);
         canvas.requestRenderAll();
         setOriginalImage(fabricImg);
+        addPreviewCircle(canvas);
         setPreviewUrl(null);
         toast.success('Image chargée !', {
           duration: 3000,
@@ -177,6 +180,32 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({
         toast.error("Impossible de charger l'image. Essayez un autre fichier.");
       }
     }
+  };
+
+  const addPreviewCircle = (canvas: FabricCanvas) => {
+    // Supprimer le cercle existant s'il y en a un
+    if (previewCircle) {
+      canvas.remove(previewCircle);
+    }
+    
+    const circle = new FabricCircle({
+      radius: 100,
+      left: canvas.getWidth() / 2,
+      top: canvas.getHeight() / 2,
+      originX: 'center',
+      originY: 'center',
+      fill: 'transparent',
+      stroke: '#007bff',
+      strokeWidth: 2,
+      strokeDashArray: [10, 5],
+      selectable: false,
+      evented: false,
+      excludeFromExport: true,
+    });
+    
+    canvas.add(circle);
+    setPreviewCircle(circle);
+    canvas.renderAll();
   };
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -242,7 +271,8 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({
     if (!fabricCanvas) return;
     const zoomLevel = value[0];
     setZoom(value);
-    fabricCanvas.setZoom(zoomLevel);
+    const center = new Point(fabricCanvas.getWidth() / 2, fabricCanvas.getHeight() / 2);
+    fabricCanvas.zoomToPoint(center, zoomLevel);
     fabricCanvas.renderAll();
   };
 
@@ -337,10 +367,18 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({
       });
   };
 
+  const rotateImage = (angle: number) => {
+    if (!fabricCanvas || !originalImage) return;
+    const currentAngle = originalImage.angle || 0;
+    originalImage.rotate(currentAngle + angle);
+    fabricCanvas.renderAll();
+  };
+
   const resetZoom = () => {
     if (!fabricCanvas) return;
     setZoom([1]);
-    fabricCanvas.setZoom(1);
+    const center = new Point(fabricCanvas.getWidth() / 2, fabricCanvas.getHeight() / 2);
+    fabricCanvas.zoomToPoint(center, 1);
     fabricCanvas.renderAll();
   };
 
@@ -484,6 +522,31 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({
                 />
                 <div className="text-center text-sm text-muted-foreground mt-1">
                   {Math.round(zoom[0] * 100)}%
+                </div>
+              </div>
+
+              {/* Rotation controls */}
+              <div>
+                <Label className="text-sm font-medium">Rotation</Label>
+                <div className="mt-2 flex gap-2">
+                  <Button
+                    onClick={() => rotateImage(-90)}
+                    variant="outline"
+                    className="flex-1"
+                    disabled={!originalImage}
+                  >
+                    <RotateCcw className="w-4 h-4 mr-2" />
+                    90° gauche
+                  </Button>
+                  <Button
+                    onClick={() => rotateImage(90)}
+                    variant="outline"
+                    className="flex-1"
+                    disabled={!originalImage}
+                  >
+                    <RotateCw className="w-4 h-4 mr-2" />
+                    90° droite
+                  </Button>
                 </div>
               </div>
 
