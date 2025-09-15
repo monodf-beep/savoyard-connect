@@ -22,7 +22,8 @@ export const useOrganigramme = () => {
       const { data: sectionsData, error: sectionsError } = await supabase
         .from('sections')
         .select('*')
-        .order('created_at');
+        .order('display_order', { ascending: true })
+        .order('created_at', { ascending: true });
       
       if (sectionsError) throw sectionsError;
 
@@ -247,6 +248,9 @@ export const useOrganigramme = () => {
         .eq('id', sectionId);
 
       if (error) throw error;
+      
+      // Recharger les données pour mettre à jour l'interface
+      await loadData();
     } catch (error) {
       console.error('Erreur lors de la mise à jour:', error);
     }

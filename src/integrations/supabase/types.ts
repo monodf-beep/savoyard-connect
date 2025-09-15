@@ -158,6 +158,7 @@ export type Database = {
       sections: {
         Row: {
           created_at: string | null
+          display_order: number | null
           id: string
           is_expanded: boolean | null
           parent_id: string | null
@@ -166,6 +167,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string | null
+          display_order?: number | null
           id?: string
           is_expanded?: boolean | null
           parent_id?: string | null
@@ -174,6 +176,7 @@ export type Database = {
         }
         Update: {
           created_at?: string | null
+          display_order?: number | null
           id?: string
           is_expanded?: boolean | null
           parent_id?: string | null

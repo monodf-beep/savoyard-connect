@@ -49,12 +49,13 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
 
   const expandAll = useCallback(async () => {
     const expandSectionRecursively = async (sections: Section[]) => {
-      for (const section of sections) {
+      const promises = sections.map(async (section) => {
         await updateSectionExpansion(section.id, true);
         if (section.subsections) {
           await expandSectionRecursively(section.subsections);
         }
-      }
+      });
+      await Promise.all(promises);
     };
     
     await expandSectionRecursively(data.sections);
@@ -62,12 +63,13 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
 
   const collapseAll = useCallback(async () => {
     const collapseSectionRecursively = async (sections: Section[]) => {
-      for (const section of sections) {
+      const promises = sections.map(async (section) => {
         await updateSectionExpansion(section.id, false);
         if (section.subsections) {
           await collapseSectionRecursively(section.subsections);
         }
-      }
+      });
+      await Promise.all(promises);
     };
     
     await collapseSectionRecursively(data.sections);
