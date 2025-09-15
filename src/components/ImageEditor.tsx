@@ -77,26 +77,23 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({
 
       const canvasWidth = canvas.getWidth();
       const canvasHeight = canvas.getHeight();
-      const imgWidth = fabricImg.width!;
-      const imgHeight = fabricImg.height!;
+      const intrinsicW = (imgEl as HTMLImageElement).naturalWidth || (imgEl as HTMLImageElement).width || 1;
+      const intrinsicH = (imgEl as HTMLImageElement).naturalHeight || (imgEl as HTMLImageElement).height || 1;
 
       const padding = 20;
       const availableWidth = canvasWidth - padding * 2;
       const availableHeight = canvasHeight - padding * 2;
 
-      const scaleX = availableWidth / imgWidth;
-      const scaleY = availableHeight / imgHeight;
+      const scaleX = availableWidth / intrinsicW;
+      const scaleY = availableHeight / intrinsicH;
       const scale = Math.min(scaleX, scaleY, 1);
 
       fabricImg.scale(scale);
-
-      const scaledWidth = imgWidth * scale;
-      const scaledHeight = imgHeight * scale;
       fabricImg.set({
-        left: (canvasWidth - scaledWidth) / 2,
-        top: (canvasHeight - scaledHeight) / 2,
-        originX: 'left',
-        originY: 'top',
+        left: canvasWidth / 2,
+        top: canvasHeight / 2,
+        originX: 'center',
+        originY: 'center',
       });
 
       canvas.clear();
@@ -130,25 +127,23 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({
 
         const canvasWidth = canvas.getWidth();
         const canvasHeight = canvas.getHeight();
-        const imgWidth = fabricImg.width!;
-        const imgHeight = fabricImg.height!;
+        const intrinsicW = (img as HTMLImageElement).naturalWidth || (img as HTMLImageElement).width || 1;
+        const intrinsicH = (img as HTMLImageElement).naturalHeight || (img as HTMLImageElement).height || 1;
 
         const padding = 20;
         const availableWidth = canvasWidth - padding * 2;
         const availableHeight = canvasHeight - padding * 2;
 
-        const scaleX = availableWidth / imgWidth;
-        const scaleY = availableHeight / imgHeight;
+        const scaleX = availableWidth / intrinsicW;
+        const scaleY = availableHeight / intrinsicH;
         const scale = Math.min(scaleX, scaleY, 1);
         fabricImg.scale(scale);
 
-        const scaledWidth = imgWidth * scale;
-        const scaledHeight = imgHeight * scale;
         fabricImg.set({
-          left: (canvasWidth - scaledWidth) / 2,
-          top: (canvasHeight - scaledHeight) / 2,
-          originX: 'left',
-          originY: 'top',
+          left: canvasWidth / 2,
+          top: canvasHeight / 2,
+          originX: 'center',
+          originY: 'center',
         });
 
         canvas.clear();
@@ -396,6 +391,19 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({
               <div className="absolute inset-0 bg-background/60 backdrop-blur-sm flex items-center justify-center z-10 rounded-lg">
                 <Loader2 className="w-6 h-6 animate-spin text-primary mr-2" />
                 <span className="text-sm">Chargement de l'image...</span>
+              </div>
+            )}
+            {loadError && (
+              <div className="absolute inset-0 flex items-center justify-center p-4 z-20">
+                <div className="max-w-md w-full bg-destructive/10 border border-destructive rounded-lg p-4 shadow">
+                  <div className="flex items-start gap-2">
+                    <AlertCircle className="w-5 h-5 text-destructive mt-0.5" />
+                    <div className="text-sm">
+                      <p className="font-medium text-destructive">Impossible de charger l'image</p>
+                      <p className="mt-1 text-foreground/90">{loadError}</p>
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
           </div>
