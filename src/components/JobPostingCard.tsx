@@ -33,18 +33,18 @@ export const JobPostingCard: React.FC<JobPostingCardProps> = ({
     });
   };
 
-  const getTypeColor = (type: string) => {
+  const getTypeVariant = (type: string) => {
     switch (type) {
-      case 'CDI': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
-      case 'CDD': return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300';
-      case 'Stage': return 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300';
-      case 'Freelance': return 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300';
-      default: return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300';
+      case 'CDI': return 'default';
+      case 'CDD': return 'secondary';
+      case 'Stage': return 'outline';
+      case 'Freelance': return 'secondary';
+      default: return 'outline';
     }
   };
 
   return (
-    <Card className="group hover:shadow-md transition-shadow">
+    <Card className="group hover:shadow-md transition-all duration-200 hover:scale-[1.02] animate-fade-in">
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <div className="flex-1">
@@ -58,7 +58,7 @@ export const JobPostingCard: React.FC<JobPostingCardProps> = ({
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <Badge className={getTypeColor(jobPosting.type)}>
+              <Badge variant={getTypeVariant(jobPosting.type)}>
                 {jobPosting.type}
               </Badge>
               <div className="flex items-center gap-1 text-xs text-muted-foreground">
@@ -106,7 +106,7 @@ export const JobPostingCard: React.FC<JobPostingCardProps> = ({
         
         <Button 
           onClick={handleApply}
-          className="w-full"
+          className="w-full hover-scale"
           size="sm"
         >
           <ExternalLink className="w-4 h-4 mr-2" />
