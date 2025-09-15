@@ -1,7 +1,8 @@
 import React, { useState, useCallback } from 'react';
-import { Person, Section, AdminMode } from '../types/organigramme';
+import { Person, Section, AdminMode, VacantPosition } from '../types/organigramme';
 import { SectionCard } from './SectionCard';
 import { PersonSidebar } from './PersonSidebar';
+import { VacantPositionsSidebar } from './VacantPositionsSidebar';
 import { PersonForm } from './PersonForm';
 import { SectionForm } from './SectionForm';
 import { Button } from './ui/button';
@@ -21,6 +22,7 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
   const { data, loading, savePerson, deletePerson, saveSection, deleteSection, updateSectionExpansion, refetch } = useOrganigramme();
   const [selectedPerson, setSelectedPerson] = useState<Person | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isVacantPositionsSidebarOpen, setIsVacantPositionsSidebarOpen] = useState(false);
   const isWPAdmin = useIsWordPressAdmin();
   const [adminMode, setAdminMode] = useState<AdminMode>({ isActive: isAdminMode });
   const [isPersonFormOpen, setIsPersonFormOpen] = useState(false);
@@ -119,6 +121,51 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
     }
   }, [deletePerson]);
 
+  // Fonction pour récupérer tous les postes vacants avec leur section
+  const getAllVacantPositions = useCallback((): (VacantPosition & { sectionTitle: string })[] => {
+    const positions: (VacantPosition & { sectionTitle: string })[] = [];
+    
+    const collectPositions = (sections: Section[]) => {
+      sections.forEach(section => {
+        if (section.vacantPositions) {
+          section.vacantPositions.forEach(position => {
+            positions.push({
+              ...position,
+              sectionTitle: section.title
+            });
+          });
+        }
+        if (section.subsections) {
+          collectPositions(section.subsections);
+        }
+      });
+    };
+    
+    collectPositions(data.sections);
+    return positions;
+  }, [data.sections]);
+
+  // Fonction pour naviguer vers une section contenant un poste vacant
+  const navigateToVacantPosition = useCallback((position: VacantPosition & { sectionTitle: string }) => {
+    // Fermer le sidebar des postes vacants
+    setIsVacantPositionsSidebarOpen(false);
+    
+    // Ici on pourrait ajouter une logique pour faire défiler jusqu'à la section
+    // et la mettre en évidence temporairement
+    console.log('Navigation vers la section:', position.sectionTitle);
+  }, []);
+
+  // Gérer l'ouverture du sidebar des postes vacants
+  const handleVacantPositionsClick = useCallback(() => {
+    if (adminMode.isActive) {
+      // En mode admin, aller vers la page jobs
+      window.location.href = '/jobs';
+    } else {
+      // En mode lecture, ouvrir le sidebar
+      setIsVacantPositionsSidebarOpen(true);
+    }
+  }, [adminMode.isActive]);
+
   const handleAddSection = useCallback(() => {
     setEditingSection(null);
     setIsSectionFormOpen(true);
@@ -194,13 +241,13 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
             {totalMembers} membres
           </span>
           <Button
-            onClick={() => window.location.href = '/jobs'}
+            onClick={handleVacantPositionsClick}
             variant="outline"
             size="sm"
             className="text-xs"
           >
             <UserPlus className="w-3 h-3 mr-1" />
-            Postes vacants
+            {adminMode.isActive ? 'Postes vacants' : `${getAllVacantPositions().length} postes vacants`}
           </Button>
         </div>
 
@@ -321,6 +368,13 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
         onClose={() => setIsSectionFormOpen(false)}
         onSave={handleSaveSection}
         onDelete={handleDeleteSection}
+      />
+
+      <VacantPositionsSidebar
+        isOpen={isVacantPositionsSidebarOpen}
+        onClose={() => setIsVacantPositionsSidebarOpen(false)}
+        positions={getAllVacantPositions()}
+        onPositionClick={navigateToVacantPosition}
       />
     </div>
   );

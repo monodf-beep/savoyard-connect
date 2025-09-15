@@ -1,6 +1,7 @@
 import React from 'react';
-import { Section, Person } from '../types/organigramme';
+import { Section, Person, VacantPosition } from '../types/organigramme';
 import { PersonCard } from './PersonCard';
+import { VacantPositionCard } from './VacantPositionCard';
 import { ChevronDown, ChevronRight, Users } from 'lucide-react';
 
 interface SectionCardProps {
@@ -24,7 +25,7 @@ export const SectionCard: React.FC<SectionCardProps> = ({
     onToggle(section.id);
   };
 
-  const hasContent = section.members.length > 0 || (section.subsections && section.subsections.length > 0);
+  const hasContent = section.members.length > 0 || (section.subsections && section.subsections.length > 0) || (section.vacantPositions && section.vacantPositions.length > 0);
   const isMainSection = level === 0;
   const marginLeft = level * 20;
 
@@ -61,7 +62,7 @@ export const SectionCard: React.FC<SectionCardProps> = ({
         {section.isExpanded && hasContent && (
           <div className="mt-4 space-y-4">
             {/* Affichage compact des membres principaux */}
-            {section.members.length > 0 && (
+            {(section.members.length > 0 || (section.vacantPositions && section.vacantPositions.length > 0)) && (
               <div className="flex flex-wrap gap-2">
                 {section.members.map(person => (
                   <PersonCard
@@ -72,6 +73,14 @@ export const SectionCard: React.FC<SectionCardProps> = ({
                     onEdit={onEditPerson}
                     compact={true}
                     isBureau={section.type === 'bureau'}
+                  />
+                ))}
+                {section.vacantPositions?.map(position => (
+                  <VacantPositionCard
+                    key={position.id}
+                    position={position}
+                    isAdmin={isAdmin}
+                    compact={true}
                   />
                 ))}
               </div>
@@ -122,7 +131,7 @@ export const SectionCard: React.FC<SectionCardProps> = ({
 
       {section.isExpanded && hasContent && (
         <div className="mt-2 ml-6 space-y-2">
-          {section.members.length > 0 && (
+          {(section.members.length > 0 || (section.vacantPositions && section.vacantPositions.length > 0)) && (
             <div className="flex flex-wrap gap-1">
               {section.members.map(person => (
                 <PersonCard
@@ -131,6 +140,14 @@ export const SectionCard: React.FC<SectionCardProps> = ({
                   onClick={onPersonClick}
                   isAdmin={isAdmin}
                   onEdit={onEditPerson}
+                  compact={true}
+                />
+              ))}
+              {section.vacantPositions?.map(position => (
+                <VacantPositionCard
+                  key={position.id}
+                  position={position}
+                  isAdmin={isAdmin}
                   compact={true}
                 />
               ))}

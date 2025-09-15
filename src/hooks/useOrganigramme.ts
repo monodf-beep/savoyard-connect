@@ -86,6 +86,13 @@ export const useOrganigramme = () => {
               type: 'bureau' as const,
               isExpanded: section.is_expanded,
               members: members as Person[],
+              // Ajouter quelques postes vacants de démonstration
+              vacantPositions: section.title === 'Conseil d\'administration' ? [
+                { id: 'vacant-1', sectionId: section.id, title: 'Trésorier adjoint', description: 'Poste de trésorier adjoint pour assister dans la gestion financière' },
+                { id: 'vacant-2', sectionId: section.id, title: 'Administrateur', description: 'Membre du conseil d\'administration' }
+              ] : section.title === 'Commission Pédagogie' ? [
+                { id: 'vacant-3', sectionId: section.id, title: 'Formateur', description: 'Formateur en langue savoyarde' }
+              ] : [],
               subsections: buildSectionHierarchy(sections, section.id)
             };
           });

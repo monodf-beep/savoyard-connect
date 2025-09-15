@@ -36,6 +36,13 @@ export interface JobPosting {
   isActive: boolean;
 }
 
+export interface VacantPosition {
+  id: string;
+  sectionId: string;
+  title: string;
+  description?: string;
+}
+
 export interface Section {
   id: string;
   title: string;
@@ -43,6 +50,7 @@ export interface Section {
   isExpanded: boolean;
   subsections?: Section[];
   members: Person[];
+  vacantPositions?: VacantPosition[];
   leader?: Person;
 }
 
