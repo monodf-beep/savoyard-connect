@@ -37,25 +37,27 @@ export const SectionCard: React.FC<SectionCardProps> = ({
           className={`section-header ${section.type} ${hasContent ? 'cursor-pointer' : 'cursor-default'}`}
           onClick={hasContent ? handleToggle : undefined}
         >
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              {(section.subsections && section.subsections.length > 0) ? (
-                section.isExpanded ? <ChevronDown className="w-5 h-5" /> : <ChevronRight className="w-5 h-5" />
-              ) : (
-                <Users className="w-5 h-5" />
-              )}
-              <div>
-                <h3 className="font-semibold text-lg">{section.title}</h3>
-                {section.leader && (
-                  <p className="text-sm text-muted-foreground">
-                    Responsable : {section.leader.firstName} {section.leader.lastName}
-                  </p>
-                )}
+          <div className="flex items-center gap-3">
+            {(section.subsections && section.subsections.length > 0) ? (
+              section.isExpanded ? <ChevronDown className="w-5 h-5" /> : <ChevronRight className="w-5 h-5" />
+            ) : (
+              <Users className="w-5 h-5" />
+            )}
+            <div className="flex-1">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="font-semibold text-lg">{section.title}</h3>
+                  {section.leader && (
+                    <p className="text-sm text-muted-foreground">
+                      Responsable : {section.leader.firstName} {section.leader.lastName}
+                    </p>
+                  )}
+                </div>
+                <span className="text-sm text-muted-foreground ml-4">
+                  {section.members.length} membre{section.members.length > 1 ? 's' : ''}
+                </span>
               </div>
             </div>
-            <span className="text-sm text-muted-foreground">
-              {section.members.length} membre{section.members.length > 1 ? 's' : ''}
-            </span>
           </div>
         </div>
 
