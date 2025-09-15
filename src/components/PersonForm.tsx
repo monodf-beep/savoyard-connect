@@ -144,7 +144,10 @@ export const PersonForm: React.FC<PersonFormProps> = ({
       sectionId: formData.sectionId,
       adresse: formData.adresse,
       competences: formData.competences || [],
-      dateEntree: formData.dateEntree
+      dateEntree: formData.dateEntree,
+      email: formData.email,
+      phone: formData.phone,
+      linkedin: formData.linkedin
     };
 
     onSave(personData);
@@ -272,6 +275,39 @@ export const PersonForm: React.FC<PersonFormProps> = ({
               value={formData.adresse}
               onChange={(e) => setFormData(prev => ({ ...prev, adresse: e.target.value }))}
               placeholder="Ville, département..."
+            />
+          </div>
+
+          {/* Contact */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                value={formData.email}
+                onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                placeholder="email@exemple.com"
+              />
+            </div>
+            <div>
+              <Label htmlFor="phone">Téléphone</Label>
+              <Input
+                id="phone"
+                value={formData.phone}
+                onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
+                placeholder="+33 1 23 45 67 89"
+              />
+            </div>
+          </div>
+
+          <div>
+            <Label htmlFor="linkedin">LinkedIn</Label>
+            <Input
+              id="linkedin"
+              value={formData.linkedin}
+              onChange={(e) => setFormData(prev => ({ ...prev, linkedin: e.target.value }))}
+              placeholder="https://linkedin.com/in/nom-prenom ou nom-prenom"
             />
           </div>
 

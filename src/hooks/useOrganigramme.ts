@@ -55,7 +55,6 @@ export const useOrganigramme = () => {
         return sections
           .filter(section => section.parent_id === parentId)
           .map(section => {
-            // Récupérer les membres de cette section via la table de liaison
             const sectionMembers = sectionMembersData?.filter(sm => sm.section_id === section.id) || [];
             const members = sectionMembers.map(sm => {
               const person = peopleData?.find(p => p.id === sm.person_id);
@@ -69,6 +68,7 @@ export const useOrganigramme = () => {
                 sectionId: section.id,
                 email: person.email || '',
                 phone: person.phone || '',
+                linkedin: person.linkedin || '',
                 formation: person.formation || '',
                 experience: person.experience || '',
                 competences: person.competences || [],
@@ -101,6 +101,7 @@ export const useOrganigramme = () => {
         description: person.bio || '',
         email: person.email || '',
         phone: person.phone || '',
+        linkedin: person.linkedin || '',
         formation: person.formation || '',
         experience: person.experience || '',
         competences: person.competences || [],
@@ -152,6 +153,9 @@ export const useOrganigramme = () => {
           title: person.role,
           bio: person.description,
           avatar_url: person.photo,
+          email: person.email,
+          phone: person.phone,
+          linkedin: person.linkedin,
           adresse: person.adresse,
           competences: person.competences || [],
           date_entree: person.dateEntree

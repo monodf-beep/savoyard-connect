@@ -147,6 +147,47 @@ export const PersonSidebar: React.FC<PersonSidebarProps> = ({
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-4 space-y-6">
           
+          {/* Contact */}
+          {(person.email || person.phone || person.linkedin) && (
+            <div>
+              <h3 className="font-semibold text-base mb-3 flex items-center gap-2">
+                <Mail className="w-4 h-4 text-primary" />
+                Contact
+              </h3>
+              <div className="space-y-2">
+                {person.email && (
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Mail className="w-4 h-4" />
+                    <a href={`mailto:${person.email}`} className="hover:text-primary transition-colors">
+                      {person.email}
+                    </a>
+                  </div>
+                )}
+                {person.phone && (
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Phone className="w-4 h-4" />
+                    <a href={`tel:${person.phone}`} className="hover:text-primary transition-colors">
+                      {person.phone}
+                    </a>
+                  </div>
+                )}
+                {person.linkedin && (
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Linkedin className="w-4 h-4" />
+                    <a 
+                      href={person.linkedin.startsWith('http') ? person.linkedin : `https://linkedin.com/in/${person.linkedin}`}
+                      target="_blank" 
+                      rel="noopener noreferrer" 
+                      className="hover:text-primary transition-colors"
+                    >
+                      LinkedIn
+                    </a>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* 1. Lieu */}
           {person.adresse && (
             <div>
