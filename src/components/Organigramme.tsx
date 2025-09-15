@@ -358,7 +358,8 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
         {/* Controls compacts et discrets */}
         <div className="flex flex-wrap items-center justify-center gap-1">
           <Button 
-            onClick={expandAll}
+            type="button"
+            onClick={(e) => { e.preventDefault(); e.stopPropagation(); expandAll(); }}
             variant="ghost"
             size="sm"
             className="text-xs text-muted-foreground hover:text-foreground"
@@ -368,7 +369,8 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
           </Button>
           
           <Button 
-            onClick={collapseAll}
+            type="button"
+            onClick={(e) => { e.preventDefault(); e.stopPropagation(); collapseAll(); }}
             variant="ghost"
             size="sm"
             className="text-xs text-muted-foreground hover:text-foreground"
