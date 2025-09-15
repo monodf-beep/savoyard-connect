@@ -3,7 +3,7 @@ import { Canvas as FabricCanvas, FabricImage, Rect, util } from 'fabric';
 import { Button } from './ui/button';
 import { Label } from './ui/label';
 import { Slider } from './ui/slider';
-import { X, RotateCcw, Check, Upload, ZoomIn, ZoomOut, Crop, Loader2 } from 'lucide-react';
+import { X, RotateCcw, Check, Upload, ZoomIn, ZoomOut, Crop, Loader2, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface ImageEditorProps {
@@ -27,6 +27,7 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({
   const [cropRect, setCropRect] = useState<Rect | null>(null);
   const [originalImage, setOriginalImage] = useState<FabricImage | null>(null);
   const [isLoadingImage, setIsLoadingImage] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const MAX_FILE_MB = 5;
   const ACCEPTED_TYPES = ['image/jpeg','image/jpg','image/png','image/webp'];
 
@@ -61,6 +62,8 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({
   const loadImageFromUrl = async (url: string, canvas: FabricCanvas) => {
     console.log('Loading image from URL:', url);
     if (!url) return;
+
+    setLoadError(null);
 
     try {
       // Try Fabric util first
@@ -162,6 +165,17 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({
         });
       } catch (e2) {
         console.error('Both loaders failed', e2);
+        const isExternal = /^https?:/i.test(url);
+        if (isExternal) {
+          try {
+            const host = new URL(url).host;
+            setLoadError(`Impossible de charger l'image depuis ${host}. Le site distant bloque le chargement (CORS / anti-hotlink). Téléchargez le fichier depuis votre ordinateur ou utilisez un lien accessible.`);
+          } catch {
+            setLoadError("Impossible de charger l'image distante (CORS / anti-hotlink).");
+          }
+        } else {
+          setLoadError("Impossible de charger l'image. Fichier invalide.");
+        }
         toast.error("Impossible de charger l'image. Essayez un autre fichier.");
       }
     }
@@ -172,13 +186,16 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({
 
     if (!file) return;
 
-    // Validate size and type
     if (file.size > MAX_FILE_MB * 1024 * 1024) {
-      toast.error(`Fichier trop volumineux (max ${MAX_FILE_MB} Mo)`);
+      const msg = `Fichier trop volumineux (max ${MAX_FILE_MB} Mo)`;
+      setLoadError(msg);
+      toast.error(msg);
       return;
     }
     if (!ACCEPTED_TYPES.includes(file.type)) {
-      toast.error('Format non supporté. Formats acceptés: JPG, PNG, WebP');
+      const msg = 'Format non supporté. Formats acceptés: JPG, PNG, WebP';
+      setLoadError(msg);
+      toast.error(msg);
       return;
     }
 
