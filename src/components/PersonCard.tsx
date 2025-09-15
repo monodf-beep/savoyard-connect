@@ -39,21 +39,21 @@ export const PersonCard: React.FC<PersonCardProps> = ({
 
   if (compact) {
     const compactClass = isBureau 
-      ? "inline-flex items-center gap-3 px-4 py-3 text-base bg-gradient-to-r from-primary/5 to-primary/10 hover:from-primary/10 hover:to-primary/15 border border-primary/20 rounded-xl transition-all duration-300 h-[50px] shadow-sm hover:shadow-md"
-      : "inline-flex items-center gap-2 px-3 py-2 text-sm bg-gradient-to-r from-accent/10 to-accent/5 hover:from-accent/15 hover:to-accent/10 border border-accent/30 rounded-lg transition-all duration-300 h-[42px] shadow-sm hover:shadow-md";
+      ? "inline-flex items-center gap-3 px-4 py-2 text-base bg-card hover:bg-accent/50 border border-border rounded-lg transition-colors h-[44px]"
+      : "inline-flex items-center gap-2 px-3 py-1.5 text-sm bg-card hover:bg-accent/50 border border-border rounded-md transition-colors h-[44px]";
     
     const avatarClass = isBureau ? "w-8 h-8" : "w-6 h-6";
-    const textClass = isBureau ? "font-semibold text-foreground" : "font-medium text-foreground";
+    const textClass = isBureau ? "font-semibold" : "font-medium";
     const iconClass = isBureau ? "w-4 h-4" : "w-3 h-3";
     
     return (
       <button
         onClick={handleClick}
-        className={`${compactClass} group hover:scale-105`}
+        className={compactClass}
       >
-        <Avatar className={`${avatarClass} ring-2 ring-primary/20 group-hover:ring-primary/40 transition-all duration-300`}>
+        <Avatar className={avatarClass}>
           <AvatarImage src={person.photo} alt={`${person.firstName} ${person.lastName}`} />
-          <AvatarFallback className="text-xs bg-primary/15 text-primary font-semibold">
+          <AvatarFallback className="text-xs bg-primary/10">
             {person.firstName.charAt(0)}
           </AvatarFallback>
         </Avatar>
@@ -61,7 +61,7 @@ export const PersonCard: React.FC<PersonCardProps> = ({
           {person.firstName} {person.lastName}
         </span>
         {person.linkedin && (
-          <Linkedin className={`${iconClass} text-primary/60 group-hover:text-primary transition-colors duration-300`} />
+          <Linkedin className={`${iconClass} text-muted-foreground opacity-60`} />
         )}
       </button>
     );
