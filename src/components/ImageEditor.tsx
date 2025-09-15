@@ -104,6 +104,7 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({
       canvas.centerObject(fabricImg);
       canvas.requestRenderAll();
       setOriginalImage(fabricImg);
+      setPreviewUrl(null);
       toast.success('Image chargée !', {
         duration: 3000,
         dismissible: true,
@@ -154,6 +155,7 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({
         canvas.centerObject(fabricImg);
         canvas.requestRenderAll();
         setOriginalImage(fabricImg);
+        setPreviewUrl(null);
         toast.success('Image chargée !', {
           duration: 3000,
           dismissible: true,
@@ -219,7 +221,6 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({
       try {
         await loadImageFromUrl(imageUrl, targetCanvas!);
         console.log('Canvas objects after load:', targetCanvas!.getObjects().length);
-        setPreviewUrl(null);
       } catch (err) {
         console.error('Load image error', err);
         toast.error("Impossible de charger l'image.");
