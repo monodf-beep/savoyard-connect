@@ -39,8 +39,8 @@ export const PersonCard: React.FC<PersonCardProps> = ({
 
   if (compact) {
     const compactClass = isBureau 
-      ? "inline-flex items-center gap-3 px-4 py-2 text-base bg-card hover:bg-accent/50 border border-border rounded-lg transition-colors min-h-[64px]"
-      : "inline-flex items-center gap-2 px-3 py-1.5 text-sm bg-card hover:bg-accent/50 border border-border rounded-md transition-colors min-h-[48px]";
+      ? "inline-flex items-center gap-3 px-4 py-2 text-base bg-card hover:bg-accent/50 border border-border rounded-lg transition-colors"
+      : "inline-flex items-center gap-2 px-3 py-1.5 text-sm bg-card hover:bg-accent/50 border border-border rounded-md transition-colors";
     
     const avatarClass = isBureau ? "w-8 h-8" : "w-6 h-6";
     const textClass = isBureau ? "font-semibold" : "font-medium";
