@@ -228,19 +228,19 @@ Couleurs inspirées de l'identité savoyarde avec des touches modernes
 /* Flash highlight animation */
 @keyframes flash-highlight {
   0% { 
-    background-color: hsla(var(--primary), 0.3);
-    box-shadow: 0 0 0 4px hsla(var(--primary), 0.6);
-    border: 2px solid hsla(var(--primary), 0.8);
+    background-color: hsla(var(--primary), 0.2);
+  }
+  25% { 
+    background-color: hsla(var(--primary), 0.35);
   }
   50% { 
     background-color: hsla(var(--primary), 0.4);
-    box-shadow: 0 0 0 16px hsla(var(--primary), 0.3);
-    border: 2px solid hsla(var(--primary), 1);
+  }
+  75% { 
+    background-color: hsla(var(--primary), 0.25);
   }
   100% { 
     background-color: transparent;
-    box-shadow: 0 0 0 0 hsla(var(--primary), 0);
-    border: 2px solid transparent;
   }
 }
 
