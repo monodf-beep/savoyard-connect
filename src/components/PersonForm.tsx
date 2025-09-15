@@ -140,12 +140,11 @@ export const PersonForm: React.FC<PersonFormProps> = ({
       lastName: formData.lastName || '',
       role: formData.role,
       description: formData.description,
-      missionDescription: formData.missionDescription,
-      linkedin: formData.linkedin,
-      instagram: formData.instagram,
-      missions: formData.missions || [],
       photo: formData.photo,
-      sectionId: formData.sectionId
+      sectionId: formData.sectionId,
+      adresse: formData.adresse,
+      competences: formData.competences || [],
+      dateEntree: formData.dateEntree
     };
 
     onSave(personData);
@@ -166,6 +165,23 @@ export const PersonForm: React.FC<PersonFormProps> = ({
     setFormData(prev => ({
       ...prev,
       missions: prev.missions?.filter((_, i) => i !== index) || []
+    }));
+  };
+
+  const addCompetence = () => {
+    if (newCompetence.trim()) {
+      setFormData(prev => ({
+        ...prev,
+        competences: [...(prev.competences || []), newCompetence.trim()]
+      }));
+      setNewCompetence('');
+    }
+  };
+
+  const removeCompetence = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      competences: prev.competences?.filter((_, i) => i !== index) || []
     }));
   };
 
@@ -236,18 +252,75 @@ export const PersonForm: React.FC<PersonFormProps> = ({
               </SelectContent>
             </Select>
           </div>
+          {/* 3. À propos / Mission */}
           <div>
-            <Label htmlFor="description">Description</Label>
+            <Label htmlFor="description">À propos / Mission au sein de l'institut</Label>
             <Textarea
               id="description"
               value={formData.description}
               onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-              rows={3}
+              rows={4}
+              placeholder="Décrivez le rôle et la mission de cette personne au sein de l'institut..."
             />
           </div>
 
+          {/* 1. Lieu */}
           <div>
-            <Label htmlFor="photo">Photo</Label>
+            <Label htmlFor="adresse">Lieu</Label>
+            <Input
+              id="adresse"
+              value={formData.adresse}
+              onChange={(e) => setFormData(prev => ({ ...prev, adresse: e.target.value }))}
+              placeholder="Ville, département..."
+            />
+          </div>
+
+          {/* 4. Compétences */}
+          <div>
+            <Label>Compétences</Label>
+            <div className="space-y-2">
+              <div className="flex gap-2">
+                <Input
+                  value={newCompetence}
+                  onChange={(e) => setNewCompetence(e.target.value)}
+                  placeholder="Ajouter une compétence..."
+                  onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addCompetence())}
+                />
+                <Button type="button" onClick={addCompetence} size="sm">
+                  <Plus className="w-4 h-4" />
+                </Button>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {formData.competences?.map((competence, index) => (
+                  <Badge key={index} variant="secondary" className="flex items-center gap-1">
+                    {competence}
+                    <button
+                      type="button"
+                      onClick={() => removeCompetence(index)}
+                      className="ml-1 hover:bg-destructive/20 rounded-full p-1"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </Badge>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* 5. Membre depuis */}
+          <div>
+            <Label htmlFor="dateEntree">Membre depuis</Label>
+            <Input
+              id="dateEntree"
+              type="date"
+              value={formData.dateEntree}
+              onChange={(e) => setFormData(prev => ({ ...prev, dateEntree: e.target.value }))}
+            />
+          </div>
+
+          {/* Photo (optionnel) */}
+          <div>
+            <Label htmlFor="photo">Photo (optionnel)</Label>
             <div className="space-y-2">
               <Input
                 id="photo"
@@ -273,69 +346,6 @@ export const PersonForm: React.FC<PersonFormProps> = ({
                   />
                 </div>
               )}
-            </div>
-          </div>
-
-          <div>
-            <Label htmlFor="linkedin">LinkedIn</Label>
-            <Input
-              id="linkedin"
-              value={formData.linkedin}
-              onChange={(e) => setFormData(prev => ({ ...prev, linkedin: e.target.value }))}
-              placeholder="https://linkedin.com/in/..."
-            />
-          </div>
-
-          <div>
-            <Label htmlFor="instagram">Code embed Instagram</Label>
-            <Textarea
-              id="instagram"
-              value={formData.instagram}
-              onChange={(e) => setFormData(prev => ({ ...prev, instagram: e.target.value }))}
-              rows={3}
-              placeholder="<blockquote class='instagram-media'..."
-            />
-          </div>
-
-          <div>
-            <Label htmlFor="missionDescription">Description des missions</Label>
-            <Textarea
-              id="missionDescription"
-              value={formData.missionDescription}
-              onChange={(e) => setFormData(prev => ({ ...prev, missionDescription: e.target.value }))}
-              rows={3}
-              placeholder="Décrivez les missions et responsabilités..."
-            />
-          </div>
-
-          <div>
-            <Label>Missions & Responsabilités (mots-clés)</Label>
-            <div className="space-y-2">
-              <div className="flex gap-2">
-                <Input
-                  value={newMission}
-                  onChange={(e) => setNewMission(e.target.value)}
-                  placeholder="Ajouter une mission..."
-                  onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addMission())}
-                />
-                <Button type="button" onClick={addMission} size="sm">
-                  <Plus className="w-4 h-4" />
-                </Button>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {formData.missions?.map((mission, index) => (
-                  <Badge key={index} variant="secondary" className="flex items-center gap-1">
-                    {mission}
-                    <button
-                      type="button"
-                      onClick={() => removeMission(index)}
-                      className="ml-1 hover:bg-destructive/20 rounded-full p-1"
-                    >
-                      <X className="w-3 h-3" />
-                    </button>
-                  </Badge>
-                ))}
-              </div>
             </div>
           </div>
 

@@ -150,7 +150,10 @@ export const useOrganigramme = () => {
           last_name: person.lastName,
           title: person.role,
           bio: person.description,
-          avatar_url: person.photo
+          avatar_url: person.photo,
+          adresse: person.adresse,
+          competences: person.competences || [],
+          date_entree: person.dateEntree
         })
         .select()
         .maybeSingle();

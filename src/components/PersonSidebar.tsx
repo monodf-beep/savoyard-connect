@@ -2,8 +2,59 @@ import React, { useEffect } from 'react';
 import { Person } from '../types/organigramme';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { Badge } from './ui/badge';
-import { X, Linkedin, MapPin, Edit, Mail, Phone, Calendar, User, BookOpen, Briefcase, Star, Globe } from 'lucide-react';
+import { X, Linkedin, MapPin, Edit, Mail, Phone, Calendar, User, BookOpen, Briefcase, Star, Globe, Users } from 'lucide-react';
 import { Button } from './ui/button';
+import { useOrganigramme } from '../hooks/useOrganigramme';
+
+// Composant pour afficher les sections d'une personne
+const PersonSections: React.FC<{ personId: string }> = ({ personId }) => {
+  const { data } = useOrganigramme();
+  
+  const getPersonSections = () => {
+    const sections: Array<{ title: string; role: string }> = [];
+    
+    const findPersonInSections = (sectionList: any[], parentTitle = '') => {
+      sectionList.forEach(section => {
+        const member = section.members?.find((m: any) => m.id === personId);
+        if (member) {
+          sections.push({
+            title: parentTitle ? `${parentTitle} > ${section.title}` : section.title,
+            role: member.role || 'Membre'
+          });
+        }
+        if (section.subsections) {
+          findPersonInSections(section.subsections, section.title);
+        }
+      });
+    };
+    
+    findPersonInSections(data.sections);
+    return sections;
+  };
+
+  const personSections = getPersonSections();
+
+  if (personSections.length === 0) return null;
+
+  return (
+    <div>
+      <h3 className="font-semibold text-base mb-3 flex items-center gap-2">
+        <Users className="w-4 h-4 text-primary" />
+        Groupes et commissions
+      </h3>
+      <div className="space-y-2">
+        {personSections.map((section, index) => (
+          <div key={index} className="flex flex-col gap-1">
+            <span className="text-sm font-medium text-foreground">{section.title}</span>
+            <Badge variant="outline" className="text-xs w-fit">
+              {section.role}
+            </Badge>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
 
 interface PersonSidebarProps {
   person: Person | null;
@@ -98,85 +149,38 @@ export const PersonSidebar: React.FC<PersonSidebarProps> = ({
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-4 space-y-6">
           
-          {/* Informations de contact */}
-          {(person.email || person.phone || person.adresse) && (
+          {/* 1. Lieu */}
+          {person.adresse && (
             <div>
               <h3 className="font-semibold text-base mb-3 flex items-center gap-2">
-                <Mail className="w-4 h-4 text-primary" />
-                Contact
+                <MapPin className="w-4 h-4 text-primary" />
+                Lieu
               </h3>
-              <div className="space-y-2">
-                {person.email && (
-                  <div className="flex items-center gap-2 text-sm">
-                    <Mail className="w-3 h-3 text-muted-foreground" />
-                    <a href={`mailto:${person.email}`} className="text-primary hover:underline">
-                      {person.email}
-                    </a>
-                  </div>
-                )}
-                {person.phone && (
-                  <div className="flex items-center gap-2 text-sm">
-                    <Phone className="w-3 h-3 text-muted-foreground" />
-                    <span className="text-muted-foreground">{person.phone}</span>
-                  </div>
-                )}
-                {person.adresse && (
-                  <div className="flex items-center gap-2 text-sm">
-                    <MapPin className="w-3 h-3 text-muted-foreground" />
-                    <span className="text-muted-foreground">{person.adresse}</span>
-                  </div>
-                )}
-              </div>
+              <p className="text-muted-foreground text-sm">{person.adresse}</p>
             </div>
           )}
 
-          {/* Spécialité en badge */}
-          {person.specialite && (
-            <div>
-              <Badge variant="outline" className="text-sm">
-                <Star className="w-3 h-3 mr-1" />
-                {person.specialite}
-              </Badge>
-            </div>
-          )}
+          {/* 2. Groupes et commissions */}
+          <PersonSections personId={person.id} />
 
-          {/* Description */}
+          {/* 3. À propos / Mission */}
           {person.description && (
             <div>
               <h3 className="font-semibold text-base mb-3 flex items-center gap-2">
                 <User className="w-4 h-4 text-primary" />
-                À propos
+                À propos / Mission
               </h3>
               <p className="text-muted-foreground leading-relaxed text-sm">{person.description}</p>
             </div>
           )}
 
-          {/* Formation */}
-          {person.formation && (
-            <div>
-              <h3 className="font-semibold text-base mb-3 flex items-center gap-2">
-                <BookOpen className="w-4 h-4 text-primary" />
-                Formation
-              </h3>
-              <p className="text-muted-foreground leading-relaxed text-sm">{person.formation}</p>
-            </div>
-          )}
-
-          {/* Expérience */}
-          {person.experience && (
-            <div>
-              <h3 className="font-semibold text-base mb-3 flex items-center gap-2">
-                <Briefcase className="w-4 h-4 text-primary" />
-                Expérience
-              </h3>
-              <p className="text-muted-foreground leading-relaxed text-sm">{person.experience}</p>
-            </div>
-          )}
-
-          {/* Compétences */}
+          {/* 4. Compétences */}
           {person.competences && person.competences.length > 0 && (
             <div>
-              <h3 className="font-semibold text-base mb-3">Compétences</h3>
+              <h3 className="font-semibold text-base mb-3 flex items-center gap-2">
+                <Star className="w-4 h-4 text-primary" />
+                Compétences
+              </h3>
               <div className="flex flex-wrap gap-2">
                 {person.competences.map((competence, index) => (
                   <Badge key={index} variant="secondary" className="text-xs">
@@ -187,24 +191,7 @@ export const PersonSidebar: React.FC<PersonSidebarProps> = ({
             </div>
           )}
 
-          {/* Langues */}
-          {person.langues && person.langues.length > 0 && (
-            <div>
-              <h3 className="font-semibold text-base mb-3 flex items-center gap-2">
-                <Globe className="w-4 h-4 text-primary" />
-                Langues
-              </h3>
-              <div className="flex flex-wrap gap-2">
-                {person.langues.map((langue, index) => (
-                  <Badge key={index} variant="outline" className="text-xs">
-                    {langue}
-                  </Badge>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Date d'entrée */}
+          {/* 5. Membre depuis */}
           {person.dateEntree && (
             <div>
               <h3 className="font-semibold text-base mb-3 flex items-center gap-2">
@@ -218,70 +205,6 @@ export const PersonSidebar: React.FC<PersonSidebarProps> = ({
                   day: 'numeric'
                 })}
               </p>
-            </div>
-          )}
-
-          {/* Centres d'intérêt */}
-          {person.hobbies && (
-            <div>
-              <h3 className="font-semibold text-base mb-3">Centres d'intérêt</h3>
-              <p className="text-muted-foreground leading-relaxed text-sm">{person.hobbies}</p>
-            </div>
-          )}
-
-          {/* Missions & Responsabilités */}
-          {(person.missionDescription || (person.missions && person.missions.length > 0)) && (
-            <div>
-              <h3 className="font-semibold text-base mb-3 flex items-center gap-2">
-                <MapPin className="w-4 h-4 text-primary" />
-                Missions & Responsabilités
-              </h3>
-              {person.missionDescription && (
-                <p className="text-muted-foreground leading-relaxed text-sm mb-3">
-                  {person.missionDescription}
-                </p>
-              )}
-              {person.missions && person.missions.length > 0 && (
-                <div className="flex flex-wrap gap-2">
-                  {person.missions.map((mission, index) => (
-                    <Badge 
-                      key={index} 
-                      variant="default" 
-                      className="px-2 py-1 text-xs"
-                    >
-                      {mission}
-                    </Badge>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Liens externes */}
-          {person.linkedin && (
-            <div>
-              <h3 className="font-semibold text-base mb-3">Liens externes</h3>
-              <a
-                href={person.linkedin}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-3 py-2 bg-[#0077B5] text-white rounded-lg hover:bg-[#005885] transition-colors text-sm"
-              >
-                <Linkedin className="w-4 h-4" />
-                Voir le profil LinkedIn
-              </a>
-            </div>
-          )}
-
-          {/* Instagram */}
-          {person.instagram && (
-            <div>
-              <h3 className="font-semibold text-base mb-3">Publication Instagram</h3>
-              <div 
-                className="instagram-embed"
-                dangerouslySetInnerHTML={{ __html: person.instagram }}
-              />
-              <script async src="//www.instagram.com/embed.js"></script>
             </div>
           )}
         </div>
