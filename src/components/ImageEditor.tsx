@@ -28,6 +28,7 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({
   const [originalImage, setOriginalImage] = useState<FabricImage | null>(null);
   const [isLoadingImage, setIsLoadingImage] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const MAX_FILE_MB = 5;
   const ACCEPTED_TYPES = ['image/jpeg','image/jpg','image/png','image/webp'];
 
@@ -214,8 +215,11 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({
     const reader = new FileReader();
     reader.onload = async (e) => {
       const imageUrl = e.target?.result as string;
+      setPreviewUrl(imageUrl);
       try {
         await loadImageFromUrl(imageUrl, targetCanvas!);
+        console.log('Canvas objects after load:', targetCanvas!.getObjects().length);
+        setPreviewUrl(null);
       } catch (err) {
         console.error('Load image error', err);
         toast.error("Impossible de charger l'image.");
@@ -380,7 +384,14 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({
               ref={canvasRef}
               className="border border-border rounded-lg shadow-lg bg-background"
             />
-            {!originalImage && (
+            {previewUrl && (
+              <img
+                src={previewUrl}
+                alt="Aperçu"
+                className="absolute inset-4 object-contain max-w-[calc(100%-2rem)] max-h-[calc(100%-2rem)] pointer-events-none rounded-lg"
+              />
+            )}
+            {!originalImage && !previewUrl && (
               <div className="absolute inset-4 flex flex-col items-center justify-center text-center text-muted-foreground pointer-events-none">
                 <Upload className="w-16 h-16 mx-auto mb-4 opacity-50" />
                 <p className="text-lg font-medium mb-2">Aucune image chargée</p>
