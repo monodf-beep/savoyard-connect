@@ -45,10 +45,12 @@ export const VacantPositionsSidebar: React.FC<VacantPositionsSidebarProps> = ({
   return (
     <>
       {/* Overlay */}
-      <div 
-        className="fixed inset-0 bg-black/20 z-40 lg:hidden"
-        onClick={onClose}
-      />
+      {isOpen && (
+        <div 
+          className="fixed inset-0 bg-black/20 z-40 lg:hidden"
+          onClick={onClose}
+        />
+      )}
       
       {/* Sidebar */}
       <div className={`

@@ -30,6 +30,20 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
   const [editingPerson, setEditingPerson] = useState<Person | null>(null);
   const [editingSection, setEditingSection] = useState<Section | null>(null);
 
+  // Listen for custom events to open vacant positions sidebar
+  React.useEffect(() => {
+    const handleOpenVacantPositions = (event: CustomEvent) => {
+      if (!adminMode.isActive) {
+        setIsVacantPositionsSidebarOpen(true);
+      }
+    };
+
+    window.addEventListener('openVacantPositions', handleOpenVacantPositions as EventListener);
+    return () => {
+      window.removeEventListener('openVacantPositions', handleOpenVacantPositions as EventListener);
+    };
+  }, [adminMode.isActive]);
+
   const toggleSection = useCallback(async (sectionId: string) => {
     const findSectionRecursively = (sections: Section[]): Section | null => {
       for (const section of sections) {
@@ -233,7 +247,7 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
 
   return (
     <div className="flex min-h-screen w-full">
-      <div className={`organigramme-container transition-all duration-300 ${isSidebarOpen ? 'mr-96' : ''} flex-1 max-w-6xl mx-auto p-4`}>
+      <div className={`organigramme-container transition-all duration-300 ${isSidebarOpen || isVacantPositionsSidebarOpen ? 'mr-96' : ''} flex-1 max-w-6xl mx-auto p-4`}>
       {/* Header épuré */}
       <div className="mb-6 text-center">
         <div className="flex flex-wrap items-center justify-center gap-2 mb-4">

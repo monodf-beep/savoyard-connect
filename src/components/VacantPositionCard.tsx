@@ -13,6 +13,7 @@ interface VacantPositionCardProps {
   position: VacantPosition;
   isAdmin: boolean;
   onEdit?: (position: VacantPosition) => void;
+  onClick?: (position: VacantPosition) => void;
   compact?: boolean;
 }
 
@@ -20,12 +21,18 @@ export const VacantPositionCard: React.FC<VacantPositionCardProps> = ({
   position, 
   isAdmin, 
   onEdit,
+  onClick,
   compact = false 
 }) => {
+  const handleClick = () => {
+    if (!isAdmin && onClick) {
+      onClick(position);
+    }
+  };
   if (compact) {
     return (
       <div className="relative group">
-        <div className="flex items-center justify-center border-2 border-dashed border-muted-foreground/30 rounded-lg bg-muted/20 hover:border-primary/50 hover:bg-primary/5 transition-colors cursor-pointer h-[44px] px-3">
+        <div className="flex items-center justify-center border-2 border-dashed border-muted-foreground/30 rounded-lg bg-muted/20 hover:border-primary/50 hover:bg-primary/5 transition-colors cursor-pointer h-[44px] px-3" onClick={handleClick}>
           <div className="text-center">
             <UserPlus className="w-4 h-4 mx-auto mb-1 text-muted-foreground" />
             <span className="text-xs text-muted-foreground font-medium truncate whitespace-nowrap">
@@ -52,7 +59,7 @@ export const VacantPositionCard: React.FC<VacantPositionCardProps> = ({
   }
 
   return (
-    <div className="relative group border-2 border-dashed border-muted-foreground/30 rounded-lg p-4 bg-muted/20 hover:border-primary/50 hover:bg-primary/5 transition-colors">
+    <div className="relative group border-2 border-dashed border-muted-foreground/30 rounded-lg p-4 bg-muted/20 hover:border-primary/50 hover:bg-primary/5 transition-colors cursor-pointer" onClick={handleClick}>
       <div className="flex items-start gap-3">
         <div className="p-2 rounded-full bg-muted">
           <UserPlus className="w-4 h-4 text-muted-foreground" />

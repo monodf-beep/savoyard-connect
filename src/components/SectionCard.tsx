@@ -81,6 +81,11 @@ export const SectionCard: React.FC<SectionCardProps> = ({
                     position={position}
                     isAdmin={isAdmin}
                     compact={true}
+                    onClick={!isAdmin ? (pos) => {
+                      // Trigger vacant positions sidebar
+                      const event = new CustomEvent('openVacantPositions', { detail: position });
+                      window.dispatchEvent(event);
+                    } : undefined}
                   />
                 ))}
               </div>
@@ -149,6 +154,11 @@ export const SectionCard: React.FC<SectionCardProps> = ({
                   position={position}
                   isAdmin={isAdmin}
                   compact={true}
+                  onClick={!isAdmin ? (pos) => {
+                    // Trigger vacant positions sidebar
+                    const event = new CustomEvent('openVacantPositions', { detail: position });
+                    window.dispatchEvent(event);
+                  } : undefined}
                 />
               ))}
             </div>
