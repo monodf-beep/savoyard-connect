@@ -28,7 +28,7 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({
   const [originalImage, setOriginalImage] = useState<FabricImage | null>(null);
   const [isLoadingImage, setIsLoadingImage] = useState(false);
   const MAX_FILE_MB = 5;
-  const ACCEPTED_TYPES = ['image/jpeg','image/png','image/webp'];
+  const ACCEPTED_TYPES = ['image/jpeg','image/jpg','image/png','image/webp'];
 
   useEffect(() => {
     if (!canvasRef.current || !isOpen) return;
@@ -62,56 +62,101 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({
     console.log('Loading image from URL:', url);
     if (!url) return;
 
-    // Prefer native Image() to avoid edge cases with util.loadImage and data URLs
-    const img = await new Promise<HTMLImageElement>((resolve, reject) => {
-      const image = new Image();
-      // Only set crossOrigin for non-data URLs
-      if (!url.startsWith('data:')) image.crossOrigin = 'anonymous';
-      image.onload = () => resolve(image);
-      image.onerror = (e) => reject(new Error('Impossible de charger l\'image'));
-      image.src = url;
-    });
+    try {
+      // Try Fabric util first
+      const imgEl = await util.loadImage(url, !url.startsWith('data:') ? { crossOrigin: 'anonymous' } : undefined);
 
-    const fabricImg = new FabricImage(img, {
-      selectable: true,
-      moveable: true,
-      scalable: true,
-    });
+      const fabricImg = new FabricImage(imgEl, {
+        selectable: true,
+        moveable: true,
+        scalable: true,
+      });
 
-    // Scale image to fit canvas while maintaining aspect ratio
-    const canvasWidth = canvas.getWidth();
-    const canvasHeight = canvas.getHeight();
-    const imgWidth = fabricImg.width!;
-    const imgHeight = fabricImg.height!;
+      const canvasWidth = canvas.getWidth();
+      const canvasHeight = canvas.getHeight();
+      const imgWidth = fabricImg.width!;
+      const imgHeight = fabricImg.height!;
 
-    const padding = 20;
-    const availableWidth = canvasWidth - padding * 2;
-    const availableHeight = canvasHeight - padding * 2;
+      const padding = 20;
+      const availableWidth = canvasWidth - padding * 2;
+      const availableHeight = canvasHeight - padding * 2;
 
-    const scaleX = availableWidth / imgWidth;
-    const scaleY = availableHeight / imgHeight;
-    const scale = Math.min(scaleX, scaleY, 1);
+      const scaleX = availableWidth / imgWidth;
+      const scaleY = availableHeight / imgHeight;
+      const scale = Math.min(scaleX, scaleY, 1);
 
-    fabricImg.scale(scale);
+      fabricImg.scale(scale);
 
-    const scaledWidth = imgWidth * scale;
-    const scaledHeight = imgHeight * scale;
-    fabricImg.set({
-      left: (canvasWidth - scaledWidth) / 2,
-      top: (canvasHeight - scaledHeight) / 2,
-      originX: 'left',
-      originY: 'top',
-    });
+      const scaledWidth = imgWidth * scale;
+      const scaledHeight = imgHeight * scale;
+      fabricImg.set({
+        left: (canvasWidth - scaledWidth) / 2,
+        top: (canvasHeight - scaledHeight) / 2,
+        originX: 'left',
+        originY: 'top',
+      });
 
-    // Clear canvas and add image
-    canvas.clear();
-    canvas.backgroundColor = '#ffffff';
-    canvas.add(fabricImg);
-    canvas.setActiveObject(fabricImg);
-    canvas.centerObject(fabricImg);
-    canvas.requestRenderAll();
-    setOriginalImage(fabricImg);
-    toast.success('Image chargée !');
+      canvas.clear();
+      canvas.backgroundColor = '#ffffff';
+      canvas.add(fabricImg);
+      canvas.setActiveObject(fabricImg);
+      canvas.centerObject(fabricImg);
+      canvas.requestRenderAll();
+      setOriginalImage(fabricImg);
+      toast.success('Image chargée !');
+    } catch (e1) {
+      console.warn('Fabric util.loadImage failed, trying native Image()', e1);
+      try {
+        const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+          const image = new Image();
+          if (!url.startsWith('data:')) image.crossOrigin = 'anonymous';
+          image.onload = () => resolve(image);
+          image.onerror = () => reject(new Error("Impossible de charger l'image"));
+          image.src = url;
+        });
+
+        const fabricImg = new FabricImage(img, {
+          selectable: true,
+          moveable: true,
+          scalable: true,
+        });
+
+        const canvasWidth = canvas.getWidth();
+        const canvasHeight = canvas.getHeight();
+        const imgWidth = fabricImg.width!;
+        const imgHeight = fabricImg.height!;
+
+        const padding = 20;
+        const availableWidth = canvasWidth - padding * 2;
+        const availableHeight = canvasHeight - padding * 2;
+
+        const scaleX = availableWidth / imgWidth;
+        const scaleY = availableHeight / imgHeight;
+        const scale = Math.min(scaleX, scaleY, 1);
+        fabricImg.scale(scale);
+
+        const scaledWidth = imgWidth * scale;
+        const scaledHeight = imgHeight * scale;
+        fabricImg.set({
+          left: (canvasWidth - scaledWidth) / 2,
+          top: (canvasHeight - scaledHeight) / 2,
+          originX: 'left',
+          originY: 'top',
+        });
+
+        canvas.clear();
+        canvas.backgroundColor = '#ffffff';
+        canvas.add(fabricImg);
+        canvas.setActiveObject(fabricImg);
+        canvas.centerObject(fabricImg);
+        canvas.requestRenderAll();
+        setOriginalImage(fabricImg);
+        toast.success('Image chargée !');
+      } catch (e2) {
+        console.error('Both loaders failed', e2);
+        toast.error("Impossible de charger l'image. Essayez un autre fichier.");
+      }
+    }
   };
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -151,6 +196,9 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({
       const imageUrl = e.target?.result as string;
       try {
         await loadImageFromUrl(imageUrl, targetCanvas!);
+      } catch (err) {
+        console.error('Load image error', err);
+        toast.error("Impossible de charger l'image.");
       } finally {
         setIsLoadingImage(false);
         if (fileInputRef.current) fileInputRef.current.value = '';
