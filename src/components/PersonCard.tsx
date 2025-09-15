@@ -52,7 +52,12 @@ export const PersonCard: React.FC<PersonCardProps> = ({
         className={compactClass}
       >
         <Avatar className={avatarClass}>
-          <AvatarImage src={person.photo} alt={`${person.firstName} ${person.lastName}`} />
+          <AvatarImage 
+            src={person.photo} 
+            alt={`${person.firstName} ${person.lastName}`}
+            className="object-cover object-center w-full h-full"
+            style={{ imageRendering: 'auto' }}
+          />
           <AvatarFallback className="text-xs bg-primary/10">
             {person.firstName.charAt(0)}
           </AvatarFallback>
@@ -70,9 +75,14 @@ export const PersonCard: React.FC<PersonCardProps> = ({
   return (
     <div className="person-card group" onClick={handleClick}>
       <div className="flex items-center gap-3">
-        <Avatar className="person-avatar">
-          <AvatarImage src={person.photo} alt={`${person.firstName} ${person.lastName}`} />
-          <AvatarFallback className="bg-primary/10 text-foreground font-semibold">
+        <Avatar className="person-avatar w-10 h-10">
+          <AvatarImage 
+            src={person.photo} 
+            alt={`${person.firstName} ${person.lastName}`}
+            className="object-cover object-center w-full h-full"
+            style={{ imageRendering: 'auto' }}
+          />
+          <AvatarFallback className="bg-primary/10 text-foreground font-semibold text-sm">
             {person.firstName.charAt(0)}{person.lastName?.charAt(0) || ''}
           </AvatarFallback>
         </Avatar>
