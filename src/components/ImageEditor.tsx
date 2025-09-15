@@ -103,7 +103,11 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({
       canvas.centerObject(fabricImg);
       canvas.requestRenderAll();
       setOriginalImage(fabricImg);
-      toast.success('Image chargée !');
+      toast.success('Image chargée !', {
+        duration: 3000,
+        dismissible: true,
+        closeButton: true
+      });
     } catch (e1) {
       console.warn('Fabric util.loadImage failed, trying native Image()', e1);
       try {
@@ -151,7 +155,11 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({
         canvas.centerObject(fabricImg);
         canvas.requestRenderAll();
         setOriginalImage(fabricImg);
-        toast.success('Image chargée !');
+        toast.success('Image chargée !', {
+          duration: 3000,
+          dismissible: true,
+          closeButton: true
+        });
       } catch (e2) {
         console.error('Both loaders failed', e2);
         toast.error("Impossible de charger l'image. Essayez un autre fichier.");
@@ -304,7 +312,11 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({
         setOriginalImage(newFabricImg);
         setIsCropMode(false);
         setCropRect(null);
-        toast.success('Image recadrée !');
+        toast.success('Image recadrée !', {
+          duration: 3000,
+          dismissible: true,
+          closeButton: true
+        });
       });
   };
 
@@ -325,7 +337,11 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({
     });
 
     onSave(dataURL);
-    toast.success('Image sauvegardée !');
+    toast.success('Image sauvegardée !', {
+      duration: 3000,
+      dismissible: true,
+      closeButton: true
+    });
   };
 
   if (!isOpen) return null;
