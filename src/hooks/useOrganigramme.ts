@@ -242,6 +242,7 @@ export const useOrganigramme = () => {
   // Mettre à jour l'état d'expansion d'une section
   const updateSectionExpansion = async (sectionId: string, isExpanded: boolean) => {
     try {
+      // Mettre à jour la base de données
       const { error } = await supabase
         .from('sections')
         .update({ is_expanded: isExpanded })
@@ -249,8 +250,23 @@ export const useOrganigramme = () => {
 
       if (error) throw error;
       
-      // Recharger les données pour mettre à jour l'interface
-      await loadData();
+      // Mettre à jour l'état local immédiatement sans recharger toutes les données
+      const updateSectionInState = (sections: Section[]): Section[] => {
+        return sections.map(section => {
+          if (section.id === sectionId) {
+            return { ...section, isExpanded };
+          }
+          if (section.subsections) {
+            return { ...section, subsections: updateSectionInState(section.subsections) };
+          }
+          return section;
+        });
+      };
+
+      setData(prevData => ({
+        ...prevData,
+        sections: updateSectionInState(prevData.sections)
+      }));
     } catch (error) {
       console.error('Erreur lors de la mise à jour:', error);
     }

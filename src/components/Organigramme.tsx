@@ -9,6 +9,7 @@ import { Settings, Eye, ExpandIcon as Expand, ShrinkIcon as Shrink, Plus, UserPl
 import { Badge } from './ui/badge';
 import { useIsWordPressAdmin } from '../utils/wordpress';
 import { useOrganigramme } from '../hooks/useOrganigramme';
+import { supabase } from '../integrations/supabase/client';
 
 interface OrganigrammeProps {
   isAdminMode?: boolean;
@@ -17,7 +18,7 @@ interface OrganigrammeProps {
 export const Organigramme: React.FC<OrganigrammeProps> = ({
   isAdminMode = false
 }) => {
-  const { data, loading, savePerson, deletePerson, saveSection, deleteSection, updateSectionExpansion } = useOrganigramme();
+  const { data, loading, savePerson, deletePerson, saveSection, deleteSection, updateSectionExpansion, refetch } = useOrganigramme();
   const [selectedPerson, setSelectedPerson] = useState<Person | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const isWPAdmin = useIsWordPressAdmin();
@@ -48,32 +49,34 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
   }, [data.sections, updateSectionExpansion]);
 
   const expandAll = useCallback(async () => {
-    const expandSectionRecursively = async (sections: Section[]) => {
-      const promises = sections.map(async (section) => {
-        await updateSectionExpansion(section.id, true);
-        if (section.subsections) {
-          await expandSectionRecursively(section.subsections);
-        }
-      });
-      await Promise.all(promises);
-    };
-    
-    await expandSectionRecursively(data.sections);
-  }, [data.sections, updateSectionExpansion]);
+    try {
+      // Mettre à jour toutes les sections en base de données en une fois
+      await supabase
+        .from('sections')
+        .update({ is_expanded: true })
+        .neq('id', ''); // Condition pour sélectionner toutes les lignes
+
+      // Recharger les données une seule fois
+      await refetch();
+    } catch (error) {
+      console.error('Erreur lors de l\'expansion:', error);
+    }
+  }, [refetch]);
 
   const collapseAll = useCallback(async () => {
-    const collapseSectionRecursively = async (sections: Section[]) => {
-      const promises = sections.map(async (section) => {
-        await updateSectionExpansion(section.id, false);
-        if (section.subsections) {
-          await collapseSectionRecursively(section.subsections);
-        }
-      });
-      await Promise.all(promises);
-    };
-    
-    await collapseSectionRecursively(data.sections);
-  }, [data.sections, updateSectionExpansion]);
+    try {
+      // Mettre à jour toutes les sections en base de données en une fois
+      await supabase
+        .from('sections')
+        .update({ is_expanded: false })
+        .neq('id', ''); // Condition pour sélectionner toutes les lignes
+
+      // Recharger les données une seule fois
+      await refetch();
+    } catch (error) {
+      console.error('Erreur lors de la fermeture:', error);
+    }
+  }, [refetch]);
 
   const handlePersonClick = useCallback((person: Person) => {
     setSelectedPerson(person);
