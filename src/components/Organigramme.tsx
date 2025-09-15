@@ -161,27 +161,53 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
 
   // Fonction pour naviguer vers une section contenant un poste vacant
   const navigateToVacantPosition = useCallback((position: VacantPosition & { sectionTitle: string }) => {
-    // Fermer le sidebar des postes vacants
-    setIsVacantPositionsSidebarOpen(false);
+    // Ne pas fermer le sidebar, garder le panneau ouvert
     
-    // Attendre que le sidebar se ferme avant de naviguer
-    setTimeout(() => {
-      const sectionElement = document.getElementById(`section-${position.sectionId}`);
-      if (sectionElement) {
-        // Faire défiler jusqu'à la section
-        sectionElement.scrollIntoView({ 
-          behavior: 'smooth', 
-          block: 'center' 
-        });
-        
-        // Ajouter un effet flash
-        sectionElement.classList.add('flash-highlight');
-        setTimeout(() => {
-          sectionElement.classList.remove('flash-highlight');
-        }, 2000);
-      }
-    }, 300);
-  }, []);
+    // Expandre d'abord toutes les sections parentes si nécessaire
+    const expandParentSections = async (sectionId: string) => {
+      const findAndExpandParents = (sections: Section[], targetId: string, parentId?: string): boolean => {
+        for (const section of sections) {
+          if (section.id === targetId) {
+            if (parentId) {
+              // Si on a trouvé la section cible, s'assurer que son parent est étendu
+              updateSectionExpansion(parentId, true);
+            }
+            // S'assurer que la section elle-même est étendue
+            updateSectionExpansion(targetId, true);
+            return true;
+          }
+          if (section.subsections && findAndExpandParents(section.subsections, targetId, section.id)) {
+            // Si trouvé dans une sous-section, étendre cette section aussi
+            updateSectionExpansion(section.id, true);
+            return true;
+          }
+        }
+        return false;
+      };
+      
+      findAndExpandParents(data.sections, sectionId);
+    };
+    
+    // Attendre l'expansion puis naviguer
+    expandParentSections(position.sectionId).then(() => {
+      setTimeout(() => {
+        const sectionElement = document.getElementById(`section-${position.sectionId}`);
+        if (sectionElement) {
+          // Faire défiler jusqu'à la section
+          sectionElement.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'center' 
+          });
+          
+          // Ajouter un effet flash
+          sectionElement.classList.add('flash-highlight');
+          setTimeout(() => {
+            sectionElement.classList.remove('flash-highlight');
+          }, 2000);
+        }
+      }, 300);
+    });
+  }, [data.sections, updateSectionExpansion]);
 
   // Gérer l'ouverture du sidebar des postes vacants
   const handleVacantPositionsClick = useCallback(() => {
