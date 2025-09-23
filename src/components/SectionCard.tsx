@@ -27,6 +27,19 @@ export const SectionCard: React.FC<SectionCardProps> = ({
     onToggle(section.id);
   };
 
+  // Fonction pour calculer le nombre total de membres (incluant les sous-sections)
+  const getTotalMemberCount = (section: Section): number => {
+    let count = section.members.length;
+    if (section.subsections) {
+      section.subsections.forEach(subsection => {
+        count += getTotalMemberCount(subsection);
+      });
+    }
+    return count;
+  };
+
+  const totalMemberCount = getTotalMemberCount(section);
+
   const hasContent = section.members.length > 0 || (section.subsections && section.subsections.length > 0) || (section.vacantPositions && section.vacantPositions.length > 0);
   const isMainSection = level === 0;
   const marginLeft = level * 20;
@@ -56,7 +69,7 @@ export const SectionCard: React.FC<SectionCardProps> = ({
                   )}
                 </div>
                 <span className="text-sm text-muted-foreground ml-4">
-                  {section.members.length} membre{section.members.length > 1 ? 's' : ''}
+                  {totalMemberCount} membre{totalMemberCount > 1 ? 's' : ''}
                 </span>
               </div>
             </div>
@@ -136,7 +149,7 @@ export const SectionCard: React.FC<SectionCardProps> = ({
           )}
         </div>
         <span className="text-xs text-muted-foreground">
-          {section.members.length}
+          {totalMemberCount}
         </span>
       </div>
 
