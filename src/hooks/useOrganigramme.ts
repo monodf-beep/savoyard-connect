@@ -27,9 +27,9 @@ export const useOrganigramme = () => {
       
       if (sectionsError) throw sectionsError;
 
-      // Charger les personnes
+      // Charger les personnes (utilise la vue publique pour la sécurité)
       const { data: peopleData, error: peopleError } = await supabase
-        .from('people')
+        .from('people_public')
         .select('*')
         .order('created_at');
       
@@ -74,17 +74,18 @@ export const useOrganigramme = () => {
                 role: sm.role || person.title || '',
                 description: person.bio || '',
                 sectionId: section.id,
-                email: person.email || '',
-                phone: person.phone || '',
+                // Sensitive fields hidden for security (use get_people_detailed() for authenticated access)
+                email: '',
+                phone: '',
                 linkedin: person.linkedin || '',
-                formation: person.formation || '',
-                experience: person.experience || '',
-                competences: person.competences || [],
-                dateEntree: person.date_entree || '',
-                adresse: person.adresse || '',
-                specialite: person.specialite || '',
-                langues: person.langues || [],
-                hobbies: person.hobbies || ''
+                formation: '',
+                experience: '',
+                competences: [],
+                dateEntree: '',
+                adresse: '',
+                specialite: '',
+                langues: [],
+                hobbies: ''
               } : null;
             }).filter(Boolean);
 
@@ -114,17 +115,18 @@ export const useOrganigramme = () => {
         photo: person.avatar_url || '',
         role: person.title || '',
         description: person.bio || '',
-        email: person.email || '',
-        phone: person.phone || '',
+        // Sensitive fields hidden for security (use get_people_detailed() for authenticated access)
+        email: '',
+        phone: '',
         linkedin: person.linkedin || '',
-        formation: person.formation || '',
-        experience: person.experience || '',
-        competences: person.competences || [],
-        dateEntree: person.date_entree || '',
-        adresse: person.adresse || '',
-        specialite: person.specialite || '',
-        langues: person.langues || [],
-        hobbies: person.hobbies || ''
+        formation: '',
+        experience: '',
+        competences: [],
+        dateEntree: '',
+        adresse: '',
+        specialite: '',
+        langues: [],
+        hobbies: ''
       })) || [];
       const formattedJobs = jobsData?.map(job => ({
         id: job.id,
