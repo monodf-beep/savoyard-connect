@@ -394,20 +394,40 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({
   };
 
   const saveImage = () => {
-    if (!fabricCanvas) return;
+    if (!fabricCanvas) {
+      toast.error('Erreur lors de la sauvegarde: Canvas non initialisé', {
+        duration: 4000,
+        dismissible: true,
+        closeButton: true
+      });
+      return;
+    }
 
-    const dataURL = fabricCanvas.toDataURL({
-      format: 'png',
-      quality: 0.9,
-      multiplier: 1,
-    });
+    try {
+      const dataURL = fabricCanvas.toDataURL({
+        format: 'png',
+        quality: 0.9,
+        multiplier: 1,
+      });
 
-    onSave(dataURL);
-    toast.success('Image sauvegardée !', {
-      duration: 3000,
-      dismissible: true,
-      closeButton: true
-    });
+      if (!dataURL || dataURL === 'data:,') {
+        throw new Error('Impossible de générer l\'image');
+      }
+
+      onSave(dataURL);
+      toast.success('Image sauvegardée !', {
+        duration: 3000,
+        dismissible: true,
+        closeButton: true
+      });
+    } catch (error) {
+      console.error('Error saving image:', error);
+      toast.error('Erreur lors de la sauvegarde', {
+        duration: 4000,
+        dismissible: true,
+        closeButton: true
+      });
+    }
   };
 
   if (!isOpen) return null;
