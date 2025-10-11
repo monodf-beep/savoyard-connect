@@ -66,6 +66,7 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({
     if (!url) return;
 
     setLoadError(null);
+    setIsLoadingImage(true);
 
     try {
       // Try Fabric util first
@@ -107,6 +108,7 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({
       setOriginalImage(fabricImg);
       addPreviewCircle(canvas);
       setPreviewUrl(null);
+      setIsLoadingImage(false);
       toast.success('Image chargée !', {
         duration: 3000,
         dismissible: true,
@@ -159,12 +161,14 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({
         setOriginalImage(fabricImg);
         addPreviewCircle(canvas);
         setPreviewUrl(null);
+        setIsLoadingImage(false);
         toast.success('Image chargée !', {
           duration: 3000,
           dismissible: true,
           closeButton: true
         });
       } catch (e2) {
+        setIsLoadingImage(false);
         console.error('Both loaders failed', e2);
         const isExternal = /^https?:/i.test(url);
         if (isExternal) {
@@ -256,15 +260,14 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({
     const reader = new FileReader();
     reader.onload = async (e) => {
       const imageUrl = e.target?.result as string;
-      setPreviewUrl(imageUrl);
       try {
         await loadImageFromUrl(imageUrl, targetCanvas!);
         console.log('Canvas objects after load:', targetCanvas!.getObjects().length);
       } catch (err) {
         console.error('Load image error', err);
         toast.error("Impossible de charger l'image.");
-      } finally {
         setIsLoadingImage(false);
+      } finally {
         if (fileInputRef.current) fileInputRef.current.value = '';
       }
     };
@@ -456,14 +459,7 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({
               height={400}
               className="border border-border rounded-lg shadow-lg bg-background"
             />
-            {previewUrl && (
-              <img
-                src={previewUrl}
-                alt="Aperçu"
-                className="absolute inset-4 object-contain max-w-[calc(100%-2rem)] max-h-[calc(100%-2rem)] pointer-events-none rounded-lg"
-              />
-            )}
-            {!originalImage && !previewUrl && (
+            {!originalImage && !isLoadingImage && (
               <div className="absolute inset-4 flex flex-col items-center justify-center text-center text-muted-foreground pointer-events-none">
                 <Upload className="w-16 h-16 mx-auto mb-4 opacity-50" />
                 <p className="text-lg font-medium mb-2">Aucune image chargée</p>
