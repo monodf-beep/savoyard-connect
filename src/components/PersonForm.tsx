@@ -428,7 +428,7 @@ export const PersonForm: React.FC<PersonFormProps> = ({
                 Annuler
               </Button>
               <Button type="submit">
-                {person ? 'Modifier' : 'Ajouter'}
+                {person ? 'Sauvegarder' : 'Créer'}
               </Button>
             </div>
           </div>

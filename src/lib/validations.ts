@@ -48,8 +48,12 @@ export const personSchema = z.object({
   
   photo: z.string()
     .trim()
-    .max(2000, { message: "L'URL de la photo ne peut pas dépasser 2000 caractères" })
     .optional()
+    .or(z.literal(''))
+    .refine(
+      (v) => !v || v.length <= 2000 || /^data:image\/(png|jpe?g|webp);base64,/i.test(v),
+      { message: "La photo doit être une URL courte ou une image en base64 (acceptée)." }
+    ),
 });
 
 // Section validation schema
