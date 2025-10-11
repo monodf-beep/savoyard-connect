@@ -99,6 +99,9 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({
         scaleY: scale,
         selectable: true,
         objectCaching: false,
+        opacity: 1,
+        visible: true,
+        angle: 0,
       });
 
       // Reset viewport and zoom to avoid invisible content
@@ -109,9 +112,12 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({
       canvas.backgroundColor = '#ffffff';
       canvas.add(fabricImg);
       canvas.setActiveObject(fabricImg);
+      fabricImg.setCoords();
       canvas.centerObject(fabricImg);
       canvas.requestRenderAll();
+      setTimeout(() => canvas.renderAll(), 0);
       console.log('Image bounding rect:', fabricImg.getBoundingRect());
+      console.log('Image visible?', fabricImg.visible, 'opacity', fabricImg.opacity);
 
       setOriginalImage(fabricImg);
       addPreviewCircle(canvas);
