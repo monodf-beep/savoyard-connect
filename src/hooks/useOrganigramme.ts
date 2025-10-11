@@ -27,10 +27,10 @@ export const useOrganigramme = () => {
       
       if (sectionsError) throw sectionsError;
 
-      // Charger les personnes (utilise la vue publique pour la sécurité)
+      // Charger les personnes (sélectionner uniquement les champs publics)
       const { data: peopleData, error: peopleError } = await supabase
-        .from('people_public')
-        .select('*')
+        .from('people')
+        .select('id, first_name, last_name, title, bio, avatar_url, linkedin, created_at, updated_at')
         .order('created_at');
       
       if (peopleError) throw peopleError;

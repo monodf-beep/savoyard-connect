@@ -150,13 +150,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "section_members_person_id_fkey"
-            columns: ["person_id"]
-            isOneToOne: false
-            referencedRelation: "people_public"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "section_members_section_id_fkey"
             columns: ["section_id"]
             isOneToOne: false
@@ -264,42 +257,7 @@ export type Database = {
       }
     }
     Views: {
-      people_public: {
-        Row: {
-          avatar_url: string | null
-          bio: string | null
-          created_at: string | null
-          first_name: string | null
-          id: string | null
-          last_name: string | null
-          linkedin: string | null
-          title: string | null
-          updated_at: string | null
-        }
-        Insert: {
-          avatar_url?: string | null
-          bio?: string | null
-          created_at?: string | null
-          first_name?: string | null
-          id?: string | null
-          last_name?: string | null
-          linkedin?: string | null
-          title?: string | null
-          updated_at?: string | null
-        }
-        Update: {
-          avatar_url?: string | null
-          bio?: string | null
-          created_at?: string | null
-          first_name?: string | null
-          id?: string | null
-          last_name?: string | null
-          linkedin?: string | null
-          title?: string | null
-          updated_at?: string | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Functions: {
       get_people_detailed: {
