@@ -7,6 +7,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { X, UserPlus, ExternalLink } from 'lucide-react';
 import { useOrganigramme } from '../hooks/useOrganigramme';
 import { Section } from '../types/organigramme';
+import { vacantPositionSchema } from '../lib/validations';
+import { toast } from 'sonner';
 
 interface VacantPosition {
   id: string;
@@ -74,7 +76,17 @@ export const VacantPositionForm: React.FC<VacantPositionFormProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.title.trim() || !formData.sectionId) {
+    // Validate form data
+    try {
+      vacantPositionSchema.parse({
+        title: formData.title,
+        description: formData.description,
+        sectionId: formData.sectionId,
+        externalLink: formData.externalLink
+      });
+    } catch (error: any) {
+      const firstError = error.errors?.[0];
+      toast.error(firstError?.message || 'Erreur de validation');
       return;
     }
 
@@ -88,6 +100,7 @@ export const VacantPositionForm: React.FC<VacantPositionFormProps> = ({
       onClose();
     } catch (error) {
       console.error('Erreur lors de la sauvegarde:', error);
+      toast.error('Erreur lors de la sauvegarde');
     }
   };
 

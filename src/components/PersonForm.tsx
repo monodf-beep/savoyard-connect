@@ -9,6 +9,8 @@ import { X, Plus, Trash2, ImageIcon } from 'lucide-react';
 import { Badge } from './ui/badge';
 import { ImageEditor } from './ImageEditor';
 import { useOrganigramme } from '../hooks/useOrganigramme';
+import { personSchema } from '../lib/validations';
+import { toast } from 'sonner';
 
 interface PersonFormProps {
   person?: Person | null;
@@ -132,7 +134,25 @@ export const PersonForm: React.FC<PersonFormProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.firstName) return;
+    
+    // Validate form data
+    try {
+      personSchema.parse({
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.email,
+        phone: formData.phone,
+        role: formData.role,
+        description: formData.description,
+        linkedin: formData.linkedin,
+        adresse: formData.adresse,
+        photo: formData.photo
+      });
+    } catch (error: any) {
+      const firstError = error.errors?.[0];
+      toast.error(firstError?.message || 'Erreur de validation');
+      return;
+    }
 
     const personData: Person = {
       id: formData.id || crypto.randomUUID(),

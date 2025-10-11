@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { Person, Section, AdminMode, VacantPosition } from '../types/organigramme';
+import { Person, Section, VacantPosition } from '../types/organigramme';
 import { SectionCard } from './SectionCard';
 import { PersonSidebar } from './PersonSidebar';
 import { VacantPositionsSidebar } from './VacantPositionsSidebar';
@@ -7,11 +7,11 @@ import { PersonForm } from './PersonForm';
 import { SectionForm } from './SectionForm';
 import { VacantPositionForm } from './VacantPositionForm';
 import { Button } from './ui/button';
-import { Settings, Eye, ExpandIcon as Expand, ShrinkIcon as Shrink, Plus, UserPlus, FolderPlus } from 'lucide-react';
-import { Badge } from './ui/badge';
-import { useIsWordPressAdmin } from '../utils/wordpress';
+import { Settings, Eye, ExpandIcon as Expand, ShrinkIcon as Shrink, UserPlus, FolderPlus, LogIn, LogOut } from 'lucide-react';
 import { useOrganigramme } from '../hooks/useOrganigramme';
 import { supabase } from '../integrations/supabase/client';
+import { useAuth } from '../hooks/useAuth';
+import { useNavigate } from 'react-router-dom';
 
 interface OrganigrammeProps {
   isAdminMode?: boolean;
@@ -20,12 +20,12 @@ interface OrganigrammeProps {
 export const Organigramme: React.FC<OrganigrammeProps> = ({
   isAdminMode = false
 }) => {
+  const navigate = useNavigate();
+  const { user, isAdmin, loading: authLoading, signOut } = useAuth();
   const { data, loading, savePerson, deletePerson, saveSection, deleteSection, updateSectionExpansion, saveVacantPosition, updateVacantPosition, deleteVacantPosition, refetch } = useOrganigramme();
   const [selectedPerson, setSelectedPerson] = useState<Person | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isVacantPositionsSidebarOpen, setIsVacantPositionsSidebarOpen] = useState(false);
-  const isWPAdmin = useIsWordPressAdmin();
-  const [adminMode, setAdminMode] = useState<AdminMode>({ isActive: isAdminMode });
   const [isPersonFormOpen, setIsPersonFormOpen] = useState(false);
   const [isSectionFormOpen, setIsSectionFormOpen] = useState(false);
   const [editingPerson, setEditingPerson] = useState<Person | null>(null);
@@ -36,7 +36,7 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
   // Listen for custom events to open vacant positions sidebar
   React.useEffect(() => {
     const handleOpenVacantPositions = (event: CustomEvent) => {
-      if (!adminMode.isActive) {
+      if (!isAdmin) {
         // Fermer le panneau des personnes et ouvrir celui des postes vacants
         setIsSidebarOpen(false);
         setSelectedPerson(null);
@@ -48,7 +48,7 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
     return () => {
       window.removeEventListener('openVacantPositions', handleOpenVacantPositions as EventListener);
     };
-  }, [adminMode.isActive]);
+  }, [isAdmin]);
 
   const toggleSection = useCallback(async (sectionId: string) => {
     const findSectionRecursively = (sections: Section[]): Section | null => {
@@ -220,7 +220,7 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
 
   // Gérer l'ouverture du sidebar des postes vacants
   const handleVacantPositionsClick = useCallback(() => {
-    if (adminMode.isActive) {
+    if (isAdmin) {
       // En mode admin, aller vers la page jobs
       window.location.href = '/jobs';
     } else {
@@ -229,7 +229,7 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
       setSelectedPerson(null);
       setIsVacantPositionsSidebarOpen(true);
     }
-  }, [adminMode.isActive]);
+  }, [isAdmin]);
 
   const handleAddSection = useCallback(() => {
     setEditingSection(null);
@@ -291,9 +291,13 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
     }
   }, [deleteVacantPosition]);
 
-  const toggleAdminMode = useCallback(() => {
-    setAdminMode(prev => ({ ...prev, isActive: !prev.isActive }));
-  }, []);
+  const handleAuthAction = useCallback(async () => {
+    if (user) {
+      await signOut();
+    } else {
+      navigate('/auth');
+    }
+  }, [user, signOut, navigate]);
 
   // Compter les membres uniques à travers toutes les sections
   const getAllMembers = (sections: Section[]): Person[] => {
@@ -320,12 +324,12 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
   
   const totalMembers = getAllMembers(data.sections).length;
 
-  if (loading) {
+  if (loading || authLoading) {
     return (
       <div className="flex min-h-screen w-full items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Chargement de l'organigramme...</p>
+          <p className="text-muted-foreground">Chargement...</p>
         </div>
       </div>
     );
@@ -351,7 +355,7 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
             className="text-xs"
           >
             <UserPlus className="w-3 h-3 mr-1" />
-            {adminMode.isActive ? 'Postes vacants' : `${getAllVacantPositions().length} postes vacants`}
+            {isAdmin ? 'Postes vacants' : `${getAllVacantPositions().length} postes vacants`}
           </Button>
         </div>
 
@@ -379,7 +383,7 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
             Tout replier
           </Button>
 
-          {adminMode.isActive && (
+          {isAdmin && (
             <>
               <Button
                 onClick={handleAddPerson}
@@ -411,29 +415,29 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
             </>
           )}
 
-          {/* Bouton Admin */}
+          {/* Auth Button */}
           <Button
-            onClick={toggleAdminMode}
-            variant={adminMode.isActive ? "default" : "outline"}
+            onClick={handleAuthAction}
+            variant={user ? "default" : "outline"}
             size="sm"
             className="ml-1"
           >
-            {adminMode.isActive ? (
+            {user ? (
               <>
-                <Eye className="w-3 h-3 mr-1" />
-                Visiteur
+                <LogOut className="w-3 h-3 mr-1" />
+                Déconnexion
               </>
             ) : (
               <>
-                <Settings className="w-3 h-3 mr-1" />
-                Admin
+                <LogIn className="w-3 h-3 mr-1" />
+                Connexion
               </>
             )}
           </Button>
         </div>
       </div>
 
-      {adminMode.isActive && (
+      {isAdmin && (
         <div className="mb-4 p-3 bg-accent/10 border border-accent/20 rounded-md">
           <div className="flex items-center gap-2 text-sm">
             <Settings className="w-3 h-3 text-accent" />
@@ -451,7 +455,7 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
             section={section}
             onToggle={toggleSection}
             onPersonClick={handlePersonClick}
-            isAdmin={adminMode.isActive}
+            isAdmin={isAdmin}
             onEditPerson={handleEditPerson}
             onEditVacantPosition={handleEditVacantPosition}
           />
@@ -465,7 +469,7 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
         person={selectedPerson}
         isOpen={isSidebarOpen}
         onClose={handleCloseSidebar}
-        isAdmin={adminMode.isActive}
+        isAdmin={isAdmin}
         onEdit={handleEditPerson}
       />
 

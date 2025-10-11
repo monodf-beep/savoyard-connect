@@ -8,6 +8,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Switch } from './ui/switch';
 import { X, Plus, Trash2 } from 'lucide-react';
 import { Badge } from './ui/badge';
+import { jobPostingSchema } from '../lib/validations';
+import { toast } from 'sonner';
 
 interface JobPostingFormProps {
   jobPosting?: JobPosting | null;
@@ -41,7 +43,22 @@ export const JobPostingForm: React.FC<JobPostingFormProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.title || !formData.department || !formData.applicationUrl) return;
+    
+    // Validate form data
+    try {
+      jobPostingSchema.parse({
+        title: formData.title,
+        department: formData.department,
+        description: formData.description,
+        location: formData.location,
+        applicationUrl: formData.applicationUrl,
+        type: formData.type
+      });
+    } catch (error: any) {
+      const firstError = error.errors?.[0];
+      toast.error(firstError?.message || 'Erreur de validation');
+      return;
+    }
 
     const jobPostingData: JobPosting = {
       id: formData.id || formData.title.toLowerCase().replace(/\s+/g, '-'),

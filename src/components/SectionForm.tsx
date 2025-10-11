@@ -5,6 +5,8 @@ import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { X, Trash2 } from 'lucide-react';
+import { sectionSchema } from '../lib/validations';
+import { toast } from 'sonner';
 
 interface SectionFormProps {
   section?: Section | null;
@@ -30,7 +32,18 @@ export const SectionForm: React.FC<SectionFormProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.title) return;
+    
+    // Validate form data
+    try {
+      sectionSchema.parse({
+        title: formData.title,
+        type: formData.type
+      });
+    } catch (error: any) {
+      const firstError = error.errors?.[0];
+      toast.error(firstError?.message || 'Erreur de validation');
+      return;
+    }
 
     const sectionData = {
       ...formData,
