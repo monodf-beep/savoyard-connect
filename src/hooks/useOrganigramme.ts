@@ -58,6 +58,13 @@ export const useOrganigramme = () => {
       
       if (vacantPositionsError) throw vacantPositionsError;
 
+      // Construire une map des personnes par ID (plus robuste)
+      const peopleMap = new Map<string, any>(
+        (peopleData || [])
+          .filter((p: any) => p && p.id)
+          .map((p: any) => [String(p.id), p])
+      );
+
       // Construire la hiérarchie des sections
       const buildSectionHierarchy = (sections: any[], parentId: string | null = null): Section[] => {
         return sections
@@ -65,9 +72,9 @@ export const useOrganigramme = () => {
           .map(section => {
             const sectionMembers = sectionMembersData?.filter(sm => sm.section_id === section.id) || [];
             const members = sectionMembers.map(sm => {
-              const person = peopleData?.find(p => p.id === sm.person_id);
+              const person = peopleMap.get(String(sm.person_id));
               return person ? {
-                id: person.id,
+                id: String(person.id),
                 firstName: person.first_name,
                 lastName: person.last_name,
                 photo: person.avatar_url || '',
@@ -87,7 +94,7 @@ export const useOrganigramme = () => {
                 langues: [],
                 hobbies: ''
               } : null;
-            }).filter(Boolean);
+            }).filter(Boolean) as Person[];
 
             return {
               id: section.id,
