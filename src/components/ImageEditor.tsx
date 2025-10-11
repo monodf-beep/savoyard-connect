@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Canvas as FabricCanvas, FabricImage, Rect, util, Circle as FabricCircle, Point } from 'fabric';
+import { Canvas as FabricCanvas, Image as FabricImage, Rect, util, Circle as FabricCircle, Point } from 'fabric';
 import { Button } from './ui/button';
 import { Label } from './ui/label';
 import { Slider } from './ui/slider';
@@ -69,19 +69,15 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({
     setIsLoadingImage(true);
 
     try {
-      // Try Fabric util first
-      const imgEl = await util.loadImage(url, !url.startsWith('data:') ? { crossOrigin: 'anonymous' } : undefined);
-
-      const fabricImg = new FabricImage(imgEl, {
-        selectable: true,
-        moveable: true,
-        scalable: true,
+      // Try Fabric Image.fromURL first (v6 API)
+      const fabricImg = await FabricImage.fromURL(url, {
+        crossOrigin: !url.startsWith('data:') ? 'anonymous' : undefined,
       });
 
       const canvasWidth = canvas.getWidth();
       const canvasHeight = canvas.getHeight();
-      const intrinsicW = (imgEl as HTMLImageElement).naturalWidth || (imgEl as HTMLImageElement).width || 1;
-      const intrinsicH = (imgEl as HTMLImageElement).naturalHeight || (imgEl as HTMLImageElement).height || 1;
+      const intrinsicW = fabricImg.width || 1;
+      const intrinsicH = fabricImg.height || 1;
 
       const padding = 20;
       const availableWidth = canvasWidth - padding * 2;
@@ -91,13 +87,19 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({
       const scaleY = availableHeight / intrinsicH;
       const scale = Math.min(scaleX, scaleY, 1);
 
-      fabricImg.scale(scale);
       fabricImg.set({
-        left: canvasWidth / 2,
-        top: canvasHeight / 2,
         originX: 'center',
         originY: 'center',
+        left: canvasWidth / 2,
+        top: canvasHeight / 2,
+        scaleX: scale,
+        scaleY: scale,
+        selectable: true,
       });
+
+      // Reset viewport and zoom to avoid invisible content
+      canvas.setViewportTransform([1, 0, 0, 1, 0, 0]);
+      setZoom([1]);
 
       canvas.clear();
       canvas.backgroundColor = '#ffffff';
@@ -105,6 +107,8 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({
       canvas.setActiveObject(fabricImg);
       canvas.centerObject(fabricImg);
       canvas.requestRenderAll();
+      console.log('Image bounding rect:', fabricImg.getBoundingRect());
+
       setOriginalImage(fabricImg);
       addPreviewCircle(canvas);
       setPreviewUrl(null);
