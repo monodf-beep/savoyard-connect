@@ -150,13 +150,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "section_members_person_id_fkey"
-            columns: ["person_id"]
-            isOneToOne: false
-            referencedRelation: "people_public"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "section_members_section_id_fkey"
             columns: ["section_id"]
             isOneToOne: false
@@ -276,28 +269,6 @@ export type Database = {
           title: string | null
           updated_at: string | null
         }
-        Insert: {
-          avatar_url?: string | null
-          bio?: string | null
-          created_at?: string | null
-          first_name?: string | null
-          id?: string | null
-          last_name?: string | null
-          linkedin?: string | null
-          title?: string | null
-          updated_at?: string | null
-        }
-        Update: {
-          avatar_url?: string | null
-          bio?: string | null
-          created_at?: string | null
-          first_name?: string | null
-          id?: string | null
-          last_name?: string | null
-          linkedin?: string | null
-          title?: string | null
-          updated_at?: string | null
-        }
         Relationships: []
       }
     }
@@ -332,6 +303,20 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      people_public_fn: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          avatar_url: string
+          bio: string
+          created_at: string
+          first_name: string
+          id: string
+          last_name: string
+          linkedin: string
+          title: string
+          updated_at: string
+        }[]
       }
     }
     Enums: {
