@@ -11,6 +11,9 @@ import { ImageEditor } from './ImageEditor';
 import { useOrganigramme } from '../hooks/useOrganigramme';
 import { personSchema } from '../lib/validations';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
+import { z } from 'zod';
+import { useAuth } from '../hooks/useAuth';
 
 interface PersonFormProps {
   person?: Person | null;
@@ -56,6 +59,7 @@ export const PersonForm: React.FC<PersonFormProps> = ({
   const [newLangue, setNewLangue] = useState('');
   const [isImageEditorOpen, setIsImageEditorOpen] = useState(false);
   const { data } = useOrganigramme();
+  const { isAdmin } = useAuth();
 
   // Mettre à jour le formulaire quand les données de la personne changent
   useEffect(() => {
@@ -208,6 +212,30 @@ export const PersonForm: React.FC<PersonFormProps> = ({
     }));
   };
 
+  const sendInvite = async () => {
+    const email = (formData.email || '').trim();
+    const emailSchema = z.string().email();
+    if (!emailSchema.safeParse(email).success) {
+      toast.error('Email invalide');
+      return;
+    }
+    try {
+      const { error } = await supabase.functions.invoke('send-invite', {
+        body: { email, baseUrl: window.location.origin },
+      });
+      if (error) throw error;
+      toast.success("Invitation envoyée");
+    } catch (e) {
+      console.error(e);
+      toast.error("Échec de l'envoi de l'invitation");
+    }
+  };
+    setFormData(prev => ({
+      ...prev,
+      competences: prev.competences?.filter((_, i) => i !== index) || []
+    }));
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -297,9 +325,9 @@ export const PersonForm: React.FC<PersonFormProps> = ({
               placeholder="Ville, département..."
             />
           </div>
-
-          {/* Contact */}
-          <div className="grid grid-cols-2 gap-4">
+ 
+           {/* Contact */}
+           <div className="grid grid-cols-2 gap-4">
             <div>
               <Label htmlFor="email">Email</Label>
               <Input
@@ -321,8 +349,16 @@ export const PersonForm: React.FC<PersonFormProps> = ({
             </div>
           </div>
 
-          <div>
-            <Label htmlFor="linkedin">LinkedIn</Label>
+          {isAdmin && (
+            <div className="mt-2">
+              <Button type="button" variant="outline" onClick={sendInvite} disabled={!formData.email}>
+                Envoyer une invitation à compléter son profil
+              </Button>
+            </div>
+          )}
+ 
+           <div>
+             <Label htmlFor="linkedin">LinkedIn</Label>
             <Input
               id="linkedin"
               value={formData.linkedin}

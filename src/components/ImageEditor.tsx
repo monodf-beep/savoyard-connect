@@ -51,9 +51,6 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({
     console.log('Canvas created:', canvas);
     setFabricCanvas(canvas);
 
-    // Mark first render when Fabric has drawn something
-    const onAfterRender = () => setHasRendered(true);
-    canvas.on('after:render', onAfterRender);
 
     // Load initial image if provided
     if (initialImageUrl) {
@@ -67,7 +64,7 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({
 
     return () => {
       console.log('Disposing canvas');
-      canvas.off('after:render', onAfterRender);
+      
       canvas.dispose();
     };
   }, [isOpen, initialImageUrl]);
@@ -186,6 +183,7 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({
         addPreviewCircle(canvas);
         setPreviewUrl(null);
         setIsLoadingImage(false);
+        setHasRendered(true);
         toast.success('Image chargée !', {
           duration: 3000,
           dismissible: true,
