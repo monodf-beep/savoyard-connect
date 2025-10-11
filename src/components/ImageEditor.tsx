@@ -41,7 +41,10 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({
     const canvas = new FabricCanvas(canvasRef.current, {
       width: 600,
       height: 400,
-      backgroundColor: '#f8f9fa',
+      backgroundColor: '#ffffff',
+      enableRetinaScaling: false,
+      renderOnAddRemove: true,
+      selection: true,
     });
 
     console.log('Canvas created:', canvas);
@@ -95,6 +98,7 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({
         scaleX: scale,
         scaleY: scale,
         selectable: true,
+        objectCaching: false,
       });
 
       // Reset viewport and zoom to avoid invisible content
@@ -251,7 +255,10 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({
       targetCanvas = new FabricCanvas(canvasRef.current, {
         width: 600,
         height: 400,
-        backgroundColor: '#f8f9fa',
+        backgroundColor: '#ffffff',
+        enableRetinaScaling: false,
+        renderOnAddRemove: true,
+        selection: true,
       });
       setFabricCanvas(targetCanvas);
     }
