@@ -30,6 +30,7 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({
   const [loadError, setLoadError] = useState<string | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [previewCircle, setPreviewCircle] = useState<any>(null);
+  const [hasRendered, setHasRendered] = useState(false);
   const MAX_FILE_MB = 5;
   const ACCEPTED_TYPES = ['image/jpeg','image/jpg','image/png','image/webp'];
 
@@ -50,9 +51,15 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({
     console.log('Canvas created:', canvas);
     setFabricCanvas(canvas);
 
+    // Mark first render when Fabric has drawn something
+    const onAfterRender = () => setHasRendered(true);
+    canvas.on('after:render', onAfterRender);
+
     // Load initial image if provided
     if (initialImageUrl) {
       console.log('Loading initial image:', initialImageUrl);
+      setHasRendered(false);
+      setPreviewUrl(initialImageUrl);
       loadImageFromUrl(initialImageUrl, canvas);
     } else {
       console.log('No initial image URL provided');
@@ -60,6 +67,7 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({
 
     return () => {
       console.log('Disposing canvas');
+      canvas.off('after:render', onAfterRender);
       canvas.dispose();
     };
   }, [isOpen, initialImageUrl]);
@@ -70,6 +78,8 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({
 
     setLoadError(null);
     setIsLoadingImage(true);
+    setHasRendered(false);
+    setPreviewUrl(url);
 
     try {
       // Try Fabric Image.fromURL first (v6 API)
@@ -121,8 +131,8 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({
 
       setOriginalImage(fabricImg);
       addPreviewCircle(canvas);
-      setPreviewUrl(null);
       setIsLoadingImage(false);
+      setHasRendered(true);
       toast.success('Image chargée !', {
         duration: 3000,
         dismissible: true,
@@ -278,6 +288,8 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({
     const reader = new FileReader();
     reader.onload = async (e) => {
       const imageUrl = e.target?.result as string;
+      setPreviewUrl(imageUrl);
+      setHasRendered(false);
       try {
         await loadImageFromUrl(imageUrl, targetCanvas!);
         console.log('Canvas objects after load:', targetCanvas!.getObjects().length);
@@ -414,6 +426,15 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({
     fabricCanvas.renderAll();
   };
 
+  const clearImage = () => {
+    if (!fabricCanvas) return;
+    fabricCanvas.clear();
+    fabricCanvas.backgroundColor = '#ffffff';
+    setOriginalImage(null);
+    setHasRendered(false);
+    try { addPreviewCircle(fabricCanvas); } catch {}
+    fabricCanvas.renderAll();
+  };
   const saveImage = () => {
     if (!fabricCanvas) {
       toast.error('Erreur lors de la sauvegarde: Canvas non initialisé', {
@@ -477,6 +498,13 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({
               height={400}
               className="border border-border rounded-lg shadow-lg bg-background"
             />
+            {previewUrl && !hasRendered && (
+              <img
+                src={previewUrl}
+                alt="Aperçu"
+                className="absolute inset-4 object-contain max-w-[calc(100%-2rem)] max-h-[calc(100%-2rem)] pointer-events-none rounded-lg"
+              />
+            )}
             {!originalImage && !isLoadingImage && (
               <div className="absolute inset-4 flex flex-col items-center justify-center text-center text-muted-foreground pointer-events-none">
                 <Upload className="w-16 h-16 mx-auto mb-4 opacity-50" />
@@ -525,6 +553,14 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({
                 >
                   <Upload className="w-4 h-4 mr-2" />
                   Choisir un fichier
+                </Button>
+                <Button
+                  onClick={clearImage}
+                  variant="destructive"
+                  className="w-full mt-2"
+                  disabled={!originalImage}
+                >
+                  Supprimer l'image actuelle
                 </Button>
                 <p className="text-xs text-muted-foreground mt-2">
                   Formats: JPG, PNG, WebP • Max {MAX_FILE_MB} Mo
