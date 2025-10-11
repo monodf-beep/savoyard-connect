@@ -199,7 +199,8 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({
       originX: 'center',
       originY: 'center',
       fill: 'transparent',
-      stroke: 'hsl(var(--primary))',
+      // Canvas 2D does not resolve CSS variables; use a concrete color string
+      stroke: '#3b82f6',
       strokeWidth: 2,
       strokeDashArray: [10, 5],
       selectable: false,
