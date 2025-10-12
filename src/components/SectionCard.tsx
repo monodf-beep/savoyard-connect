@@ -122,7 +122,7 @@ export const SectionCard: React.FC<SectionCardProps> = ({
               onMouseLeave={() => setIsHovered(false)}
             >
               {/* Affichage compact des membres principaux */}
-              {(section.members.length > 0 || (section.vacantPositions && section.vacantPositions.length > 0) || !isAdmin) && (
+              {(section.members.length > 0 || (section.vacantPositions && section.vacantPositions.length > 0)) && (
                 <div className="flex flex-wrap gap-2 items-stretch">
                   {section.members.map(person => (
                     <PersonCard
@@ -149,7 +149,8 @@ export const SectionCard: React.FC<SectionCardProps> = ({
                       } : undefined}
                     />
                   ))}
-                  {!isAdmin && isHovered && (
+                  {/* OpenPositionCard uniquement si pas de sous-sections */}
+                  {!isAdmin && isHovered && (!section.subsections || section.subsections.length === 0) && (
                     <OpenPositionCard onClick={() => setShowApplicationForm(true)} />
                   )}
                 </div>
