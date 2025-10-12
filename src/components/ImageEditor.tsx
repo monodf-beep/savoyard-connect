@@ -194,16 +194,36 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({
 
         <div className="flex flex-1 min-h-0">
           <div className="flex-1 p-4 bg-muted/20 relative flex items-center justify-center">
-            <canvas
-              ref={canvasRef}
-              width={600}
-              height={400}
-              className="border border-border rounded-lg shadow-lg bg-white cursor-move"
-              onMouseDown={handleMouseDown}
-              onMouseMove={handleMouseMove}
-              onMouseUp={handleMouseUp}
-              onMouseLeave={handleMouseUp}
-            />
+            <div className="relative">
+              <canvas
+                ref={canvasRef}
+                width={600}
+                height={400}
+                className="border border-border rounded-lg shadow-lg bg-white cursor-move"
+                onMouseDown={handleMouseDown}
+                onMouseMove={handleMouseMove}
+                onMouseUp={handleMouseUp}
+                onMouseLeave={handleMouseUp}
+              />
+              
+              {/* Cercle de guidage fixe */}
+              <svg
+                className="absolute inset-0 pointer-events-none"
+                width={600}
+                height={400}
+                style={{ left: 0, top: 0 }}
+              >
+                <circle 
+                  cx="300" 
+                  cy="200" 
+                  r="140" 
+                  fill="none" 
+                  stroke="#3b82f6" 
+                  strokeWidth="3" 
+                  strokeDasharray="10,5"
+                />
+              </svg>
+            </div>
             
             {!image && !isLoadingImage && (
               <div className="absolute inset-4 flex flex-col items-center justify-center text-center text-muted-foreground pointer-events-none">
