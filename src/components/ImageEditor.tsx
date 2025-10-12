@@ -213,15 +213,7 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({
                 height={400}
                 style={{ left: 0, top: 0 }}
               >
-                <defs>
-                  <mask id="cropMask">
-                    <rect width="600" height="400" fill="white" />
-                    <circle cx="300" cy="200" r="140" fill="black" />
-                  </mask>
-                </defs>
-                {/* Zone sombre autour du cercle */}
-                <rect width="600" height="400" fill="black" opacity="0.5" mask="url(#cropMask)" />
-                {/* Bordure du cercle */}
+                {/* Bordure du cercle uniquement */}
                 <circle 
                   cx="300" 
                   cy="200" 
