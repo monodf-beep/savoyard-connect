@@ -52,12 +52,12 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({
     setFabricCanvas(canvas);
 
 
-    // Load initial image if provided
+    // Load initial image if provided (silently, no toast)
     if (initialImageUrl) {
       console.log('Loading initial image:', initialImageUrl);
       setHasRendered(false);
       setPreviewUrl(initialImageUrl);
-      loadImageFromUrl(initialImageUrl, canvas);
+      loadImageFromUrl(initialImageUrl, canvas, true); // true = silent mode
     } else {
       console.log('No initial image URL provided');
     }
@@ -69,7 +69,7 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({
     };
   }, [isOpen, initialImageUrl]);
 
-  const loadImageFromUrl = async (url: string, canvas: FabricCanvas) => {
+  const loadImageFromUrl = async (url: string, canvas: FabricCanvas, silent = false) => {
     console.log('Loading image from URL:', url);
     if (!url) return;
 
@@ -130,11 +130,14 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({
       addPreviewCircle(canvas);
       setIsLoadingImage(false);
       setHasRendered(true);
-      toast.success('Image chargée !', {
-        duration: 3000,
-        dismissible: true,
-        closeButton: true
-      });
+      
+      if (!silent) {
+        toast.success('Image chargée !', {
+          duration: 3000,
+          dismissible: true,
+          closeButton: true
+        });
+      }
     } catch (e1) {
       console.warn('Fabric util.loadImage failed, trying native Image()', e1);
       try {
@@ -184,11 +187,14 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({
         setPreviewUrl(null);
         setIsLoadingImage(false);
         setHasRendered(true);
-        toast.success('Image chargée !', {
-          duration: 3000,
-          dismissible: true,
-          closeButton: true
-        });
+        
+        if (!silent) {
+          toast.success('Image chargée !', {
+            duration: 3000,
+            dismissible: true,
+            closeButton: true
+          });
+        }
       } catch (e2) {
         setIsLoadingImage(false);
         console.error('Both loaders failed', e2);
