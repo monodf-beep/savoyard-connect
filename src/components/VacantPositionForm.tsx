@@ -33,7 +33,7 @@ export const VacantPositionForm: React.FC<VacantPositionFormProps> = ({
   onSave,
   onDelete
 }) => {
-  const { data } = useOrganigramme();
+  const { data } = useOrganigramme(false);
   const [formData, setFormData] = useState({
     title: '',
     description: '',

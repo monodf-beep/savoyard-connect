@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { OrganigrammeData, Person, Section, JobPosting, VacantPosition } from '@/types/organigramme';
 import { toast } from 'sonner';
 
-export const useOrganigramme = () => {
+export const useOrganigramme = (isAdmin: boolean = false) => {
   const [data, setData] = useState<OrganigrammeData>({
     sections: [],
     people: [],
@@ -27,11 +27,22 @@ export const useOrganigramme = () => {
       
       if (sectionsError) throw sectionsError;
 
-      // Charger les personnes depuis la vue publique sécurisée
-      const { data: peopleData, error: peopleError } = await supabase
-        .from('people_public')
-        .select('*')
-        .order('created_at');
+      // Charger les personnes - utilisez la fonction sécurisée si admin, sinon la vue publique
+      let peopleData;
+      let peopleError;
+
+      if (isAdmin) {
+        const result = await supabase.rpc('get_people_with_details');
+        peopleData = result.data;
+        peopleError = result.error;
+      } else {
+        const result = await supabase
+          .from('people_public')
+          .select('*')
+          .order('created_at');
+        peopleData = result.data;
+        peopleError = result.error;
+      }
       
       if (peopleError) throw peopleError;
 
@@ -75,15 +86,14 @@ export const useOrganigramme = () => {
                 role: sm.role || person.title || '',
                 description: person.bio || '',
                 sectionId: section.id,
-                // Sensitive fields hidden for security (use get_people_detailed() for authenticated access)
-                email: '',
-                phone: '',
+                email: person.email || '',
+                phone: person.phone || '',
                 linkedin: person.linkedin || '',
                 formation: '',
                 experience: '',
-                competences: [],
-                dateEntree: '',
-                adresse: '',
+                competences: person.competences || [],
+                dateEntree: person.date_entree || '',
+                adresse: person.adresse || '',
                 specialite: '',
                 langues: [],
                 hobbies: ''
@@ -116,15 +126,14 @@ export const useOrganigramme = () => {
         photo: person.avatar_url || '',
         role: person.title || '',
         description: person.bio || '',
-        // Sensitive fields hidden for security (use get_people_detailed() for authenticated access)
-        email: '',
-        phone: '',
+        email: person.email || '',
+        phone: person.phone || '',
         linkedin: person.linkedin || '',
         formation: '',
         experience: '',
-        competences: [],
-        dateEntree: '',
-        adresse: '',
+        competences: person.competences || [],
+        dateEntree: person.date_entree || '',
+        adresse: person.adresse || '',
         specialite: '',
         langues: [],
         hobbies: ''

@@ -58,8 +58,8 @@ export const PersonForm: React.FC<PersonFormProps> = ({
   const [newCompetence, setNewCompetence] = useState('');
   const [newLangue, setNewLangue] = useState('');
   const [isImageEditorOpen, setIsImageEditorOpen] = useState(false);
-  const { data } = useOrganigramme();
   const { isAdmin } = useAuth();
+  const { data } = useOrganigramme(isAdmin);
 
   // Mettre à jour le formulaire quand les données de la personne changent
   useEffect(() => {

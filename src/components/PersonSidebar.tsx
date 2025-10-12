@@ -8,7 +8,7 @@ import { useOrganigramme } from '../hooks/useOrganigramme';
 
 // Composant pour afficher les sections d'une personne
 const PersonSections: React.FC<{ personId: string }> = ({ personId }) => {
-  const { data } = useOrganigramme();
+  const { data } = useOrganigramme(false);
   
   const getPersonSections = () => {
     const sections: Array<{ title: string; role: string }> = [];

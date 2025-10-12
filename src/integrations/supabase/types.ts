@@ -335,6 +335,25 @@ export type Database = {
           updated_at: string | null
         }[]
       }
+      get_people_with_details: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          adresse: string
+          avatar_url: string
+          bio: string
+          competences: string[]
+          created_at: string
+          date_entree: string
+          email: string
+          first_name: string
+          id: string
+          last_name: string
+          linkedin: string
+          phone: string
+          title: string
+          updated_at: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
