@@ -89,52 +89,35 @@ export const SectionCard: React.FC<SectionCardProps> = ({
         )}
         
         <div className="mb-6" id={`section-${section.id}`}>
-          <TooltipProvider>
-            <div 
-              className={`section-header ${section.type} ${hasContent ? 'cursor-pointer' : 'cursor-default'} group`}
-              onClick={hasContent ? handleToggle : undefined}
-            >
-              <div className="flex items-center gap-3">
-                {(section.subsections && section.subsections.length > 0) ? (
-                  section.isExpanded ? <ChevronDown className="w-5 h-5" /> : <ChevronRight className="w-5 h-5" />
-                ) : (
-                  <Users className="w-5 h-5" />
-                )}
-                <div className="flex-1">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <div>
-                        <h3 className="font-semibold text-lg">{section.title}</h3>
-                        {section.leader && (
-                          <p className="text-sm text-muted-foreground">
-                            Responsable : {section.leader.firstName} {section.leader.lastName}
-                          </p>
-                        )}
-                      </div>
-                      {!isAdmin && (
-                        <Tooltip delayDuration={200}>
-                          <TooltipTrigger asChild>
-                            <div className="opacity-0 group-hover:opacity-100 transition-opacity">
-                              <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-primary/10 text-primary text-xs font-medium">
-                                <Sparkles className="w-3 h-3" />
-                                Ouvert aux candidatures
-                              </div>
-                            </div>
-                          </TooltipTrigger>
-                          <TooltipContent side="right">
-                            <p className="text-xs">Postulez spontanément à cette section</p>
-                          </TooltipContent>
-                        </Tooltip>
+          <div 
+            className={`section-header ${section.type} ${hasContent ? 'cursor-pointer' : 'cursor-default'} group`}
+            onClick={hasContent ? handleToggle : undefined}
+          >
+            <div className="flex items-center gap-3">
+              {(section.subsections && section.subsections.length > 0) ? (
+                section.isExpanded ? <ChevronDown className="w-5 h-5" /> : <ChevronRight className="w-5 h-5" />
+              ) : (
+                <Users className="w-5 h-5" />
+              )}
+              <div className="flex-1">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div>
+                      <h3 className="font-semibold text-lg">{section.title}</h3>
+                      {section.leader && (
+                        <p className="text-sm text-muted-foreground">
+                          Responsable : {section.leader.firstName} {section.leader.lastName}
+                        </p>
                       )}
                     </div>
-                    <span className="text-sm text-muted-foreground ml-4">
-                      {totalMemberCount} membre{totalMemberCount > 1 ? 's' : ''}
-                    </span>
                   </div>
+                  <span className="text-sm text-muted-foreground ml-4">
+                    {totalMemberCount} membre{totalMemberCount > 1 ? 's' : ''}
+                  </span>
                 </div>
               </div>
             </div>
-          </TooltipProvider>
+          </div>
 
           {section.isExpanded && hasContent && (
             <div 
@@ -223,37 +206,23 @@ export const SectionCard: React.FC<SectionCardProps> = ({
       )}
       
       <div className="mb-3" style={{ marginLeft: `${marginLeft}px` }} id={`section-${section.id}`}>
-        <TooltipProvider>
-          <div 
-            className="flex items-center justify-between p-3 border border-border rounded-lg hover:bg-accent/20 transition-colors cursor-pointer group"
-            onClick={handleToggle}
-          >
-            <div className="flex items-center gap-2">
-              {section.isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
-              <h4 className="font-medium text-sm">{section.title}</h4>
-              {section.leader && (
-                <span className="text-xs text-muted-foreground">
-                  • {section.leader.firstName} {section.leader.lastName}
-                </span>
-              )}
-              {!isAdmin && (
-                <Tooltip delayDuration={200}>
-                  <TooltipTrigger asChild>
-                    <div className="opacity-0 group-hover:opacity-100 transition-opacity">
-                      <Sparkles className="w-3 h-3 text-primary" />
-                    </div>
-                  </TooltipTrigger>
-                  <TooltipContent side="right">
-                    <p className="text-xs">Postulez spontanément</p>
-                  </TooltipContent>
-                </Tooltip>
-              )}
-            </div>
-            <span className="text-xs text-muted-foreground">
-              {totalMemberCount}
-            </span>
+        <div 
+          className="flex items-center justify-between p-3 border border-border rounded-lg hover:bg-accent/20 transition-colors cursor-pointer group"
+          onClick={handleToggle}
+        >
+          <div className="flex items-center gap-2">
+            {section.isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+            <h4 className="font-medium text-sm">{section.title}</h4>
+            {section.leader && (
+              <span className="text-xs text-muted-foreground">
+                • {section.leader.firstName} {section.leader.lastName}
+              </span>
+            )}
           </div>
-        </TooltipProvider>
+          <span className="text-xs text-muted-foreground">
+            {totalMemberCount}
+          </span>
+        </div>
 
         {section.isExpanded && hasContent && (
           <div 
