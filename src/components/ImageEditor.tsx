@@ -89,10 +89,15 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({
           scaleY: scale,
         });
 
-        canvas.clear();
+        // Avoid fabric clear() due to context issues in v6
+        // Remove all objects manually
+        const objects = canvas.getObjects();
+        objects.forEach(obj => canvas.remove(obj));
+        canvas.discardActiveObject();
+        canvas.backgroundColor = '#ffffff';
         canvas.add(fabricImg);
         canvas.setActiveObject(fabricImg);
-        canvas.renderAll();
+        canvas.requestRenderAll();
 
         setOriginalImage(fabricImg);
         setIsLoadingImage(false);
@@ -153,10 +158,13 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({
 
   const clearImage = () => {
     if (!fabricCanvas) return;
-    fabricCanvas.clear();
+    // Avoid fabric clear() which can throw when contexts are undefined
+    const objects = fabricCanvas.getObjects();
+    objects.forEach(obj => fabricCanvas.remove(obj));
+    fabricCanvas.discardActiveObject();
     fabricCanvas.backgroundColor = '#ffffff';
     setOriginalImage(null);
-    fabricCanvas.renderAll();
+    fabricCanvas.requestRenderAll();
   };
 
   const saveImage = () => {
