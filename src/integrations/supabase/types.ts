@@ -234,6 +234,60 @@ export type Database = {
           },
         ]
       }
+      spontaneous_applications: {
+        Row: {
+          availability: string | null
+          commitment: string | null
+          created_at: string
+          cv_url: string | null
+          email: string
+          first_name: string
+          id: string
+          last_name: string
+          linkedin: string | null
+          location: string | null
+          message: string | null
+          phone: string | null
+          section_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          availability?: string | null
+          commitment?: string | null
+          created_at?: string
+          cv_url?: string | null
+          email: string
+          first_name: string
+          id?: string
+          last_name: string
+          linkedin?: string | null
+          location?: string | null
+          message?: string | null
+          phone?: string | null
+          section_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          availability?: string | null
+          commitment?: string | null
+          created_at?: string
+          cv_url?: string | null
+          email?: string
+          first_name?: string
+          id?: string
+          last_name?: string
+          linkedin?: string | null
+          location?: string | null
+          message?: string | null
+          phone?: string | null
+          section_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string | null
