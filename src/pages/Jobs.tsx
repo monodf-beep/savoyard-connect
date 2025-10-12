@@ -5,8 +5,9 @@ import { JobPostingForm } from '../components/JobPostingForm';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
-import { Plus, Search, Briefcase, Settings } from 'lucide-react';
+import { Plus, Search, Briefcase, Settings, Info } from 'lucide-react';
 import { useIsWordPressAdmin } from '../utils/wordpress';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../components/ui/tooltip';
 
 // Données de démonstration
 const initialJobPostings: JobPosting[] = [
@@ -116,6 +117,23 @@ const Jobs = () => {
           </div>
           
           <div className="flex items-center gap-2">
+            {isAdmin && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button variant="ghost" size="icon" className="h-8 w-8">
+                      <Info className="w-4 h-4 text-primary" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent className="max-w-xs">
+                    <p className="font-semibold mb-1">Mode Admin activé</p>
+                    <p className="text-sm">• Cliquez sur "Ajouter un poste" pour créer une offre</p>
+                    <p className="text-sm">• Cliquez sur une carte pour modifier/supprimer</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
+            
             <Button
               onClick={toggleAdminMode}
               variant={isAdmin ? "default" : "outline"}
