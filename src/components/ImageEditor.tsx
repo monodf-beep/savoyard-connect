@@ -1,5 +1,4 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Canvas as FabricCanvas, Image as FabricImage, Circle as FabricCircle } from 'fabric';
 import { Button } from './ui/button';
 import { Label } from './ui/label';
 import { Slider } from './ui/slider';
@@ -21,118 +20,91 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [fabricCanvas, setFabricCanvas] = useState<FabricCanvas | null>(null);
+  const [image, setImage] = useState<HTMLImageElement | null>(null);
   const [zoom, setZoom] = useState([1]);
-  const [originalImage, setOriginalImage] = useState<FabricImage | null>(null);
+  const [panX, setPanX] = useState(0);
+  const [panY, setPanY] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [isLoadingImage, setIsLoadingImage] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
   const MAX_FILE_MB = 5;
-  const ACCEPTED_TYPES = ['image/jpeg','image/jpg','image/png','image/webp'];
+  const ACCEPTED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
 
-  useEffect(() => {
-    if (!canvasRef.current || !isOpen) return;
+  // Dessiner l'image sur le canvas
+  const drawCanvas = () => {
+    const canvas = canvasRef.current;
+    const ctx = canvas?.getContext('2d');
+    if (!canvas || !ctx || !image) return;
 
-    console.log('Initializing canvas...');
-    const canvas = new FabricCanvas(canvasRef.current, {
-      width: 600,
-      height: 400,
-      backgroundColor: '#ffffff',
-    });
+    // Effacer le canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    setFabricCanvas(canvas);
-    console.log('Canvas initialized');
+    // Calculer les dimensions pour centrer l'image
+    const scale = Math.min(
+      canvas.width / image.width,
+      canvas.height / image.height
+    ) * 0.9;
 
-    // Load initial image if provided
-    if (initialImageUrl) {
-      console.log('Loading initial image:', initialImageUrl);
-      loadImage(initialImageUrl, canvas, true);
-    }
+    const scaledWidth = image.width * scale * zoom[0];
+    const scaledHeight = image.height * scale * zoom[0];
+    const x = (canvas.width - scaledWidth) / 2 + panX;
+    const y = (canvas.height - scaledHeight) / 2 + panY;
 
-    return () => {
-      console.log('Disposing canvas');
-      canvas.dispose();
-    };
-  }, [isOpen, initialImageUrl]);
+    // Dessiner l'image
+    ctx.drawImage(image, x, y, scaledWidth, scaledHeight);
+  };
 
-  const loadImage = async (url: string, canvas: FabricCanvas, silent = false) => {
-    console.log('loadImage called with:', url);
+  // Charger une image
+  const loadImage = (url: string, silent = false) => {
     if (!url) return;
 
     setLoadError(null);
     setIsLoadingImage(true);
 
-    try {
-      const img = new Image();
-      img.crossOrigin = 'anonymous';
-      
-      img.onload = () => {
-        console.log('Image loaded successfully');
-        const fabricImg = new FabricImage(img);
-        
-        // Scale image to fit canvas
-        const canvasWidth = canvas.getWidth();
-        const canvasHeight = canvas.getHeight();
-        const imgWidth = img.width;
-        const imgHeight = img.height;
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
 
-        const scale = Math.min(
-          (canvasWidth - 40) / imgWidth,
-          (canvasHeight - 40) / imgHeight
-        );
-
-        fabricImg.set({
-          left: canvasWidth / 2,
-          top: canvasHeight / 2,
-          originX: 'center',
-          originY: 'center',
-          scaleX: scale,
-          scaleY: scale,
-        });
-
-        // Avoid fabric clear() due to context issues in v6
-        // Remove all objects manually
-        const objects = canvas.getObjects();
-        objects.forEach(obj => canvas.remove(obj));
-        canvas.discardActiveObject();
-        canvas.backgroundColor = '#ffffff';
-
-        // Reset viewport + zoom to ensure visibility
-        canvas.setViewportTransform([1, 0, 0, 1, 0, 0]);
-        canvas.setZoom(1);
-        setZoom([1]);
-
-        canvas.add(fabricImg);
-        canvas.setActiveObject(fabricImg);
-        canvas.requestRenderAll();
-
-        setOriginalImage(fabricImg);
-        setIsLoadingImage(false);
-
-        if (!silent) {
-          toast.success('Image chargée !');
-        }
-        console.log('Image added to canvas');
-      };
-
-      img.onerror = () => {
-        console.error('Failed to load image');
-        setIsLoadingImage(false);
-        setLoadError("Impossible de charger l'image");
-        toast.error("Impossible de charger l'image");
-      };
-
-      img.src = url;
-    } catch (error) {
-      console.error('Error loading image:', error);
+    img.onload = () => {
+      setImage(img);
+      setZoom([1]);
+      setPanX(0);
+      setPanY(0);
       setIsLoadingImage(false);
-      setLoadError("Erreur lors du chargement");
-      toast.error("Erreur lors du chargement");
-    }
+      if (!silent) {
+        toast.success('Image chargée !');
+      }
+    };
+
+    img.onerror = () => {
+      setIsLoadingImage(false);
+      setLoadError("Impossible de charger l'image");
+      toast.error("Impossible de charger l'image");
+    };
+
+    img.src = url;
   };
 
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  // Charger l'image initiale
+  useEffect(() => {
+    if (isOpen && initialImageUrl) {
+      loadImage(initialImageUrl, true);
+    }
+  }, [isOpen, initialImageUrl]);
+
+  // Redessiner quand l'image, zoom ou pan change
+  useEffect(() => {
+    if (image) {
+      drawCanvas();
+    }
+  }, [image, zoom, panX, panY]);
+
+  // Upload de fichier
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (!file || !fabricCanvas) return;
+    if (!file) return;
 
     if (file.size > MAX_FILE_MB * 1024 * 1024) {
       toast.error(`Fichier trop volumineux (max ${MAX_FILE_MB} Mo)`);
@@ -148,50 +120,58 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({
     reader.onload = (e) => {
       const result = e.target?.result as string;
       if (result) {
-        loadImage(result, fabricCanvas);
+        loadImage(result);
       }
     };
     reader.readAsDataURL(file);
   };
 
+  // Gestion du zoom
   const handleZoom = (value: number[]) => {
-    if (!fabricCanvas) return;
-    const zoomLevel = value[0];
     setZoom(value);
-    fabricCanvas.setZoom(zoomLevel);
-    fabricCanvas.renderAll();
   };
 
+  // Gestion du drag
+  const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    setIsDragging(true);
+    setDragStart({ x: e.clientX - panX, y: e.clientY - panY });
+  };
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (!isDragging) return;
+    setPanX(e.clientX - dragStart.x);
+    setPanY(e.clientY - dragStart.y);
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
+  // Supprimer l'image
   const clearImage = () => {
-    if (!fabricCanvas) return;
-    // Avoid fabric clear() which can throw when contexts are undefined
-    const objects = fabricCanvas.getObjects();
-    objects.forEach(obj => fabricCanvas.remove(obj));
-    fabricCanvas.discardActiveObject();
-    fabricCanvas.backgroundColor = '#ffffff';
-
-    // Reset zoom/viewport
-    fabricCanvas.setViewportTransform([1, 0, 0, 1, 0, 0]);
-    fabricCanvas.setZoom(1);
+    setImage(null);
     setZoom([1]);
-
-    setOriginalImage(null);
-    fabricCanvas.requestRenderAll();
+    setPanX(0);
+    setPanY(0);
+    const canvas = canvasRef.current;
+    const ctx = canvas?.getContext('2d');
+    if (canvas && ctx) {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
   };
 
+  // Sauvegarder l'image
   const saveImage = () => {
-    if (!fabricCanvas) {
+    const canvas = canvasRef.current;
+    if (!canvas || !image) {
       toast.error('Aucune image à sauvegarder');
       return;
     }
 
     try {
-      const dataURL = fabricCanvas.toDataURL({
-        format: 'png',
-        quality: 0.9,
-        multiplier: 1,
-      });
-
+      const dataURL = canvas.toDataURL('image/png', 0.9);
       onSave(dataURL);
       toast.success('Image sauvegardée !');
     } catch (error) {
@@ -218,10 +198,14 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({
               ref={canvasRef}
               width={600}
               height={400}
-              className="border border-border rounded-lg shadow-lg bg-white"
+              className="border border-border rounded-lg shadow-lg bg-white cursor-move"
+              onMouseDown={handleMouseDown}
+              onMouseMove={handleMouseMove}
+              onMouseUp={handleMouseUp}
+              onMouseLeave={handleMouseUp}
             />
             
-            {!originalImage && !isLoadingImage && (
+            {!image && !isLoadingImage && (
               <div className="absolute inset-4 flex flex-col items-center justify-center text-center text-muted-foreground pointer-events-none">
                 <Upload className="w-16 h-16 mx-auto mb-4 opacity-50" />
                 <p className="text-lg font-medium mb-2">Aucune image chargée</p>
@@ -274,7 +258,7 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({
                   onClick={clearImage}
                   variant="destructive"
                   className="w-full mt-2"
-                  disabled={!originalImage}
+                  disabled={!image}
                 >
                   Supprimer l'image
                 </Button>
@@ -297,7 +281,11 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({
                   max={3}
                   step={0.1}
                   className="w-full"
+                  disabled={!image}
                 />
+                <p className="text-xs text-muted-foreground mt-2">
+                  Glissez l'image pour la repositionner
+                </p>
               </div>
             </div>
           </div>
@@ -307,7 +295,7 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({
           <Button variant="outline" onClick={onClose}>
             Annuler
           </Button>
-          <Button onClick={saveImage} disabled={!originalImage}>
+          <Button onClick={saveImage} disabled={!image}>
             <Check className="w-4 h-4 mr-2" />
             Sauvegarder
           </Button>
