@@ -32,6 +32,7 @@ export const SectionCard: React.FC<SectionCardProps> = ({
   level = 0 
 }) => {
   const [showApplicationForm, setShowApplicationForm] = React.useState(false);
+  const [isHovered, setIsHovered] = React.useState(false);
   
   const handleToggle = () => {
     onToggle(section.id);
@@ -115,7 +116,11 @@ export const SectionCard: React.FC<SectionCardProps> = ({
           </TooltipProvider>
 
           {section.isExpanded && hasContent && (
-            <div className="mt-4 space-y-4">
+            <div 
+              className="mt-4 space-y-4"
+              onMouseEnter={() => setIsHovered(true)}
+              onMouseLeave={() => setIsHovered(false)}
+            >
               {/* Affichage compact des membres principaux */}
               {(section.members.length > 0 || (section.vacantPositions && section.vacantPositions.length > 0) || !isAdmin) && (
                 <div className="flex flex-wrap gap-2 items-stretch">
@@ -144,7 +149,7 @@ export const SectionCard: React.FC<SectionCardProps> = ({
                       } : undefined}
                     />
                   ))}
-                  {!isAdmin && (
+                  {!isAdmin && isHovered && (
                     <OpenPositionCard onClick={() => setShowApplicationForm(true)} />
                   )}
                 </div>
@@ -219,7 +224,11 @@ export const SectionCard: React.FC<SectionCardProps> = ({
         </TooltipProvider>
 
         {section.isExpanded && hasContent && (
-          <div className="mt-2 ml-6 space-y-2">
+          <div 
+            className="mt-2 ml-6 space-y-2"
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
+          >
             {(section.members.length > 0 || (section.vacantPositions && section.vacantPositions.length > 0) || !isAdmin) && (
               <div className="flex flex-wrap gap-1 items-stretch">
                 {section.members.map(person => (
@@ -246,7 +255,7 @@ export const SectionCard: React.FC<SectionCardProps> = ({
                     } : undefined}
                   />
                 ))}
-                {!isAdmin && (
+                {!isAdmin && isHovered && (
                   <OpenPositionCard onClick={() => setShowApplicationForm(true)} />
                 )}
               </div>
