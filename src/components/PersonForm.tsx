@@ -230,11 +230,6 @@ export const PersonForm: React.FC<PersonFormProps> = ({
       toast.error("Échec de l'envoi de l'invitation");
     }
   };
-    setFormData(prev => ({
-      ...prev,
-      competences: prev.competences?.filter((_, i) => i !== index) || []
-    }));
-  };
 
   if (!isOpen) return null;
 

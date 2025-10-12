@@ -14,6 +14,44 @@ export type Database = {
   }
   public: {
     Tables: {
+      invites: {
+        Row: {
+          created_at: string
+          email: string
+          expires_at: string
+          id: string
+          person_id: string | null
+          status: string
+          token: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          expires_at?: string
+          id?: string
+          person_id?: string | null
+          status?: string
+          token: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          expires_at?: string
+          id?: string
+          person_id?: string | null
+          status?: string
+          token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invites_person_id_fkey"
+            columns: ["person_id"]
+            isOneToOne: false
+            referencedRelation: "people"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       job_postings: {
         Row: {
           created_at: string | null
