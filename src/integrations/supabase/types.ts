@@ -196,6 +196,56 @@ export type Database = {
           },
         ]
       }
+      section_reassurance: {
+        Row: {
+          availability_details: string | null
+          commitment_details: string | null
+          created_at: string
+          custom_info: string | null
+          flexible_commitment: boolean | null
+          flexible_hours: boolean | null
+          id: string
+          location: string | null
+          on_site_required: boolean | null
+          section_id: string
+          updated_at: string
+        }
+        Insert: {
+          availability_details?: string | null
+          commitment_details?: string | null
+          created_at?: string
+          custom_info?: string | null
+          flexible_commitment?: boolean | null
+          flexible_hours?: boolean | null
+          id?: string
+          location?: string | null
+          on_site_required?: boolean | null
+          section_id: string
+          updated_at?: string
+        }
+        Update: {
+          availability_details?: string | null
+          commitment_details?: string | null
+          created_at?: string
+          custom_info?: string | null
+          flexible_commitment?: boolean | null
+          flexible_hours?: boolean | null
+          id?: string
+          location?: string | null
+          on_site_required?: boolean | null
+          section_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "section_reassurance_section_id_fkey"
+            columns: ["section_id"]
+            isOneToOne: true
+            referencedRelation: "sections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sections: {
         Row: {
           created_at: string | null

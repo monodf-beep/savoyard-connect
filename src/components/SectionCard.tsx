@@ -4,6 +4,7 @@ import { PersonCard } from './PersonCard';
 import { VacantPositionCard } from './VacantPositionCard';
 import { OpenPositionCard } from './OpenPositionCard';
 import { SpontaneousApplicationForm } from './SpontaneousApplicationForm';
+import { SectionReassuranceDialog } from './SectionReassuranceDialog';
 import { ChevronDown, ChevronRight, Users, Sparkles } from 'lucide-react';
 import {
   Tooltip,
@@ -32,10 +33,20 @@ export const SectionCard: React.FC<SectionCardProps> = ({
   level = 0 
 }) => {
   const [showApplicationForm, setShowApplicationForm] = React.useState(false);
+  const [showReassuranceDialog, setShowReassuranceDialog] = React.useState(false);
   const [isHovered, setIsHovered] = React.useState(false);
   
   const handleToggle = () => {
     onToggle(section.id);
+  };
+
+  const handleOpenReassurance = () => {
+    setShowReassuranceDialog(true);
+  };
+
+  const handleApply = () => {
+    setShowReassuranceDialog(false);
+    setShowApplicationForm(true);
   };
 
   // Fonction pour calculer le nombre total de membres (incluant les sous-sections)
@@ -59,6 +70,16 @@ export const SectionCard: React.FC<SectionCardProps> = ({
   if (isMainSection) {
     return (
       <>
+        {showReassuranceDialog && (
+          <SectionReassuranceDialog
+            open={showReassuranceDialog}
+            onOpenChange={setShowReassuranceDialog}
+            sectionId={section.id}
+            sectionTitle={section.title}
+            onApply={handleApply}
+          />
+        )}
+        
         {showApplicationForm && (
           <SpontaneousApplicationForm
             sectionId={section.id}
@@ -151,7 +172,7 @@ export const SectionCard: React.FC<SectionCardProps> = ({
                   ))}
                   {/* OpenPositionCard uniquement si pas de sous-sections */}
                   {!isAdmin && isHovered && (!section.subsections || section.subsections.length === 0) && (
-                    <OpenPositionCard onClick={() => setShowApplicationForm(true)} />
+                    <OpenPositionCard onClick={handleOpenReassurance} />
                   )}
                 </div>
               )}
@@ -183,6 +204,16 @@ export const SectionCard: React.FC<SectionCardProps> = ({
   // Pour les sous-sections, affichage encore plus minimaliste
   return (
     <>
+      {showReassuranceDialog && (
+        <SectionReassuranceDialog
+          open={showReassuranceDialog}
+          onOpenChange={setShowReassuranceDialog}
+          sectionId={section.id}
+          sectionTitle={section.title}
+          onApply={handleApply}
+        />
+      )}
+      
       {showApplicationForm && (
         <SpontaneousApplicationForm
           sectionId={section.id}
@@ -257,7 +288,7 @@ export const SectionCard: React.FC<SectionCardProps> = ({
                   />
                 ))}
                 {!isAdmin && isHovered && (
-                  <OpenPositionCard onClick={() => setShowApplicationForm(true)} />
+                  <OpenPositionCard onClick={handleOpenReassurance} />
                 )}
               </div>
             )}
