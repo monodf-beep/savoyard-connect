@@ -95,6 +95,12 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({
         objects.forEach(obj => canvas.remove(obj));
         canvas.discardActiveObject();
         canvas.backgroundColor = '#ffffff';
+
+        // Reset viewport + zoom to ensure visibility
+        canvas.setViewportTransform([1, 0, 0, 1, 0, 0]);
+        canvas.setZoom(1);
+        setZoom([1]);
+
         canvas.add(fabricImg);
         canvas.setActiveObject(fabricImg);
         canvas.requestRenderAll();
@@ -163,6 +169,12 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({
     objects.forEach(obj => fabricCanvas.remove(obj));
     fabricCanvas.discardActiveObject();
     fabricCanvas.backgroundColor = '#ffffff';
+
+    // Reset zoom/viewport
+    fabricCanvas.setViewportTransform([1, 0, 0, 1, 0, 0]);
+    fabricCanvas.setZoom(1);
+    setZoom([1]);
+
     setOriginalImage(null);
     fabricCanvas.requestRenderAll();
   };
