@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Plus, Search, Briefcase, Settings, Info } from 'lucide-react';
 import { useIsWordPressAdmin } from '../utils/wordpress';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../components/ui/tooltip';
+import { Navbar } from '../components/Navbar';
 
 // Données de démonstration
 const initialJobPostings: JobPosting[] = [
@@ -103,6 +104,7 @@ const Jobs = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <Navbar />
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">

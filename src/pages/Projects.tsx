@@ -2,12 +2,12 @@ import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useOrganigramme } from '@/hooks/useOrganigramme';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Plus } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Plus } from 'lucide-react';
 import { ProjectCard } from '@/components/ProjectCard';
 import { ProjectForm } from '@/components/ProjectForm';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { Navbar } from '@/components/Navbar';
 
 export interface Project {
   id: string;
@@ -165,21 +165,15 @@ const Projects = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <Navbar />
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-4">
-            <Link to="/">
-              <Button variant="outline" size="icon">
-                <ArrowLeft className="h-4 w-4" />
-              </Button>
-            </Link>
-            <div>
-              <h1 className="text-3xl font-bold">Projets</h1>
-              <p className="text-muted-foreground mt-1">
-                Découvrez les projets en cours et à venir des groupes et commissions
-              </p>
-            </div>
+          <div>
+            <h1 className="text-3xl font-bold">Projets</h1>
+            <p className="text-muted-foreground mt-1">
+              Découvrez les projets en cours et à venir des groupes et commissions
+            </p>
           </div>
           {isAdmin && (
             <Button onClick={handleAddProject}>
