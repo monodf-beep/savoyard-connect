@@ -157,6 +157,56 @@ export type Database = {
         }
         Relationships: []
       }
+      projects: {
+        Row: {
+          created_at: string
+          description: string | null
+          documents: Json | null
+          end_date: string | null
+          id: string
+          roadmap: string | null
+          section_id: string
+          start_date: string | null
+          status: Database["public"]["Enums"]["project_status"]
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          documents?: Json | null
+          end_date?: string | null
+          id?: string
+          roadmap?: string | null
+          section_id: string
+          start_date?: string | null
+          status?: Database["public"]["Enums"]["project_status"]
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          documents?: Json | null
+          end_date?: string | null
+          id?: string
+          roadmap?: string | null
+          section_id?: string
+          start_date?: string | null
+          status?: Database["public"]["Enums"]["project_status"]
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "projects_section_id_fkey"
+            columns: ["section_id"]
+            isOneToOne: false
+            referencedRelation: "sections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       section_members: {
         Row: {
           created_at: string | null
@@ -482,6 +532,7 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "user"
+      project_status: "planned" | "in_progress" | "completed"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -610,6 +661,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "user"],
+      project_status: ["planned", "in_progress", "completed"],
     },
   },
 } as const
