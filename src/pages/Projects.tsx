@@ -60,57 +60,80 @@ const Projects = () => {
   });
 
   const handleSaveProject = async (projectData: Partial<Project>) => {
-    if (editingProject) {
-      // Update
-      const { error } = await supabase
-        .from('projects')
-        .update(projectData as any)
-        .eq('id', editingProject.id);
-
-      if (error) {
-        toast({
-          title: 'Erreur',
-          description: 'Impossible de mettre à jour le projet',
-          variant: 'destructive',
-        });
-        return;
-      }
-
-      setProjects(projects.map(p => p.id === editingProject.id ? { ...p, ...projectData } as Project : p));
+    // Basic validation (Select required isn't enforced by the Radix Select)
+    if (!projectData.title || !projectData.title.trim()) {
       toast({
-        title: 'Succès',
-        description: 'Projet mis à jour',
+        title: 'Champ manquant',
+        description: 'Le titre est requis',
+        variant: 'destructive',
       });
-    } else {
-      // Create
-      const { data: newData, error } = await supabase
-        .from('projects')
-        .insert([projectData as any])
-        .select()
-        .single();
-
-      if (error) {
-        toast({
-          title: 'Erreur',
-          description: 'Impossible de créer le projet',
-          variant: 'destructive',
-        });
-        return;
-      }
-
-      setProjects([{
-        ...newData,
-        documents: (newData.documents as any) || [],
-      }, ...projects]);
+      return;
+    }
+    if (!projectData.section_id) {
       toast({
-        title: 'Succès',
-        description: 'Projet créé',
+        title: 'Champ manquant',
+        description: 'La section est requise',
+        variant: 'destructive',
       });
+      return;
     }
 
-    setShowForm(false);
-    setEditingProject(undefined);
-    setSelectedSectionId(undefined);
+    const sanitize = (data: Partial<Project>) => ({
+      ...data,
+      // Convert empty strings to null for optional date columns to avoid Postgres errors
+      start_date: data.start_date ? data.start_date : null,
+      end_date: data.end_date ? data.end_date : null,
+      // Ensure documents is always an array
+      documents: (data.documents ?? []) as any,
+    });
+
+    try {
+      if (editingProject) {
+        // Update
+        const { error } = await supabase
+          .from('projects')
+          .update(sanitize(projectData) as any)
+          .eq('id', editingProject.id);
+
+        if (error) throw error;
+
+        setProjects(
+          projects.map((p) =>
+            p.id === editingProject.id ? ({ ...p, ...sanitize(projectData) } as Project) : p
+          )
+        );
+        toast({ title: 'Succès', description: 'Projet mis à jour' });
+      } else {
+        // Create
+        const { data: newData, error } = await supabase
+          .from('projects')
+          .insert([sanitize(projectData) as any])
+          .select()
+          .single();
+
+        if (error) throw error;
+
+        setProjects([
+          {
+            ...newData,
+            documents: (newData.documents as any) || [],
+          },
+          ...projects,
+        ]);
+        toast({ title: 'Succès', description: 'Projet créé' });
+      }
+
+      setShowForm(false);
+      setEditingProject(undefined);
+      setSelectedSectionId(undefined);
+    } catch (error: any) {
+      console.error('Error saving project:', error);
+      toast({
+        title: 'Erreur',
+        description: error?.message || "Impossible d’enregistrer le projet",
+        variant: 'destructive',
+      });
+    }
   };
 
   const handleDeleteProject = async (projectId: string) => {
