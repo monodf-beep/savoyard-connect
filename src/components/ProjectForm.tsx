@@ -70,6 +70,14 @@ export const ProjectForm = ({ project, sections, open, onOpenChange, onSave }: P
     });
   };
 
+  const buildOptions = (items: Section[], depth = 0): { id: string; label: string }[] => {
+    return items.flatMap((s) => [
+      { id: s.id, label: `${'\u2014 '.repeat(depth)}${s.title}` },
+      ...(s.subsections ? buildOptions(s.subsections, depth + 1) : []),
+    ]);
+  };
+  const sectionOptions = buildOptions(sections);
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
@@ -90,9 +98,9 @@ export const ProjectForm = ({ project, sections, open, onOpenChange, onSave }: P
                 <SelectValue placeholder="Sélectionner une section" />
               </SelectTrigger>
               <SelectContent>
-                {sections.map((section) => (
-                  <SelectItem key={section.id} value={section.id}>
-                    {section.title}
+                {sectionOptions.map((opt) => (
+                  <SelectItem key={opt.id} value={opt.id}>
+                    {opt.label}
                   </SelectItem>
                 ))}
               </SelectContent>
