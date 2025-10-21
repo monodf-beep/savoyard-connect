@@ -490,11 +490,11 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {data.sections.map(section => {
-            // Compter tous les membres (y compris ceux des sous-sections)
-            const countAllMembers = (s: Section): number => {
-              let count = s.members.length;
-              if (s.subsections) {
-                s.subsections.forEach(sub => {
+            // Compter tous les membres (incluant sous-sections)
+            const countAllMembers = (sec: Section): number => {
+              let count = sec.members.length;
+              if (sec.subsections) {
+                sec.subsections.forEach(sub => {
                   count += countAllMembers(sub);
                 });
               }
@@ -504,46 +504,27 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
             const totalMembers = countAllMembers(section);
             const subsectionCount = section.subsections?.length || 0;
             
-            // Collecter les premiers membres (de la section et sous-sections)
-            const collectFirstMembers = (s: Section, max: number): Person[] => {
-              const members: Person[] = [];
-              members.push(...s.members);
-              if (members.length < max && s.subsections) {
-                for (const sub of s.subsections) {
-                  members.push(...collectFirstMembers(sub, max - members.length));
-                  if (members.length >= max) break;
-                }
-              }
-              return members.slice(0, max);
-            };
-            
-            const displayMembers = collectFirstMembers(section, 3);
-            
             return (
               <div
                 key={section.id}
                 className="bg-card border rounded-lg p-4 hover:shadow-lg transition-shadow cursor-pointer"
                 onClick={() => {
-                  if (displayMembers.length > 0) {
-                    handlePersonClick(displayMembers[0]);
+                  if (section.members.length > 0) {
+                    handlePersonClick(section.members[0]);
                   }
                 }}
               >
                 <h3 className="font-semibold text-lg mb-2">{section.title}</h3>
-                
-                {/* Informations sur les membres et sous-sections */}
                 <div className="text-sm text-muted-foreground mb-3 space-y-1">
                   <div>{totalMembers} membre{totalMembers > 1 ? 's' : ''}</div>
                   {subsectionCount > 0 && (
-                    <div className="text-xs">
-                      {subsectionCount} {subsectionCount > 1 ? 'commissions' : 'commission'}
+                    <div className="text-xs text-primary">
+                      {subsectionCount} sous-groupe{subsectionCount > 1 ? 's' : ''}
                     </div>
                   )}
                 </div>
-                
-                {/* Affichage des premiers membres */}
                 <div className="flex flex-wrap gap-2">
-                  {displayMembers.map(member => (
+                  {section.members.slice(0, 3).map(member => (
                     <div
                       key={member.id}
                       className="flex items-center gap-2 bg-secondary/50 px-2 py-1 rounded-md text-xs hover:bg-secondary transition-colors"
@@ -555,14 +536,12 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
                       <span>{member.firstName} {member.lastName}</span>
                     </div>
                   ))}
-                  {totalMembers > 3 && (
+                  {section.members.length > 3 && (
                     <div className="flex items-center px-2 py-1 text-xs text-muted-foreground">
-                      +{totalMembers - 3} autres
+                      +{section.members.length - 3} autres
                     </div>
                   )}
                 </div>
-                
-                {/* Postes vacants */}
                 {section.vacantPositions && section.vacantPositions.length > 0 && (
                   <div className="mt-3 text-xs text-primary">
                     {section.vacantPositions.length} poste{section.vacantPositions.length > 1 ? 's' : ''} vacant{section.vacantPositions.length > 1 ? 's' : ''}
