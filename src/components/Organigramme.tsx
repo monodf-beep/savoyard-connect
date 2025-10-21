@@ -3,6 +3,7 @@ import { Person, Section, VacantPosition } from '../types/organigramme';
 import { SectionCard } from './SectionCard';
 import { PersonSidebar } from './PersonSidebar';
 import { VacantPositionsSidebar } from './VacantPositionsSidebar';
+import { SectionDetailsSidebar } from './SectionDetailsSidebar';
 import { PersonForm } from './PersonForm';
 import { SectionForm } from './SectionForm';
 import { VacantPositionForm } from './VacantPositionForm';
@@ -33,6 +34,8 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
   const [isVacantPositionFormOpen, setIsVacantPositionFormOpen] = useState(false);
   const [editingVacantPosition, setEditingVacantPosition] = useState<VacantPosition | null>(null);
   const [viewMode, setViewMode] = useState<'line' | 'grid'>('line');
+  const [selectedSection, setSelectedSection] = useState<Section | null>(null);
+  const [isSectionDetailsSidebarOpen, setIsSectionDetailsSidebarOpen] = useState(false);
 
   // Listen for custom events to open vacant positions sidebar
   React.useEffect(() => {
@@ -500,14 +503,20 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
                     key={section.id}
                     className="bg-card border rounded-lg p-4 hover:shadow-lg transition-shadow cursor-pointer"
                     onClick={() => {
-                      if (section.members.length > 0) {
-                        handlePersonClick(section.members[0]);
-                      }
+                      // Fermer les autres sidebars et ouvrir le détail de la section
+                      setIsSidebarOpen(false);
+                      setSelectedPerson(null);
+                      setIsVacantPositionsSidebarOpen(false);
+                      setSelectedSection(section);
+                      setIsSectionDetailsSidebarOpen(true);
                     }}
                   >
                     <h3 className="font-semibold text-lg mb-2">{section.title}</h3>
                     <div className="text-sm text-muted-foreground mb-3">
                       {section.members.length} membre{section.members.length > 1 ? 's' : ''}
+                      {section.subsections && section.subsections.length > 0 && (
+                        <span> • {section.subsections.length} sous-groupe{section.subsections.length > 1 ? 's' : ''}</span>
+                      )}
                     </div>
                     <div className="flex flex-wrap gap-2">
                       {section.members.slice(0, 3).map(member => (
@@ -591,6 +600,18 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
         onClose={() => setIsVacantPositionsSidebarOpen(false)}
         positions={getAllVacantPositions()}
         onPositionClick={navigateToVacantPosition}
+      />
+
+      <SectionDetailsSidebar
+        section={selectedSection}
+        isOpen={isSectionDetailsSidebarOpen}
+        onClose={() => {
+          setIsSectionDetailsSidebarOpen(false);
+          setSelectedSection(null);
+        }}
+        onPersonClick={handlePersonClick}
+        isAdmin={isAdmin}
+        onEditPerson={handleEditPerson}
       />
     </div>
   );
