@@ -1,7 +1,7 @@
 import React from 'react';
 import { Section, Person } from '../types/organigramme';
 import { PersonCard } from './PersonCard';
-import { X, Users, FolderTree, Briefcase } from 'lucide-react';
+import { X, Users, FolderTree, Briefcase, ChevronRight } from 'lucide-react';
 import { Button } from './ui/button';
 import { ScrollArea } from './ui/scroll-area';
 import { supabase } from '@/integrations/supabase/client';
@@ -26,10 +26,12 @@ export const SectionDetailsSidebar: React.FC<SectionDetailsSidebarProps> = ({
 }) => {
   const [projects, setProjects] = React.useState<Project[]>([]);
   const [loading, setLoading] = React.useState(false);
+  const [selectedMember, setSelectedMember] = React.useState<Person | null>(null);
 
   React.useEffect(() => {
     if (section && isOpen) {
       setLoading(true);
+      setSelectedMember(null); // Reset member selection when section changes
       supabase
         .from('projects')
         .select('*')
@@ -47,6 +49,14 @@ export const SectionDetailsSidebar: React.FC<SectionDetailsSidebarProps> = ({
     }
   }, [section, isOpen]);
 
+  const handleMemberClick = (person: Person) => {
+    setSelectedMember(person);
+  };
+
+  const handleBackToSection = () => {
+    setSelectedMember(null);
+  };
+
   if (!isOpen || !section) return null;
 
   const getAllSubsectionMembers = (sec: Section): Person[] => {
@@ -61,6 +71,121 @@ export const SectionDetailsSidebar: React.FC<SectionDetailsSidebarProps> = ({
 
   const allMembers = getAllSubsectionMembers(section);
 
+  // Si un membre est sélectionné, afficher ses détails
+  if (selectedMember) {
+    return (
+      <div
+        className={`fixed top-0 right-0 h-full w-96 bg-background border-l border-border shadow-2xl transform transition-transform duration-300 z-50 ${
+          isOpen ? 'translate-x-0' : 'translate-x-full'
+        }`}
+      >
+        <div className="flex flex-col h-full">
+          {/* Header avec bouton retour */}
+          <div className="p-6 border-b border-border">
+            <div className="flex items-start justify-between mb-4">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleBackToSection}
+                className="gap-2"
+              >
+                <ChevronRight className="w-4 h-4 rotate-180" />
+                Retour au groupe
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={onClose}
+                className="shrink-0"
+              >
+                <X className="w-5 h-5" />
+              </Button>
+            </div>
+            <div className="flex items-center gap-4">
+              {selectedMember.photo && (
+                <img
+                  src={selectedMember.photo}
+                  alt={`${selectedMember.firstName} ${selectedMember.lastName}`}
+                  className="w-16 h-16 rounded-full object-cover"
+                />
+              )}
+              <div>
+                <h2 className="text-2xl font-bold">
+                  {selectedMember.firstName} {selectedMember.lastName}
+                </h2>
+                {selectedMember.role && (
+                  <p className="text-sm text-muted-foreground">{selectedMember.role}</p>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <ScrollArea className="flex-1">
+            <div className="p-6 space-y-6">
+              {selectedMember.description && (
+                <div>
+                  <h3 className="font-semibold mb-2">À propos</h3>
+                  <p className="text-sm text-muted-foreground">{selectedMember.description}</p>
+                </div>
+              )}
+
+              {selectedMember.email && (
+                <div>
+                  <h3 className="font-semibold mb-2">Contact</h3>
+                  <p className="text-sm text-muted-foreground">{selectedMember.email}</p>
+                  {selectedMember.phone && (
+                    <p className="text-sm text-muted-foreground mt-1">{selectedMember.phone}</p>
+                  )}
+                </div>
+              )}
+
+              {selectedMember.competences && selectedMember.competences.length > 0 && (
+                <div>
+                  <h3 className="font-semibold mb-2">Compétences</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedMember.competences.map((comp, idx) => (
+                      <span
+                        key={idx}
+                        className="text-xs bg-primary/10 text-primary px-2 py-1 rounded"
+                      >
+                        {comp}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {selectedMember.linkedin && (
+                <div>
+                  <h3 className="font-semibold mb-2">Réseaux</h3>
+                  <a
+                    href={selectedMember.linkedin}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-primary hover:underline"
+                  >
+                    LinkedIn
+                  </a>
+                </div>
+              )}
+
+              {isAdmin && onEditPerson && (
+                <Button
+                  onClick={() => onEditPerson(selectedMember)}
+                  variant="outline"
+                  className="w-full"
+                >
+                  Modifier
+                </Button>
+              )}
+            </div>
+          </ScrollArea>
+        </div>
+      </div>
+    );
+  }
+
+  // Vue du groupe par défaut
   return (
     <div
       className={`fixed top-0 right-0 h-full w-96 bg-background border-l border-border shadow-2xl transform transition-transform duration-300 z-50 ${
@@ -105,7 +230,7 @@ export const SectionDetailsSidebar: React.FC<SectionDetailsSidebarProps> = ({
                   <PersonCard
                     key={person.id}
                     person={person}
-                    onClick={onPersonClick}
+                    onClick={handleMemberClick}
                     isAdmin={isAdmin}
                     onEdit={onEditPerson}
                     compact={true}
