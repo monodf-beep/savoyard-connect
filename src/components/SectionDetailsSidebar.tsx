@@ -252,24 +252,35 @@ export const SectionDetailsSidebar: React.FC<SectionDetailsSidebarProps> = ({
                   </h3>
                 </div>
                 <div className="space-y-2">
-                  {section.subsections.map(subsection => (
-                    <div
-                      key={subsection.id}
-                      className="p-3 border border-border rounded-lg hover:bg-accent/20 transition-colors"
-                    >
-                      <div className="flex items-center justify-between mb-2">
-                        <h4 className="font-medium text-sm">{subsection.title}</h4>
-                        <span className="text-xs text-muted-foreground">
-                          {subsection.members.length} membre{subsection.members.length > 1 ? 's' : ''}
-                        </span>
+                  {section.subsections.map(subsection => {
+                    const subsectionMembers = getAllSubsectionMembers(subsection);
+                    return (
+                      <div
+                        key={subsection.id}
+                        onClick={() => {
+                          // Ouvrir les détails du sous-groupe en remplaçant la section actuelle
+                          onClose();
+                          setTimeout(() => {
+                            const sectionClickEvent = new CustomEvent('section-click', { detail: subsection });
+                            window.dispatchEvent(sectionClickEvent);
+                          }, 100);
+                        }}
+                        className="p-3 border border-border rounded-lg hover:bg-accent/20 transition-colors cursor-pointer"
+                      >
+                        <div className="flex items-center justify-between mb-2">
+                          <h4 className="font-medium text-sm">{subsection.title}</h4>
+                          <span className="text-xs text-muted-foreground">
+                            {subsectionMembers.length} membre{subsectionMembers.length > 1 ? 's' : ''}
+                          </span>
+                        </div>
+                        {subsection.leader && (
+                          <p className="text-xs text-muted-foreground">
+                            Responsable : {subsection.leader.firstName} {subsection.leader.lastName}
+                          </p>
+                        )}
                       </div>
-                      {subsection.leader && (
-                        <p className="text-xs text-muted-foreground">
-                          Responsable : {subsection.leader.firstName} {subsection.leader.lastName}
-                        </p>
-                      )}
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             )}
