@@ -491,7 +491,7 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {(() => {
             const renderSectionCards = (sections: Section[]): JSX.Element[] => {
-              return sections.flatMap(section => {
+              return sections.filter(section => section.members.length > 0).flatMap(section => {
                 const cards = [];
                 
                 // Carte pour la section principale
