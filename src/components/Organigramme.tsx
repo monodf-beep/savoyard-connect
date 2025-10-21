@@ -488,64 +488,86 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
           ))}
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="space-y-8">
           {(() => {
-            const renderSectionCards = (sections: Section[]): JSX.Element[] => {
-              return sections.flatMap(section => {
-                const cards = [];
-                
-                // Carte pour la section principale
-                cards.push(
-                  <div
-                    key={section.id}
-                    className="bg-card border rounded-lg p-4 hover:shadow-lg transition-shadow cursor-pointer"
-                    onClick={() => {
-                      if (section.members.length > 0) {
-                        handlePersonClick(section.members[0]);
-                      }
-                    }}
-                  >
-                    <h3 className="font-semibold text-lg mb-2">{section.title}</h3>
-                    <div className="text-sm text-muted-foreground mb-3">
-                      {section.members.length} membre{section.members.length > 1 ? 's' : ''}
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                      {section.members.slice(0, 3).map(member => (
-                        <div
-                          key={member.id}
-                          className="flex items-center gap-2 bg-secondary/50 px-2 py-1 rounded-md text-xs hover:bg-secondary transition-colors"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handlePersonClick(member);
-                          }}
-                        >
-                          <span>{member.firstName} {member.lastName}</span>
-                        </div>
-                      ))}
-                      {section.members.length > 3 && (
-                        <div className="flex items-center px-2 py-1 text-xs text-muted-foreground">
-                          +{section.members.length - 3} autres
-                        </div>
-                      )}
-                    </div>
-                    {section.vacantPositions && section.vacantPositions.length > 0 && (
-                      <div className="mt-3 text-xs text-primary">
-                        {section.vacantPositions.length} poste{section.vacantPositions.length > 1 ? 's' : ''} vacant{section.vacantPositions.length > 1 ? 's' : ''}
-                      </div>
-                    )}
-                  </div>
-                );
-                
-                // Ajouter les sous-sections récursivement
-                if (section.subsections && section.subsections.length > 0) {
-                  cards.push(...renderSectionCards(section.subsections));
+            // Fonction pour trouver une section par titre dans toute l'arborescence
+            const findSectionByTitle = (sections: Section[], title: string): Section | null => {
+              for (const section of sections) {
+                if (section.title === title) {
+                  return section;
                 }
-                
-                return cards;
-              });
+                if (section.subsections) {
+                  const found = findSectionByTitle(section.subsections, title);
+                  if (found) return found;
+                }
+              }
+              return null;
             };
-            
-            return renderSectionCards(data.sections);
+
+            // Définir les groupes de sections à afficher
+            const sectionGroups = [
+              ['Bureau', 'Conseil d\'administration'],
+              ['Commission pédagogie', 'Commission littérature', 'Commission data'],
+              ['Commission toponymie', 'Commission néologie'],
+              ['Groupe de travail communication']
+            ];
+
+            // Fonction pour rendre une carte de section
+            const renderSectionCard = (section: Section) => (
+              <div
+                key={section.id}
+                className="bg-card border rounded-lg p-4 hover:shadow-lg transition-shadow cursor-pointer"
+                onClick={() => {
+                  if (section.members.length > 0) {
+                    handlePersonClick(section.members[0]);
+                  }
+                }}
+              >
+                <h3 className="font-semibold text-lg mb-2">{section.title}</h3>
+                <div className="text-sm text-muted-foreground mb-3">
+                  {section.members.length} membre{section.members.length > 1 ? 's' : ''}
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {section.members.slice(0, 3).map(member => (
+                    <div
+                      key={member.id}
+                      className="flex items-center gap-2 bg-secondary/50 px-2 py-1 rounded-md text-xs hover:bg-secondary transition-colors"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handlePersonClick(member);
+                      }}
+                    >
+                      <span>{member.firstName} {member.lastName}</span>
+                    </div>
+                  ))}
+                  {section.members.length > 3 && (
+                    <div className="flex items-center px-2 py-1 text-xs text-muted-foreground">
+                      +{section.members.length - 3} autres
+                    </div>
+                  )}
+                </div>
+                {section.vacantPositions && section.vacantPositions.length > 0 && (
+                  <div className="mt-3 text-xs text-primary">
+                    {section.vacantPositions.length} poste{section.vacantPositions.length > 1 ? 's' : ''} vacant{section.vacantPositions.length > 1 ? 's' : ''}
+                  </div>
+                )}
+              </div>
+            );
+
+            // Rendre chaque groupe de sections
+            return sectionGroups.map((group, groupIndex) => {
+              const sectionsInGroup = group
+                .map(title => findSectionByTitle(data.sections, title))
+                .filter((section): section is Section => section !== null);
+
+              if (sectionsInGroup.length === 0) return null;
+
+              return (
+                <div key={groupIndex} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {sectionsInGroup.map(section => renderSectionCard(section))}
+                </div>
+              );
+            });
           })()}
         </div>
       )}
