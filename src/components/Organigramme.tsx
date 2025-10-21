@@ -489,66 +489,84 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {data.sections.map(section => (
-            <div
-              key={section.id}
-              className="bg-card border rounded-lg p-4 hover:shadow-lg transition-shadow cursor-pointer"
-              onClick={() => {
-                if (section.members.length > 0) {
-                  handlePersonClick(section.members[0]);
-                }
-              }}
-            >
-              <h3 className="font-semibold text-lg mb-2">{section.title}</h3>
-              <div className="text-sm text-muted-foreground mb-3">
-                {section.members.length} membre{section.members.length > 1 ? 's' : ''}
-              </div>
-              <div className="flex flex-wrap gap-2 mb-3">
-                {section.members.slice(0, 3).map(member => (
-                  <div
-                    key={member.id}
-                    className="flex items-center gap-2 bg-secondary/50 px-2 py-1 rounded-md text-xs hover:bg-secondary transition-colors"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handlePersonClick(member);
-                    }}
-                  >
-                    <span>{member.firstName} {member.lastName}</span>
+          {data.sections.map(section => {
+            // Compter tous les membres (incluant sous-sections)
+            const countAllMembers = (sec: Section): number => {
+              let count = sec.members.length;
+              if (sec.subsections) {
+                sec.subsections.forEach(sub => {
+                  count += countAllMembers(sub);
+                });
+              }
+              return count;
+            };
+            
+            const totalMembers = countAllMembers(section);
+            const subsectionCount = section.subsections?.length || 0;
+            
+            return (
+              <div
+                key={section.id}
+                className="bg-card border rounded-lg p-4 hover:shadow-lg transition-shadow cursor-pointer"
+                onClick={() => {
+                  if (section.members.length > 0) {
+                    handlePersonClick(section.members[0]);
+                  }
+                }}
+              >
+                <h3 className="font-semibold text-lg mb-2">{section.title}</h3>
+                <div className="text-sm text-muted-foreground mb-3 space-y-1">
+                  <div>{totalMembers} membre{totalMembers > 1 ? 's' : ''}</div>
+                  {subsectionCount > 0 && (
+                    <div className="text-xs text-primary">
+                      {subsectionCount} sous-groupe{subsectionCount > 1 ? 's' : ''}
+                    </div>
+                  )}
+                </div>
+                
+                {/* Afficher les sous-sections */}
+                {section.subsections && section.subsections.length > 0 && (
+                  <div className="mb-3 space-y-1">
+                    <div className="text-xs font-medium text-muted-foreground mb-1">Sous-groupes:</div>
+                    <div className="flex flex-wrap gap-1">
+                      {section.subsections.map(subsection => (
+                        <span
+                          key={subsection.id}
+                          className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-md"
+                        >
+                          {subsection.title}
+                        </span>
+                      ))}
+                    </div>
                   </div>
-                ))}
-                {section.members.length > 3 && (
-                  <div className="flex items-center px-2 py-1 text-xs text-muted-foreground">
-                    +{section.members.length - 3} autres
+                )}
+                <div className="flex flex-wrap gap-2">
+                  {section.members.slice(0, 3).map(member => (
+                    <div
+                      key={member.id}
+                      className="flex items-center gap-2 bg-secondary/50 px-2 py-1 rounded-md text-xs hover:bg-secondary transition-colors"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handlePersonClick(member);
+                      }}
+                    >
+                      <span>{member.firstName} {member.lastName}</span>
+                    </div>
+                  ))}
+                  {section.members.length > 3 && (
+                    <div className="flex items-center px-2 py-1 text-xs text-muted-foreground">
+                      +{section.members.length - 3} autres
+                    </div>
+                  )}
+                </div>
+                {section.vacantPositions && section.vacantPositions.length > 0 && (
+                  <div className="mt-3 text-xs text-primary">
+                    {section.vacantPositions.length} poste{section.vacantPositions.length > 1 ? 's' : ''} vacant{section.vacantPositions.length > 1 ? 's' : ''}
                   </div>
                 )}
               </div>
-              
-              {/* Affichage des sous-sections (commissions filles / groupes de travail fils) */}
-              {section.subsections && section.subsections.length > 0 && (
-                <div className="mt-3 pt-3 border-t border-border">
-                  <div className="text-xs font-medium text-muted-foreground mb-2">
-                    Sous-groupes ({section.subsections.length})
-                  </div>
-                  <div className="flex flex-wrap gap-1">
-                    {section.subsections.map(subsection => (
-                      <div
-                        key={subsection.id}
-                        className="bg-primary/10 text-primary px-2 py-1 rounded text-xs"
-                      >
-                        {subsection.title}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-              
-              {section.vacantPositions && section.vacantPositions.length > 0 && (
-                <div className="mt-3 text-xs text-primary">
-                  {section.vacantPositions.length} poste{section.vacantPositions.length > 1 ? 's' : ''} vacant{section.vacantPositions.length > 1 ? 's' : ''}
-                </div>
-              )}
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
