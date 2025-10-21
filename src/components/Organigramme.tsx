@@ -7,7 +7,7 @@ import { PersonForm } from './PersonForm';
 import { SectionForm } from './SectionForm';
 import { VacantPositionForm } from './VacantPositionForm';
 import { Button } from './ui/button';
-import { Settings, Eye, ExpandIcon as Expand, ShrinkIcon as Shrink, UserPlus, FolderPlus, LogIn, LogOut } from 'lucide-react';
+import { Settings, Eye, ExpandIcon as Expand, ShrinkIcon as Shrink, UserPlus, FolderPlus, LogIn, LogOut, LayoutGrid, List } from 'lucide-react';
 import { useOrganigramme } from '../hooks/useOrganigramme';
 import { supabase } from '../integrations/supabase/client';
 import { useAuth } from '../hooks/useAuth';
@@ -32,6 +32,7 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
   const [editingSection, setEditingSection] = useState<Section | null>(null);
   const [isVacantPositionFormOpen, setIsVacantPositionFormOpen] = useState(false);
   const [editingVacantPosition, setEditingVacantPosition] = useState<VacantPosition | null>(null);
+  const [viewMode, setViewMode] = useState<'line' | 'grid'>('line');
 
   // Listen for custom events to open vacant positions sidebar
   React.useEffect(() => {
@@ -361,6 +362,30 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
 
         {/* Controls compacts et discrets */}
         <div className="flex flex-wrap items-center justify-center gap-1">
+          {/* View Mode Toggle */}
+          <div className="flex gap-1 mr-2">
+            <Button
+              type="button"
+              onClick={() => setViewMode('line')}
+              variant={viewMode === 'line' ? 'default' : 'ghost'}
+              size="sm"
+              className="text-xs"
+            >
+              <List className="w-3 h-3 mr-1" />
+              Ligne
+            </Button>
+            <Button
+              type="button"
+              onClick={() => setViewMode('grid')}
+              variant={viewMode === 'grid' ? 'default' : 'ghost'}
+              size="sm"
+              className="text-xs"
+            >
+              <LayoutGrid className="w-3 h-3 mr-1" />
+              Tuiles
+            </Button>
+          </div>
+
           <Button 
             type="button"
             onClick={(e) => { e.preventDefault(); e.stopPropagation(); expandAll(); }}
@@ -447,20 +472,83 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
         </div>
       )}
 
-      {/* Sections épurées */}
-      <div className="space-y-4">
-        {data.sections.map(section => (
-          <SectionCard
-            key={section.id}
-            section={section}
-            onToggle={toggleSection}
-            onPersonClick={handlePersonClick}
-            isAdmin={isAdmin}
-            onEditPerson={handleEditPerson}
-            onEditVacantPosition={handleEditVacantPosition}
-          />
-        ))}
-      </div>
+      {/* Sections */}
+      {viewMode === 'line' ? (
+        <div className="space-y-4">
+          {data.sections.map(section => (
+            <SectionCard
+              key={section.id}
+              section={section}
+              onToggle={toggleSection}
+              onPersonClick={handlePersonClick}
+              isAdmin={isAdmin}
+              onEditPerson={handleEditPerson}
+              onEditVacantPosition={handleEditVacantPosition}
+            />
+          ))}
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {(() => {
+            const renderSectionCards = (sections: Section[]): JSX.Element[] => {
+              return sections.flatMap(section => {
+                const cards = [];
+                
+                // Carte pour la section principale
+                cards.push(
+                  <div
+                    key={section.id}
+                    className="bg-card border rounded-lg p-4 hover:shadow-lg transition-shadow cursor-pointer"
+                    onClick={() => {
+                      if (section.members.length > 0) {
+                        handlePersonClick(section.members[0]);
+                      }
+                    }}
+                  >
+                    <h3 className="font-semibold text-lg mb-2">{section.title}</h3>
+                    <div className="text-sm text-muted-foreground mb-3">
+                      {section.members.length} membre{section.members.length > 1 ? 's' : ''}
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {section.members.slice(0, 3).map(member => (
+                        <div
+                          key={member.id}
+                          className="flex items-center gap-2 bg-secondary/50 px-2 py-1 rounded-md text-xs hover:bg-secondary transition-colors"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handlePersonClick(member);
+                          }}
+                        >
+                          <span>{member.firstName} {member.lastName}</span>
+                        </div>
+                      ))}
+                      {section.members.length > 3 && (
+                        <div className="flex items-center px-2 py-1 text-xs text-muted-foreground">
+                          +{section.members.length - 3} autres
+                        </div>
+                      )}
+                    </div>
+                    {section.vacantPositions && section.vacantPositions.length > 0 && (
+                      <div className="mt-3 text-xs text-primary">
+                        {section.vacantPositions.length} poste{section.vacantPositions.length > 1 ? 's' : ''} vacant{section.vacantPositions.length > 1 ? 's' : ''}
+                      </div>
+                    )}
+                  </div>
+                );
+                
+                // Ajouter les sous-sections récursivement
+                if (section.subsections && section.subsections.length > 0) {
+                  cards.push(...renderSectionCards(section.subsections));
+                }
+                
+                return cards;
+              });
+            };
+            
+            return renderSectionCards(data.sections);
+          })()}
+        </div>
+      )}
 
       </div>
 
