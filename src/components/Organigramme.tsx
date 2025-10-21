@@ -523,6 +523,23 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
                     </div>
                   )}
                 </div>
+                
+                {/* Afficher les sous-sections */}
+                {section.subsections && section.subsections.length > 0 && (
+                  <div className="mb-3 space-y-1">
+                    <div className="text-xs font-medium text-muted-foreground mb-1">Sous-groupes:</div>
+                    <div className="flex flex-wrap gap-1">
+                      {section.subsections.map(subsection => (
+                        <span
+                          key={subsection.id}
+                          className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-md"
+                        >
+                          {subsection.title}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
                 <div className="flex flex-wrap gap-2">
                   {section.members.slice(0, 3).map(member => (
                     <div
