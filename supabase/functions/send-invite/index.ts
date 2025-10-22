@@ -96,7 +96,7 @@ serve(async (req: Request) => {
     });
 
     if (emailError) {
-      console.error("Resend error:", emailError);
+      if (Deno.env.get("DENO_ENV") !== "production") console.error("Resend error:", emailError);
       return new Response(JSON.stringify({ error: "Erreur d'envoi de l'email" }), {
         status: 500,
         headers: { "Content-Type": "application/json", ...corsHeaders },
@@ -108,7 +108,7 @@ serve(async (req: Request) => {
       headers: { "Content-Type": "application/json", ...corsHeaders },
     });
   } catch (error) {
-    console.error("send-invite error:", error);
+    if (Deno.env.get("DENO_ENV") !== "production") console.error("send-invite error:", error);
     return new Response(JSON.stringify({ error: "Erreur serveur" }), {
       status: 500,
       headers: { "Content-Type": "application/json", ...corsHeaders },

@@ -14,11 +14,11 @@ export const useOrganigramme = (isAdmin: boolean = false) => {
   // Charger les données depuis Supabase
   const loadData = async () => {
     try {
-      console.log('Début du chargement des données...');
+      if (import.meta.env.DEV) console.log('Début du chargement des données...');
       setLoading(true);
       
       // Charger les sections
-      console.log('Chargement des sections...');
+      if (import.meta.env.DEV) console.log('Chargement des sections...');
       const { data: sectionsData, error: sectionsError } = await supabase
         .from('sections')
         .select('*')
@@ -149,15 +149,15 @@ export const useOrganigramme = (isAdmin: boolean = false) => {
         isActive: job.status === 'active'
       })) || [];
 
-      console.log('Formatage terminé, mise à jour de l\'état...');
+      if (import.meta.env.DEV) console.log('Formatage terminé, mise à jour de l\'état...');
       setData({
         sections: formattedSections,
         people: formattedPeople,
         jobPostings: formattedJobs
       });
-      console.log('État mis à jour avec:', { sectionsCount: formattedSections.length, peopleCount: formattedPeople.length });
+      if (import.meta.env.DEV) console.log('État mis à jour avec:', { sectionsCount: formattedSections.length, peopleCount: formattedPeople.length });
     } catch (error) {
-      console.error('Erreur lors du chargement des données:', error);
+      if (import.meta.env.DEV) console.error('Erreur lors du chargement des données:', error);
       toast.error('Erreur lors du chargement des données');
     } finally {
       setLoading(false);
@@ -167,7 +167,7 @@ export const useOrganigramme = (isAdmin: boolean = false) => {
   // Sauvegarder une personne
   const savePerson = async (person: Person) => {
     try {
-      console.log('Sauvegarde de la personne:', person);
+      if (import.meta.env.DEV) console.log('Sauvegarde de la personne:', person);
       
       const { data: savedPerson, error } = await supabase
         .from('people')
@@ -190,16 +190,16 @@ export const useOrganigramme = (isAdmin: boolean = false) => {
 
       if (error) throw error;
 
-      console.log('Personne sauvegardée:', savedPerson);
+      if (import.meta.env.DEV) console.log('Personne sauvegardée:', savedPerson);
       toast.success('Personne sauvegardée avec succès');
       
       // Recharger les données et vérifier qu'elles sont bien mises à jour
-      console.log('Rechargement des données...');
+      if (import.meta.env.DEV) console.log('Rechargement des données...');
       await loadData();
-      console.log('Données rechargées');
+      if (import.meta.env.DEV) console.log('Données rechargées');
       return savedPerson;
     } catch (error) {
-      console.error('Erreur lors de la sauvegarde:', error);
+      if (import.meta.env.DEV) console.error('Erreur lors de la sauvegarde:', error);
       toast.error('Erreur lors de la sauvegarde');
       throw error;
     }
@@ -218,7 +218,7 @@ export const useOrganigramme = (isAdmin: boolean = false) => {
       toast.success('Personne supprimée avec succès');
       await loadData(); // Recharger les données
     } catch (error) {
-      console.error('Erreur lors de la suppression:', error);
+      if (import.meta.env.DEV) console.error('Erreur lors de la suppression:', error);
       toast.error('Erreur lors de la suppression');
       throw error;
     }
@@ -243,7 +243,7 @@ export const useOrganigramme = (isAdmin: boolean = false) => {
       await loadData(); // Recharger les données
       return savedSection;
     } catch (error) {
-      console.error('Erreur lors de la sauvegarde:', error);
+      if (import.meta.env.DEV) console.error('Erreur lors de la sauvegarde:', error);
       toast.error('Erreur lors de la sauvegarde');
       throw error;
     }
@@ -262,7 +262,7 @@ export const useOrganigramme = (isAdmin: boolean = false) => {
       toast.success('Section supprimée avec succès');
       await loadData(); // Recharger les données
     } catch (error) {
-      console.error('Erreur lors de la suppression:', error);
+      if (import.meta.env.DEV) console.error('Erreur lors de la suppression:', error);
       toast.error('Erreur lors de la suppression');
       throw error;
     }
@@ -297,7 +297,7 @@ export const useOrganigramme = (isAdmin: boolean = false) => {
         sections: updateSectionInState(prevData.sections)
       }));
     } catch (error) {
-      console.error('Erreur lors de la mise à jour:', error);
+      if (import.meta.env.DEV) console.error('Erreur lors de la mise à jour:', error);
     }
   };
 
@@ -321,7 +321,7 @@ export const useOrganigramme = (isAdmin: boolean = false) => {
       await loadData(); // Recharger les données
       return savedPosition;
     } catch (error) {
-      console.error('Erreur lors de la sauvegarde:', error);
+      if (import.meta.env.DEV) console.error('Erreur lors de la sauvegarde:', error);
       toast.error('Erreur lors de la sauvegarde');
       throw error;
     }
@@ -348,7 +348,7 @@ export const useOrganigramme = (isAdmin: boolean = false) => {
       await loadData(); // Recharger les données
       return updatedPosition;
     } catch (error) {
-      console.error('Erreur lors de la modification:', error);
+      if (import.meta.env.DEV) console.error('Erreur lors de la modification:', error);
       toast.error('Erreur lors de la modification');
       throw error;
     }
@@ -367,7 +367,7 @@ export const useOrganigramme = (isAdmin: boolean = false) => {
       toast.success('Poste vacant supprimé avec succès');
       await loadData(); // Recharger les données
     } catch (error) {
-      console.error('Erreur lors de la suppression:', error);
+      if (import.meta.env.DEV) console.error('Erreur lors de la suppression:', error);
       toast.error('Erreur lors de la suppression');
       throw error;
     }

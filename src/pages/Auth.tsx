@@ -227,9 +227,12 @@ export default function Auth() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
-                    minLength={6}
+                    minLength={8}
                     disabled={loading}
                   />
+                  <p className="text-xs text-muted-foreground">
+                    Minimum 8 caractères recommandés
+                  </p>
                 </div>
 
                 {error && (

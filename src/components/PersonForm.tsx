@@ -226,7 +226,7 @@ export const PersonForm: React.FC<PersonFormProps> = ({
       if (error) throw error;
       toast.success("Invitation envoyée");
     } catch (e) {
-      console.error(e);
+      if (import.meta.env.DEV) console.error(e);
       toast.error("Échec de l'envoi de l'invitation");
     }
   };

@@ -52,12 +52,12 @@ export const useAuth = () => {
         .single();
 
       if (error && error.code !== 'PGRST116') {
-        console.error('Error checking admin role:', error);
+        if (import.meta.env.DEV) console.error('Error checking admin role:', error);
       }
 
       setIsAdmin(!!data);
     } catch (error) {
-      console.error('Error checking admin role:', error);
+      if (import.meta.env.DEV) console.error('Error checking admin role:', error);
       setIsAdmin(false);
     } finally {
       setLoading(false);

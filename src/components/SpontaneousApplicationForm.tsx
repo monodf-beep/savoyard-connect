@@ -66,7 +66,7 @@ export const SpontaneousApplicationForm: React.FC<SpontaneousApplicationFormProp
       });
       onClose();
     } catch (error) {
-      console.error('Error submitting application:', error);
+      if (import.meta.env.DEV) console.error('Error submitting application:', error);
       toast({
         title: 'Erreur',
         description: 'Une erreur est survenue lors de l\'envoi de votre candidature.',
