@@ -302,6 +302,7 @@ export type Database = {
           display_order: number | null
           id: string
           is_expanded: boolean | null
+          is_hidden: boolean | null
           parent_id: string | null
           title: string
           updated_at: string | null
@@ -311,6 +312,7 @@ export type Database = {
           display_order?: number | null
           id?: string
           is_expanded?: boolean | null
+          is_hidden?: boolean | null
           parent_id?: string | null
           title: string
           updated_at?: string | null
@@ -320,6 +322,7 @@ export type Database = {
           display_order?: number | null
           id?: string
           is_expanded?: boolean | null
+          is_hidden?: boolean | null
           parent_id?: string | null
           title?: string
           updated_at?: string | null
@@ -466,7 +469,7 @@ export type Database = {
     }
     Functions: {
       get_people_detailed: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           adresse: string | null
           avatar_url: string | null
@@ -488,9 +491,15 @@ export type Database = {
           title: string | null
           updated_at: string | null
         }[]
+        SetofOptions: {
+          from: "*"
+          to: "people"
+          isOneToOne: false
+          isSetofReturn: true
+        }
       }
       get_people_with_details: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           adresse: string
           avatar_url: string
@@ -516,7 +525,7 @@ export type Database = {
         Returns: boolean
       }
       people_public_fn: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           avatar_url: string
           bio: string

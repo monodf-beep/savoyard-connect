@@ -105,6 +105,7 @@ export const useOrganigramme = (isAdmin: boolean = false) => {
               title: section.title,
               type: 'bureau' as const,
               isExpanded: section.is_expanded,
+              isHidden: section.is_hidden || false,
               members: members as Person[],
               vacantPositions: vacantPositionsData?.filter(vp => vp.section_id === section.id).map(vp => ({
                 id: vp.id,

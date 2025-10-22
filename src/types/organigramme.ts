@@ -49,6 +49,7 @@ export interface Section {
   title: string;
   type: 'bureau' | 'conseil' | 'commission' | 'groupe';
   isExpanded: boolean;
+  isHidden?: boolean;
   subsections?: Section[];
   members: Person[];
   vacantPositions?: VacantPosition[];

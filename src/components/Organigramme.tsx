@@ -8,11 +8,12 @@ import { PersonForm } from './PersonForm';
 import { SectionForm } from './SectionForm';
 import { VacantPositionForm } from './VacantPositionForm';
 import { Button } from './ui/button';
-import { Settings, Eye, ExpandIcon as Expand, ShrinkIcon as Shrink, UserPlus, FolderPlus, LogIn, LogOut, LayoutGrid, List } from 'lucide-react';
+import { Settings, Eye, EyeOff, ExpandIcon as Expand, ShrinkIcon as Shrink, UserPlus, FolderPlus, LogIn, LogOut, LayoutGrid, List } from 'lucide-react';
 import { useOrganigramme } from '../hooks/useOrganigramme';
 import { supabase } from '../integrations/supabase/client';
 import { useAuth } from '../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 
 interface OrganigrammeProps {
   isAdminMode?: boolean;
@@ -103,6 +104,33 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
       console.error('Erreur lors de la fermeture:', error);
     }
   }, [refetch]);
+
+  const toggleSectionVisibility = useCallback(async (sectionId: string, currentHidden: boolean) => {
+    try {
+      await supabase
+        .from('sections')
+        .update({ is_hidden: !currentHidden })
+        .eq('id', sectionId);
+
+      await refetch();
+      toast.success(currentHidden ? 'Section affichée' : 'Section cachée');
+    } catch (error) {
+      console.error('Erreur lors du changement de visibilité:', error);
+      toast.error('Erreur lors du changement de visibilité');
+    }
+  }, [refetch]);
+
+  // Filter sections based on visibility and admin status
+  const filterVisibleSections = useCallback((sections: Section[]): Section[] => {
+    return sections
+      .filter(section => isAdmin || !section.isHidden)
+      .map(section => ({
+        ...section,
+        subsections: section.subsections ? filterVisibleSections(section.subsections) : []
+      }));
+  }, [isAdmin]);
+
+  const visibleSections = filterVisibleSections(data.sections);
 
   const handlePersonClick = useCallback((person: Person) => {
     // Fermer le panneau des postes vacants s'il est ouvert
@@ -478,7 +506,7 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
       {/* Sections */}
       {viewMode === 'line' ? (
         <div className="space-y-4">
-          {data.sections.map(section => (
+          {visibleSections.map(section => (
             <SectionCard
               key={section.id}
               section={section}
@@ -501,45 +529,76 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
                 cards.push(
                   <div
                     key={section.id}
-                    className="bg-card border rounded-lg p-4 hover:shadow-lg transition-shadow cursor-pointer"
-                    onClick={() => {
-                      // Fermer les autres sidebars et ouvrir le détail de la section
-                      setIsSidebarOpen(false);
-                      setSelectedPerson(null);
-                      setIsVacantPositionsSidebarOpen(false);
-                      setSelectedSection(section);
-                      setIsSectionDetailsSidebarOpen(true);
-                    }}
+                    className="bg-card border rounded-lg p-4 hover:shadow-lg transition-shadow relative group"
                   >
-                    <h3 className="font-semibold text-lg mb-2">{section.title}</h3>
-                    <div className="text-sm text-muted-foreground mb-3">
-                      {section.members.length} membre{section.members.length > 1 ? 's' : ''}
-                      {section.subsections && section.subsections.length > 0 && (
-                        <span> • {section.subsections.length} sous-groupe{section.subsections.length > 1 ? 's' : ''}</span>
+                    {/* Section content */}
+                    <div
+                      className="cursor-pointer"
+                      onClick={() => {
+                        // Fermer les autres sidebars et ouvrir le détail de la section
+                        setIsSidebarOpen(false);
+                        setSelectedPerson(null);
+                        setIsVacantPositionsSidebarOpen(false);
+                        setSelectedSection(section);
+                        setIsSectionDetailsSidebarOpen(true);
+                      }}
+                    >
+                      <h3 className="font-semibold text-lg mb-2">{section.title}</h3>
+                      <div className="text-sm text-muted-foreground mb-3">
+                        {section.members.length} membre{section.members.length > 1 ? 's' : ''}
+                        {section.subsections && section.subsections.length > 0 && (
+                          <span> • {section.subsections.length} sous-groupe{section.subsections.length > 1 ? 's' : ''}</span>
+                        )}
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {section.members.slice(0, 3).map(member => (
+                          <div
+                            key={member.id}
+                            className="flex items-center gap-2 bg-secondary/50 px-2 py-1 rounded-md text-xs hover:bg-secondary transition-colors"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handlePersonClick(member);
+                            }}
+                          >
+                            <span>{member.firstName} {member.lastName}</span>
+                          </div>
+                        ))}
+                        {section.members.length > 3 && (
+                          <div className="flex items-center px-2 py-1 text-xs text-muted-foreground">
+                            +{section.members.length - 3} autres
+                          </div>
+                        )}
+                      </div>
+                      {section.vacantPositions && section.vacantPositions.length > 0 && (
+                        <div className="mt-3 text-xs text-primary">
+                          {section.vacantPositions.length} poste{section.vacantPositions.length > 1 ? 's' : ''} vacant{section.vacantPositions.length > 1 ? 's' : ''}
+                        </div>
                       )}
                     </div>
-                    <div className="flex flex-wrap gap-2">
-                      {section.members.slice(0, 3).map(member => (
-                        <div
-                          key={member.id}
-                          className="flex items-center gap-2 bg-secondary/50 px-2 py-1 rounded-md text-xs hover:bg-secondary transition-colors"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handlePersonClick(member);
-                          }}
-                        >
-                          <span>{member.firstName} {member.lastName}</span>
-                        </div>
-                      ))}
-                      {section.members.length > 3 && (
-                        <div className="flex items-center px-2 py-1 text-xs text-muted-foreground">
-                          +{section.members.length - 3} autres
-                        </div>
-                      )}
-                    </div>
-                    {section.vacantPositions && section.vacantPositions.length > 0 && (
-                      <div className="mt-3 text-xs text-primary">
-                        {section.vacantPositions.length} poste{section.vacantPositions.length > 1 ? 's' : ''} vacant{section.vacantPositions.length > 1 ? 's' : ''}
+
+                    {/* Admin visibility toggle button */}
+                    {isAdmin && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleSectionVisibility(section.id, section.isHidden || false);
+                        }}
+                      >
+                        {section.isHidden ? (
+                          <EyeOff className="w-4 h-4 text-muted-foreground" />
+                        ) : (
+                          <Eye className="w-4 h-4 text-muted-foreground" />
+                        )}
+                      </Button>
+                    )}
+
+                    {/* Hidden indicator for admins */}
+                    {isAdmin && section.isHidden && (
+                      <div className="absolute top-2 left-2 bg-muted text-muted-foreground px-2 py-1 rounded text-xs">
+                        Cachée
                       </div>
                     )}
                   </div>
@@ -554,7 +613,7 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
               });
             };
             
-            return renderSectionCards(data.sections);
+            return renderSectionCards(visibleSections);
           })()}
         </div>
       )}
