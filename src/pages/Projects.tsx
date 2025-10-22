@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useOrganigramme } from '@/hooks/useOrganigramme';
 import { Button } from '@/components/ui/button';
@@ -34,7 +34,7 @@ const Projects = () => {
   const [selectedSectionId, setSelectedSectionId] = useState<string | undefined>();
 
   // Fetch projects
-  useState(() => {
+  useEffect(() => {
     const fetchProjects = async () => {
       const { data, error } = await supabase
         .from('projects')
@@ -57,7 +57,7 @@ const Projects = () => {
     };
 
     fetchProjects();
-  });
+  }, [toast]);
 
   const handleSaveProject = async (projectData: Partial<Project>) => {
     // Basic validation (Select required isn't enforced by the Radix Select)
