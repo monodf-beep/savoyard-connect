@@ -3,9 +3,7 @@ import { JobPosting } from '../types/organigramme';
 import { JobPostingCard } from '../components/JobPostingCard';
 import { JobPostingForm } from '../components/JobPostingForm';
 import { Button } from '../components/ui/button';
-import { Input } from '../components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
-import { Plus, Search, Briefcase, Settings, Info } from 'lucide-react';
+import { Plus, Briefcase, Settings, Info } from 'lucide-react';
 import { useIsWordPressAdmin } from '../utils/wordpress';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../components/ui/tooltip';
 import { Navbar } from '../components/Navbar';
@@ -56,22 +54,8 @@ const Jobs = () => {
   const isWPAdmin = useIsWordPressAdmin();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedJobPosting, setSelectedJobPosting] = useState<JobPosting | null>(null);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterType, setFilterType] = useState<string>('all');
-  const [filterDepartment, setFilterDepartment] = useState<string>('all');
 
-  const filteredJobPostings = jobPostings.filter(job => {
-    if (!job.isActive) return false;
-    
-    const matchesSearch = job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         job.department.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesType = filterType === 'all' || job.type === filterType;
-    const matchesDepartment = filterDepartment === 'all' || job.department === filterDepartment;
-    
-    return matchesSearch && matchesType && matchesDepartment;
-  });
-
-  const departments = Array.from(new Set(jobPostings.map(job => job.department)));
+  const activeJobPostings = jobPostings.filter(job => job.isActive);
 
   const handleSaveJobPosting = (jobPosting: JobPosting) => {
     if (selectedJobPosting) {
@@ -113,7 +97,7 @@ const Jobs = () => {
             <div>
               <h1 className="text-3xl font-bold">Postes Vacants</h1>
               <p className="text-muted-foreground">
-                {filteredJobPostings.length} poste{filteredJobPostings.length > 1 ? 's' : ''} disponible{filteredJobPostings.length > 1 ? 's' : ''}
+                {activeJobPostings.length} poste{activeJobPostings.length > 1 ? 's' : ''} disponible{activeJobPostings.length > 1 ? 's' : ''}
               </p>
             </div>
           </div>
@@ -154,69 +138,18 @@ const Jobs = () => {
           </div>
         </div>
 
-        {/* Filtres */}
-        <div className="bg-card rounded-lg border border-border p-4 mb-6">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input
-                placeholder="Rechercher un poste..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-            
-            <Select value={filterType} onValueChange={setFilterType}>
-              <SelectTrigger>
-                <SelectValue placeholder="Type de contrat" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Tous les contrats</SelectItem>
-                <SelectItem value="CDI">CDI</SelectItem>
-                <SelectItem value="CDD">CDD</SelectItem>
-                <SelectItem value="Stage">Stage</SelectItem>
-                <SelectItem value="Freelance">Freelance</SelectItem>
-              </SelectContent>
-            </Select>
-            
-            <Select value={filterDepartment} onValueChange={setFilterDepartment}>
-              <SelectTrigger>
-                <SelectValue placeholder="Département" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Tous les départements</SelectItem>
-                {departments.map(dept => (
-                  <SelectItem key={dept} value={dept}>{dept}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            
-            <Button 
-              variant="outline" 
-              onClick={() => {
-                setSearchTerm('');
-                setFilterType('all');
-                setFilterDepartment('all');
-              }}
-            >
-              Réinitialiser
-            </Button>
-          </div>
-        </div>
-
         {/* Liste des postes */}
-        {filteredJobPostings.length === 0 ? (
+        {activeJobPostings.length === 0 ? (
           <div className="text-center py-12">
             <Briefcase className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-lg font-semibold mb-2">Aucun poste trouvé</h3>
+            <h3 className="text-lg font-semibold mb-2">Aucun poste disponible</h3>
             <p className="text-muted-foreground">
-              Aucun poste ne correspond à vos critères de recherche.
+              Il n'y a actuellement aucun poste vacant.
             </p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredJobPostings.map((jobPosting) => (
+            {activeJobPostings.map((jobPosting) => (
               <JobPostingCard
                 key={jobPosting.id}
                 jobPosting={jobPosting}
