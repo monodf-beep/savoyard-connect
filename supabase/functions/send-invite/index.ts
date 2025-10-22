@@ -17,11 +17,37 @@ serve(async (req: Request) => {
   try {
     const authHeader = req.headers.get("Authorization") ?? "";
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
 
-    const supabase = createClient(supabaseUrl, serviceKey, {
+    // Create client with user's JWT to verify admin role
+    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
       global: { headers: { Authorization: authHeader } },
     });
+
+    // Verify user is authenticated and has admin role
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    
+    if (authError || !user) {
+      return new Response(JSON.stringify({ error: "Non autorisé" }), {
+        status: 401,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
+
+    // Check if user has admin role
+    const { data: roleData, error: roleError } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", user.id)
+      .eq("role", "admin")
+      .single();
+
+    if (roleError || !roleData) {
+      return new Response(JSON.stringify({ error: "Non autorisé" }), {
+        status: 403,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
 
     const { email, baseUrl }: { email?: string; baseUrl?: string } = await req.json();
 
@@ -36,7 +62,7 @@ serve(async (req: Request) => {
     const token = crypto.randomUUID().replace(/-/g, "");
     const expiresAt = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString();
 
-    // Insert invite - RLS will enforce admin permissions via forwarded JWT
+    // Insert invite
     const { data: invite, error: insertError } = await supabase
       .from("invites")
       .insert({ email, token, expires_at: expiresAt, status: "pending" })
@@ -44,9 +70,8 @@ serve(async (req: Request) => {
       .maybeSingle();
 
     if (insertError) {
-      console.error("Insert invite error:", insertError);
-      return new Response(JSON.stringify({ error: "Non autorisé" }), {
-        status: 403,
+      return new Response(JSON.stringify({ error: "Erreur lors de la création de l'invitation" }), {
+        status: 500,
         headers: { "Content-Type": "application/json", ...corsHeaders },
       });
     }
