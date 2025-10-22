@@ -25,46 +25,70 @@ export const useOrganigramme = (isAdmin: boolean = false) => {
         .order('display_order', { ascending: true })
         .order('created_at', { ascending: true });
       
-      if (sectionsError) throw sectionsError;
+      if (sectionsError) {
+        if (import.meta.env.DEV) console.error('Sections load error:', sectionsError);
+        toast.error('Erreur lors du chargement des sections');
+        setLoading(false);
+        return;
+      }
 
       // Charger les personnes - utilisez les fonctions sécurisées
-      let peopleData;
-      let peopleError;
-
-      if (isAdmin) {
-        const result = await supabase.rpc('get_people_with_details');
-        peopleData = result.data;
-        peopleError = result.error;
-      } else {
-        const result = await supabase.rpc('people_public_fn');
-        peopleData = result.data;
-        peopleError = result.error;
+      let peopleData: any[] = [];
+      try {
+        if (isAdmin) {
+          const result = await supabase.rpc('get_people_with_details');
+          if (result.error) throw result.error;
+          peopleData = result.data || [];
+        } else {
+          const result = await supabase.rpc('people_public_fn');
+          if (result.error) throw result.error;
+          peopleData = result.data || [];
+        }
+      } catch (e) {
+        if (import.meta.env.DEV) console.error('People load error:', e);
+        peopleData = [];
       }
       
-      if (peopleError) throw peopleError;
-
       // Charger les liaisons section-membres
-      const { data: sectionMembersData, error: sectionMembersError } = await supabase
-        .from('section_members')
-        .select('*');
-      
-      if (sectionMembersError) throw sectionMembersError;
+      let sectionMembersData: any[] = [];
+      try {
+        const { data: smd, error: sectionMembersError } = await supabase
+          .from('section_members')
+          .select('*');
+        if (sectionMembersError) throw sectionMembersError;
+        sectionMembersData = smd || [];
+      } catch (e) {
+        if (import.meta.env.DEV) console.error('Section members load error:', e);
+        sectionMembersData = [];
+      }
 
       // Charger les offres d'emploi
-      const { data: jobsData, error: jobsError } = await supabase
-        .from('job_postings')
-        .select('*')
-        .order('created_at');
-      
-      if (jobsError) throw jobsError;
+      let jobsData: any[] = [];
+      try {
+        const { data: jd, error: jobsError } = await supabase
+          .from('job_postings')
+          .select('*')
+          .order('created_at');
+        if (jobsError) throw jobsError;
+        jobsData = jd || [];
+      } catch (e) {
+        if (import.meta.env.DEV) console.error('Job postings load error:', e);
+        jobsData = [];
+      }
 
       // Charger les postes vacants
-      const { data: vacantPositionsData, error: vacantPositionsError } = await supabase
-        .from('vacant_positions')
-        .select('*')
-        .order('created_at');
-      
-      if (vacantPositionsError) throw vacantPositionsError;
+      let vacantPositionsData: any[] = [];
+      try {
+        const { data: vpd, error: vacantPositionsError } = await supabase
+          .from('vacant_positions')
+          .select('*')
+          .order('created_at');
+        if (vacantPositionsError) throw vacantPositionsError;
+        vacantPositionsData = vpd || [];
+      } catch (e) {
+        if (import.meta.env.DEV) console.error('Vacant positions load error:', e);
+        vacantPositionsData = [];
+      }
 
 
       // Construire la hiérarchie des sections
