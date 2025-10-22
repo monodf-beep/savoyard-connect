@@ -27,7 +27,7 @@ export const useOrganigramme = (isAdmin: boolean = false) => {
       
       if (sectionsError) throw sectionsError;
 
-      // Charger les personnes - utilisez la fonction sécurisée si admin, sinon la vue publique
+      // Charger les personnes - utilisez les fonctions sécurisées
       let peopleData;
       let peopleError;
 
@@ -36,10 +36,7 @@ export const useOrganigramme = (isAdmin: boolean = false) => {
         peopleData = result.data;
         peopleError = result.error;
       } else {
-        const result = await supabase
-          .from('people_public')
-          .select('*')
-          .order('created_at');
+        const result = await supabase.rpc('people_public_fn');
         peopleData = result.data;
         peopleError = result.error;
       }

@@ -452,20 +452,7 @@ export type Database = {
       }
     }
     Views: {
-      people_public: {
-        Row: {
-          avatar_url: string | null
-          bio: string | null
-          created_at: string | null
-          first_name: string | null
-          id: string | null
-          last_name: string | null
-          linkedin: string | null
-          title: string | null
-          updated_at: string | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Functions: {
       get_people_detailed: {
