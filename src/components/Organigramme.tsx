@@ -121,13 +121,26 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
   }, [refetch]);
 
   // Filter sections based on visibility and admin status
+  // If a section is hidden for non-admins, promote its children to the parent level
   const filterVisibleSections = useCallback((sections: Section[]): Section[] => {
-    return sections
-      .filter(section => isAdmin || !section.isHidden)
-      .map(section => ({
-        ...section,
-        subsections: section.subsections ? filterVisibleSections(section.subsections) : []
-      }));
+    const result: Section[] = [];
+    
+    for (const section of sections) {
+      if (isAdmin || !section.isHidden) {
+        // Section is visible, include it with its filtered subsections
+        result.push({
+          ...section,
+          subsections: section.subsections ? filterVisibleSections(section.subsections) : []
+        });
+      } else {
+        // Section is hidden for non-admins, but promote its subsections to this level
+        if (section.subsections) {
+          result.push(...filterVisibleSections(section.subsections));
+        }
+      }
+    }
+    
+    return result;
   }, [isAdmin]);
 
   const visibleSections = filterVisibleSections(data.sections);
