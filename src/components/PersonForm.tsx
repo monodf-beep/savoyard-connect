@@ -252,7 +252,7 @@ export const PersonForm: React.FC<PersonFormProps> = ({
         </div>
 
         <form onSubmit={handleSubmit} className="p-4 space-y-4">
-          {!person && isAdmin && (
+          {isAdmin && (
             <div className="mb-6">
               <LinkedInImporter 
                 onProfileExtracted={(profile) => {
