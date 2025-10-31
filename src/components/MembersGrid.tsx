@@ -107,16 +107,16 @@ export const MembersGrid: React.FC<MembersGridProps> = ({
   }, [filteredPeople, sortBy, personSectionsMap]);
 
   return (
-    <div className="w-full space-y-6">
-      {/* Filtres et tri */}
-      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between bg-card/50 p-4 rounded-lg border border-border">
-        <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+    <div className="w-full space-y-3 md:space-y-6">
+      {/* Filtres et tri - Compacts sur mobile */}
+      <div className="flex flex-col sm:flex-row gap-2 md:gap-4 items-start sm:items-center justify-between bg-card/50 p-2 md:p-4 rounded-lg border border-border">
+        <div className="flex flex-col sm:flex-row gap-2 md:gap-3 w-full sm:w-auto">
           {/* Filtre par section */}
           <div className="flex items-center gap-2">
-            <Filter className="w-4 h-4 text-muted-foreground" />
+            <Filter className="w-3.5 h-3.5 md:w-4 md:h-4 text-muted-foreground flex-shrink-0" />
             <Select value={filterSection} onValueChange={setFilterSection}>
-              <SelectTrigger className="w-[200px] bg-background">
-                <SelectValue placeholder="Toutes les sections" />
+              <SelectTrigger className="w-full sm:w-[180px] md:w-[200px] h-8 md:h-10 bg-background text-xs md:text-sm">
+                <SelectValue placeholder="Toutes" />
               </SelectTrigger>
               <SelectContent className="bg-background z-50">
                 <SelectItem value="all">Toutes les sections</SelectItem>
@@ -131,28 +131,28 @@ export const MembersGrid: React.FC<MembersGridProps> = ({
 
           {/* Tri */}
           <div className="flex items-center gap-2">
-            <ArrowUpDown className="w-4 h-4 text-muted-foreground" />
+            <ArrowUpDown className="w-3.5 h-3.5 md:w-4 md:h-4 text-muted-foreground flex-shrink-0" />
             <Select value={sortBy} onValueChange={(value) => setSortBy(value as SortOption)}>
-              <SelectTrigger className="w-[180px] bg-background">
+              <SelectTrigger className="w-full sm:w-[150px] md:w-[180px] h-8 md:h-10 bg-background text-xs md:text-sm">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent className="bg-background z-50">
-                <SelectItem value="name">Trier par nom</SelectItem>
-                <SelectItem value="date">Trier par date d'entrée</SelectItem>
-                <SelectItem value="section">Trier par section</SelectItem>
+                <SelectItem value="name">Par nom</SelectItem>
+                <SelectItem value="date">Par date</SelectItem>
+                <SelectItem value="section">Par section</SelectItem>
               </SelectContent>
             </Select>
           </div>
         </div>
 
         {/* Compteur */}
-        <div className="text-sm text-muted-foreground">
+        <div className="text-xs md:text-sm text-muted-foreground">
           {sortedPeople.length} membre{sortedPeople.length > 1 ? 's' : ''}
         </div>
       </div>
 
-      {/* Grille de cartes */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      {/* Grille de cartes - Ajustement mobile */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
         {sortedPeople.map(person => {
           const sections = personSectionsMap.get(person.id) || [];
           const mainSection = sections[0]?.section.title;

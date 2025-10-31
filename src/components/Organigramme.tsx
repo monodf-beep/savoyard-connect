@@ -385,71 +385,97 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
     <div className="flex min-h-screen w-full relative">
       <div className={`organigramme-container transition-all duration-300 ${(isSidebarOpen || isVacantPositionsSidebarOpen) ? 'pr-80' : ''} flex-1 max-w-full px-4 py-4`}>
       {/* Header épuré */}
-      <div className="mb-6 text-center">
-        <div className="flex flex-wrap items-center justify-center gap-2 mb-4">
-          <span className="text-xs bg-secondary/50 px-2 py-1 rounded-md">
-            {totalMembers} membres
-          </span>
+      <div className="mb-3 md:mb-6">
+        {/* Stats compactes - toujours visibles */}
+        <div className="flex items-center justify-between mb-2 md:mb-4">
+          <div className="flex items-center gap-2">
+            <span className="text-xs md:text-sm bg-secondary/50 px-2 py-1 rounded-md">
+              {totalMembers} membres
+            </span>
+            <Button
+              onClick={() => {
+                setIsSidebarOpen(false);
+                setSelectedPerson(null);
+                setIsVacantPositionsSidebarOpen(true);
+              }}
+              variant="outline"
+              size="sm"
+              className="text-xs h-7 md:h-8"
+            >
+              <UserPlus className="w-3 h-3 md:mr-1" />
+              <span className="hidden sm:inline ml-1">{isAdmin ? 'Postes vacants' : `${getAllVacantPositions().length} postes`}</span>
+              <span className="sm:hidden ml-1">{getAllVacantPositions().length}</span>
+            </Button>
+          </div>
+
+          {/* Connexion sur la droite */}
           <Button
-            onClick={() => {
-              setIsSidebarOpen(false);
-              setSelectedPerson(null);
-              setIsVacantPositionsSidebarOpen(true);
-            }}
-            variant="outline"
+            type="button"
+            onClick={handleAuthAction}
+            variant={user ? "default" : "outline"}
             size="sm"
-            className="text-xs"
+            className="h-7 md:h-8"
           >
-            <UserPlus className="w-3 h-3 mr-1" />
-            {isAdmin ? 'Postes vacants' : `${getAllVacantPositions().length} postes vacants`}
+            {user ? (
+              <>
+                <LogOut className="w-3 h-3 md:mr-1" />
+                <span className="hidden md:inline ml-1">Déconnexion</span>
+              </>
+            ) : (
+              <>
+                <LogIn className="w-3 h-3 md:mr-1" />
+                <span className="hidden md:inline ml-1">Connexion</span>
+              </>
+            )}
           </Button>
         </div>
 
-        {/* Controls compacts et discrets */}
-        <div className="flex flex-wrap items-center justify-center gap-1">
-          {/* View Mode Toggle */}
-          <div className="flex gap-1 mr-2">
+        {/* Controls - Vue mobile compacte */}
+        <div className="flex items-center gap-1 md:gap-2 overflow-x-auto pb-1">
+          {/* View Mode Toggle - Icônes uniquement sur mobile */}
+          <div className="flex gap-0.5 md:gap-1 border border-border rounded-md p-0.5">
             <Button
               type="button"
               onClick={() => setViewMode('line')}
               variant={viewMode === 'line' ? 'default' : 'ghost'}
               size="sm"
-              className="text-xs"
+              className="h-7 md:h-8 px-2 md:px-3"
             >
-              <List className="w-3 h-3 mr-1" />
-              Ligne
+              <List className="w-3.5 h-3.5 md:mr-1" />
+              <span className="hidden md:inline text-xs">Ligne</span>
             </Button>
             <Button
               type="button"
               onClick={() => setViewMode('grid')}
               variant={viewMode === 'grid' ? 'default' : 'ghost'}
               size="sm"
-              className="text-xs"
+              className="h-7 md:h-8 px-2 md:px-3"
             >
-              <LayoutGrid className="w-3 h-3 mr-1" />
-              Tuiles
+              <LayoutGrid className="w-3.5 h-3.5 md:mr-1" />
+              <span className="hidden md:inline text-xs">Tuiles</span>
             </Button>
             <Button
               type="button"
               onClick={() => setViewMode('members')}
               variant={viewMode === 'members' ? 'default' : 'ghost'}
               size="sm"
-              className="text-xs"
+              className="h-7 md:h-8 px-2 md:px-3"
             >
-              <Network className="w-3 h-3 mr-1" />
-              Membres
+              <Network className="w-3.5 h-3.5 md:mr-1" />
+              <span className="hidden md:inline text-xs">Membres</span>
             </Button>
           </div>
 
+          {/* Expand/Collapse - Icônes uniquement sur mobile */}
           <Button 
             type="button"
             onClick={(e) => { e.preventDefault(); e.stopPropagation(); expandAll(); }}
             variant="ghost"
             size="sm"
-            className="text-xs text-muted-foreground hover:text-foreground"
+            className="h-7 md:h-8 px-2 md:px-3"
           >
-            <Expand className="w-3 h-3 mr-1" />
-            Tout déplier
+            <Expand className="w-3.5 h-3.5 md:mr-1" />
+            <span className="hidden md:inline text-xs">Tout déplier</span>
           </Button>
           
           <Button 
@@ -457,10 +483,10 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
             onClick={(e) => { e.preventDefault(); e.stopPropagation(); collapseAll(); }}
             variant="ghost"
             size="sm"
-            className="text-xs text-muted-foreground hover:text-foreground"
+            className="h-7 md:h-8 px-2 md:px-3"
           >
-            <Shrink className="w-3 h-3 mr-1" />
-            Tout replier
+            <Shrink className="w-3.5 h-3.5 md:mr-1" />
+            <span className="hidden md:inline text-xs">Tout replier</span>
           </Button>
 
           {isAdmin && (
@@ -469,51 +495,33 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
                 onClick={handleAddPerson}
                 variant="outline"
                 size="sm"
-                className="ml-2"
+                className="h-7 md:h-8 px-2 md:px-3"
               >
-                <UserPlus className="w-3 h-3 mr-1" />
-                Ajouter personne
+                <UserPlus className="w-3.5 h-3.5 md:mr-1" />
+                <span className="hidden lg:inline text-xs">Ajouter personne</span>
               </Button>
               
               <Button
                 onClick={handleAddSection}
                 variant="outline"
                 size="sm"
+                className="h-7 md:h-8 px-2 md:px-3"
               >
-                <FolderPlus className="w-3 h-3 mr-1" />
-                Ajouter section
+                <FolderPlus className="w-3.5 h-3.5 md:mr-1" />
+                <span className="hidden lg:inline text-xs">Ajouter section</span>
               </Button>
               
               <Button
                 onClick={handleAddVacantPosition}
                 variant="outline"
                 size="sm"
+                className="h-7 md:h-8 px-2 md:px-3"
               >
-                <UserPlus className="w-3 h-3 mr-1" />
-                Ajouter poste vacant
+                <UserPlus className="w-3.5 h-3.5 md:mr-1" />
+                <span className="hidden lg:inline text-xs">Poste vacant</span>
               </Button>
             </>
           )}
-
-          {/* Auth Button */}
-          <Button
-            onClick={handleAuthAction}
-            variant={user ? "default" : "outline"}
-            size="sm"
-            className="ml-1"
-          >
-            {user ? (
-              <>
-                <LogOut className="w-3 h-3 mr-1" />
-                Déconnexion
-              </>
-            ) : (
-              <>
-                <LogIn className="w-3 h-3 mr-1" />
-                Connexion
-              </>
-            )}
-          </Button>
         </div>
       </div>
 
