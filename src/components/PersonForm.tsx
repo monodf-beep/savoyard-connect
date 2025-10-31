@@ -255,18 +255,29 @@ export const PersonForm: React.FC<PersonFormProps> = ({
           {isAdmin && (
             <div className="mb-6">
               <LinkedInImporter 
+                currentData={{
+                  firstName: formData.firstName,
+                  lastName: formData.lastName,
+                  role: formData.role,
+                  description: formData.description,
+                  formation: formData.formation,
+                  experience: formData.experience,
+                  competences: formData.competences,
+                  langues: formData.langues,
+                  adresse: formData.adresse,
+                }}
                 onProfileExtracted={(profile) => {
                   setFormData(prev => ({
                     ...prev,
-                    firstName: profile.firstName || prev.firstName,
-                    lastName: profile.lastName || prev.lastName,
-                    role: profile.title || prev.role,
-                    description: profile.bio || prev.description,
-                    formation: profile.formation || prev.formation,
-                    experience: profile.experience || prev.experience,
-                    competences: profile.competences.length > 0 ? profile.competences : prev.competences,
-                    langues: profile.langues.length > 0 ? profile.langues : prev.langues,
-                    adresse: profile.location || prev.adresse,
+                    ...(profile.firstName !== undefined && { firstName: profile.firstName }),
+                    ...(profile.lastName !== undefined && { lastName: profile.lastName }),
+                    ...(profile.title !== undefined && { role: profile.title }),
+                    ...(profile.bio !== undefined && { description: profile.bio }),
+                    ...(profile.formation !== undefined && { formation: profile.formation }),
+                    ...(profile.experience !== undefined && { experience: profile.experience }),
+                    ...(profile.competences !== undefined && { competences: profile.competences }),
+                    ...(profile.langues !== undefined && { langues: profile.langues }),
+                    ...(profile.location !== undefined && { adresse: profile.location }),
                   }));
                 }}
               />

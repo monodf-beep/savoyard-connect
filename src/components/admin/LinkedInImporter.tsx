@@ -4,9 +4,10 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2, Download, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Loader2, Download, CheckCircle2, AlertCircle, Check, X } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { Label } from '@/components/ui/label';
 
 interface LinkedInProfile {
   firstName: string;
@@ -21,13 +22,34 @@ interface LinkedInProfile {
 }
 
 interface LinkedInImporterProps {
-  onProfileExtracted?: (profile: LinkedInProfile) => void;
+  onProfileExtracted?: (profile: Partial<LinkedInProfile>) => void;
+  currentData?: {
+    firstName?: string;
+    lastName?: string;
+    role?: string;
+    description?: string;
+    experience?: string;
+    formation?: string;
+    competences?: string[];
+    langues?: string[];
+    adresse?: string;
+  };
 }
 
-export const LinkedInImporter = ({ onProfileExtracted }: LinkedInImporterProps) => {
+interface FieldComparison {
+  field: keyof LinkedInProfile;
+  label: string;
+  currentValue: string | string[];
+  linkedInValue: string | string[];
+  selected: 'current' | 'linkedin';
+}
+
+export const LinkedInImporter = ({ onProfileExtracted, currentData }: LinkedInImporterProps) => {
   const [linkedinUrl, setLinkedinUrl] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [extractedProfile, setExtractedProfile] = useState<LinkedInProfile | null>(null);
+  const [comparisons, setComparisons] = useState<FieldComparison[]>([]);
+  const [showComparison, setShowComparison] = useState(false);
   const { toast } = useToast();
 
   const handleExtract = async () => {
@@ -71,9 +93,101 @@ export const LinkedInImporter = ({ onProfileExtracted }: LinkedInImporterProps) 
         description: `Données récupérées pour ${profile.firstName} ${profile.lastName}`,
       });
 
-      if (onProfileExtracted) {
-        onProfileExtracted(profile);
+      // Créer les comparaisons champ par champ
+      const fieldComparisons: FieldComparison[] = [];
+      
+      if (profile.firstName || currentData?.firstName) {
+        fieldComparisons.push({
+          field: 'firstName',
+          label: 'Prénom',
+          currentValue: currentData?.firstName || '',
+          linkedInValue: profile.firstName || '',
+          selected: currentData?.firstName ? 'current' : 'linkedin'
+        });
       }
+      
+      if (profile.lastName || currentData?.lastName) {
+        fieldComparisons.push({
+          field: 'lastName',
+          label: 'Nom',
+          currentValue: currentData?.lastName || '',
+          linkedInValue: profile.lastName || '',
+          selected: currentData?.lastName ? 'current' : 'linkedin'
+        });
+      }
+      
+      if (profile.title || currentData?.role) {
+        fieldComparisons.push({
+          field: 'title',
+          label: 'Rôle/Fonction',
+          currentValue: currentData?.role || '',
+          linkedInValue: profile.title || '',
+          selected: currentData?.role ? 'current' : 'linkedin'
+        });
+      }
+      
+      if (profile.bio || currentData?.description) {
+        fieldComparisons.push({
+          field: 'bio',
+          label: 'À propos / Mission',
+          currentValue: currentData?.description || '',
+          linkedInValue: profile.bio || '',
+          selected: currentData?.description ? 'current' : 'linkedin'
+        });
+      }
+      
+      if (profile.formation || currentData?.formation) {
+        fieldComparisons.push({
+          field: 'formation',
+          label: 'Formation',
+          currentValue: currentData?.formation || '',
+          linkedInValue: profile.formation || '',
+          selected: currentData?.formation ? 'current' : 'linkedin'
+        });
+      }
+      
+      if (profile.experience || currentData?.experience) {
+        fieldComparisons.push({
+          field: 'experience',
+          label: 'Expérience',
+          currentValue: currentData?.experience || '',
+          linkedInValue: profile.experience || '',
+          selected: currentData?.experience ? 'current' : 'linkedin'
+        });
+      }
+      
+      if (profile.competences?.length > 0 || currentData?.competences?.length) {
+        fieldComparisons.push({
+          field: 'competences',
+          label: 'Compétences',
+          currentValue: currentData?.competences || [],
+          linkedInValue: profile.competences || [],
+          selected: currentData?.competences?.length ? 'current' : 'linkedin'
+        });
+      }
+      
+      if (profile.langues?.length > 0 || currentData?.langues?.length) {
+        fieldComparisons.push({
+          field: 'langues',
+          label: 'Langues',
+          currentValue: currentData?.langues || [],
+          linkedInValue: profile.langues || [],
+          selected: currentData?.langues?.length ? 'current' : 'linkedin'
+        });
+      }
+      
+      if (profile.location || currentData?.adresse) {
+        fieldComparisons.push({
+          field: 'location',
+          label: 'Lieu',
+          currentValue: currentData?.adresse || '',
+          linkedInValue: profile.location || '',
+          selected: currentData?.adresse ? 'current' : 'linkedin'
+        });
+      }
+      
+      setComparisons(fieldComparisons);
+      setShowComparison(true);
     } catch (error) {
       console.error('Error extracting LinkedIn profile:', error);
       toast({
@@ -84,6 +198,64 @@ export const LinkedInImporter = ({ onProfileExtracted }: LinkedInImporterProps) 
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const toggleFieldSelection = (index: number) => {
+    setComparisons(prev => prev.map((comp, i) => 
+      i === index 
+        ? { ...comp, selected: comp.selected === 'current' ? 'linkedin' : 'current' }
+        : comp
+    ));
+  };
+
+  const applySelectedFields = () => {
+    if (!extractedProfile || !onProfileExtracted) return;
+
+    const selectedData: Partial<LinkedInProfile> = {};
+    
+    comparisons.forEach(comp => {
+      if (comp.selected === 'linkedin') {
+        selectedData[comp.field] = comp.linkedInValue as any;
+      }
+    });
+
+    onProfileExtracted(selectedData);
+    setShowComparison(false);
+    setComparisons([]);
+    setExtractedProfile(null);
+    setLinkedinUrl('');
+    
+    toast({
+      title: "Données appliquées",
+      description: "Les champs sélectionnés ont été mis à jour",
+    });
+  };
+
+  const cancelComparison = () => {
+    setShowComparison(false);
+    setComparisons([]);
+    setExtractedProfile(null);
+  };
+
+  const renderValue = (value: string | string[]) => {
+    if (Array.isArray(value)) {
+      return value.length > 0 ? (
+        <div className="flex flex-wrap gap-1">
+          {value.map((item, idx) => (
+            <Badge key={idx} variant="secondary" className="text-xs">
+              {item}
+            </Badge>
+          ))}
+        </div>
+      ) : (
+        <span className="text-muted-foreground italic text-sm">Aucune valeur</span>
+      );
+    }
+    return value ? (
+      <p className="text-sm whitespace-pre-line">{value}</p>
+    ) : (
+      <span className="text-muted-foreground italic text-sm">Aucune valeur</span>
+    );
   };
 
   return (
@@ -124,90 +296,85 @@ export const LinkedInImporter = ({ onProfileExtracted }: LinkedInImporterProps) 
           </Button>
         </div>
 
-        {extractedProfile && (
+        {showComparison && comparisons.length > 0 && (
           <div className="space-y-4 pt-4">
             <Separator />
             
-            <div className="flex items-start gap-2">
-              <CheckCircle2 className="h-5 w-5 text-green-500 mt-0.5" />
-              <div className="flex-1 space-y-3">
-                <div>
-                  <h3 className="font-semibold text-lg">
-                    {extractedProfile.firstName} {extractedProfile.lastName}
-                  </h3>
-                  {extractedProfile.title && (
-                    <p className="text-muted-foreground">{extractedProfile.title}</p>
-                  )}
-                  {extractedProfile.location && (
-                    <p className="text-sm text-muted-foreground">{extractedProfile.location}</p>
-                  )}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="font-semibold text-lg">Choisissez les valeurs à conserver</h3>
+                <div className="text-sm text-muted-foreground">
+                  Cliquez sur une carte pour basculer entre les valeurs
                 </div>
-
-                {extractedProfile.bio && (
-                  <div>
-                    <h4 className="font-medium text-sm mb-1">Bio</h4>
-                    <p className="text-sm text-muted-foreground line-clamp-3">
-                      {extractedProfile.bio}
-                    </p>
-                  </div>
-                )}
-
-                {extractedProfile.competences.length > 0 && (
-                  <div>
-                    <h4 className="font-medium text-sm mb-2">Compétences</h4>
-                    <div className="flex flex-wrap gap-1">
-                      {extractedProfile.competences.slice(0, 10).map((skill, idx) => (
-                        <Badge key={idx} variant="secondary" className="text-xs">
-                          {skill}
-                        </Badge>
-                      ))}
-                      {extractedProfile.competences.length > 10 && (
-                        <Badge variant="outline" className="text-xs">
-                          +{extractedProfile.competences.length - 10} autres
-                        </Badge>
-                      )}
+              </div>
+              
+              {comparisons.map((comp, index) => (
+                <div key={comp.field} className="space-y-2">
+                  <Label className="text-base font-medium">{comp.label}</Label>
+                  <div className="grid grid-cols-2 gap-3">
+                    {/* Valeur actuelle */}
+                    <div
+                      onClick={() => toggleFieldSelection(index)}
+                      className={`p-3 rounded-lg border-2 cursor-pointer transition-all ${
+                        comp.selected === 'current'
+                          ? 'border-primary bg-primary/5'
+                          : 'border-border hover:border-primary/50'
+                      }`}
+                    >
+                      <div className="flex items-start justify-between mb-2">
+                        <span className="text-xs font-medium text-muted-foreground">Valeur actuelle</span>
+                        {comp.selected === 'current' && (
+                          <Check className="h-4 w-4 text-primary" />
+                        )}
+                      </div>
+                      {renderValue(comp.currentValue)}
+                    </div>
+                    
+                    {/* Valeur LinkedIn */}
+                    <div
+                      onClick={() => toggleFieldSelection(index)}
+                      className={`p-3 rounded-lg border-2 cursor-pointer transition-all ${
+                        comp.selected === 'linkedin'
+                          ? 'border-primary bg-primary/5'
+                          : 'border-border hover:border-primary/50'
+                      }`}
+                    >
+                      <div className="flex items-start justify-between mb-2">
+                        <span className="text-xs font-medium text-muted-foreground">Valeur LinkedIn</span>
+                        {comp.selected === 'linkedin' && (
+                          <Check className="h-4 w-4 text-primary" />
+                        )}
+                      </div>
+                      {renderValue(comp.linkedInValue)}
                     </div>
                   </div>
-                )}
-
-                {extractedProfile.langues.length > 0 && (
-                  <div>
-                    <h4 className="font-medium text-sm mb-2">Langues</h4>
-                    <div className="flex flex-wrap gap-1">
-                      {extractedProfile.langues.map((lang, idx) => (
-                        <Badge key={idx} variant="outline" className="text-xs">
-                          {lang}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {extractedProfile.experience && (
-                  <div>
-                    <h4 className="font-medium text-sm mb-1">Expérience</h4>
-                    <p className="text-sm text-muted-foreground line-clamp-4 whitespace-pre-line">
-                      {extractedProfile.experience}
-                    </p>
-                  </div>
-                )}
-
-                {extractedProfile.formation && (
-                  <div>
-                    <h4 className="font-medium text-sm mb-1">Formation</h4>
-                    <p className="text-sm text-muted-foreground line-clamp-3 whitespace-pre-line">
-                      {extractedProfile.formation}
-                    </p>
-                  </div>
-                )}
-
-                <div className="flex items-start gap-2 p-3 bg-muted/50 rounded-md">
-                  <AlertCircle className="h-4 w-4 text-muted-foreground mt-0.5" />
-                  <p className="text-xs text-muted-foreground">
-                    Les données extraites sont basées sur le profil public LinkedIn. 
-                    Vérifiez et complétez les informations avant de les sauvegarder.
-                  </p>
                 </div>
+              ))}
+              
+              <div className="flex items-start gap-2 p-3 bg-muted/50 rounded-md">
+                <AlertCircle className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                <p className="text-xs text-muted-foreground">
+                  Seules les valeurs avec une coche verte seront appliquées au formulaire. 
+                  Les champs non cochés conserveront leur valeur actuelle.
+                </p>
+              </div>
+              
+              <div className="flex gap-2 justify-end">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={cancelComparison}
+                >
+                  <X className="h-4 w-4 mr-2" />
+                  Annuler
+                </Button>
+                <Button
+                  type="button"
+                  onClick={applySelectedFields}
+                >
+                  <CheckCircle2 className="h-4 w-4 mr-2" />
+                  Appliquer les modifications
+                </Button>
               </div>
             </div>
           </div>
