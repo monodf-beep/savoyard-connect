@@ -2,3 +2,6 @@ project_id = "perfpsiibarwgvjtrlxr"
 
 [functions.send-invite]
 verify_jwt = true
+
+[functions.extract-linkedin]
+verify_jwt = false

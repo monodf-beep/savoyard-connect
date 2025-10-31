@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { X, Plus, Trash2, ImageIcon } from 'lucide-react';
 import { Badge } from './ui/badge';
 import { ImageEditor } from './ImageEditor';
+import { LinkedInImporter } from './admin/LinkedInImporter';
 import { useOrganigramme } from '../hooks/useOrganigramme';
 import { personSchema } from '../lib/validations';
 import { toast } from 'sonner';
@@ -251,6 +252,27 @@ export const PersonForm: React.FC<PersonFormProps> = ({
         </div>
 
         <form onSubmit={handleSubmit} className="p-4 space-y-4">
+          {!person && isAdmin && (
+            <div className="mb-6">
+              <LinkedInImporter 
+                onProfileExtracted={(profile) => {
+                  setFormData(prev => ({
+                    ...prev,
+                    firstName: profile.firstName || prev.firstName,
+                    lastName: profile.lastName || prev.lastName,
+                    role: profile.title || prev.role,
+                    description: profile.bio || prev.description,
+                    formation: profile.formation || prev.formation,
+                    experience: profile.experience || prev.experience,
+                    competences: profile.competences.length > 0 ? profile.competences : prev.competences,
+                    langues: profile.langues.length > 0 ? profile.langues : prev.langues,
+                    adresse: profile.location || prev.adresse,
+                  }));
+                }}
+              />
+            </div>
+          )}
+          
           <div className="grid grid-cols-2 gap-4">
             <div>
               <Label htmlFor="firstName">Prénom *</Label>
