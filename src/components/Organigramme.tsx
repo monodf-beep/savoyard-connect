@@ -7,8 +7,9 @@ import { SectionDetailsSidebar } from './SectionDetailsSidebar';
 import { PersonForm } from './PersonForm';
 import { SectionForm } from './SectionForm';
 import { VacantPositionForm } from './VacantPositionForm';
+import { MembersGrid } from './MembersGrid';
 import { Button } from './ui/button';
-import { Settings, Eye, EyeOff, ExpandIcon as Expand, ShrinkIcon as Shrink, UserPlus, FolderPlus, LogIn, LogOut, LayoutGrid, List } from 'lucide-react';
+import { Settings, Eye, EyeOff, ExpandIcon as Expand, ShrinkIcon as Shrink, UserPlus, FolderPlus, LogIn, LogOut, LayoutGrid, List, Network } from 'lucide-react';
 import { useOrganigramme } from '../hooks/useOrganigramme';
 import { supabase } from '../integrations/supabase/client';
 import { useAuth } from '../hooks/useAuth';
@@ -34,7 +35,7 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
   const [editingSection, setEditingSection] = useState<Section | null>(null);
   const [isVacantPositionFormOpen, setIsVacantPositionFormOpen] = useState(false);
   const [editingVacantPosition, setEditingVacantPosition] = useState<VacantPosition | null>(null);
-  const [viewMode, setViewMode] = useState<'line' | 'grid'>('line');
+  const [viewMode, setViewMode] = useState<'line' | 'grid' | 'members'>('line');
   const [selectedSection, setSelectedSection] = useState<Section | null>(null);
   const [isSectionDetailsSidebarOpen, setIsSectionDetailsSidebarOpen] = useState(false);
 
@@ -428,6 +429,16 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
               <LayoutGrid className="w-3 h-3 mr-1" />
               Tuiles
             </Button>
+            <Button
+              type="button"
+              onClick={() => setViewMode('members')}
+              variant={viewMode === 'members' ? 'default' : 'ghost'}
+              size="sm"
+              className="text-xs"
+            >
+              <Network className="w-3 h-3 mr-1" />
+              Membres
+            </Button>
           </div>
 
           <Button 
@@ -516,8 +527,15 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
         </div>
       )}
 
-      {/* Sections */}
-      {viewMode === 'line' ? (
+      {/* Sections ou Vue membres */}
+      {viewMode === 'members' ? (
+        <MembersGrid
+          sections={data.sections}
+          people={data.people}
+          isAdmin={isAdmin}
+          onEdit={handleEditPerson}
+        />
+      ) : viewMode === 'line' ? (
         <div className="space-y-4">
           {visibleSections.map(section => (
             <SectionCard
