@@ -8,9 +8,11 @@ import { PersonForm } from './PersonForm';
 import { SectionForm } from './SectionForm';
 import { VacantPositionForm } from './VacantPositionForm';
 import { MembersGrid } from './MembersGrid';
+import { VolunteerImportManager } from './admin/VolunteerImportManager';
 import { Button } from './ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from './ui/sheet';
-import { Settings, Eye, EyeOff, ExpandIcon as Expand, ShrinkIcon as Shrink, UserPlus, FolderPlus, LogIn, LogOut, LayoutGrid, List, Network, Menu, X } from 'lucide-react';
+import { Dialog, DialogContent } from './ui/dialog';
+import { Settings, Eye, EyeOff, ExpandIcon as Expand, ShrinkIcon as Shrink, UserPlus, FolderPlus, LogIn, LogOut, LayoutGrid, List, Network, Menu, X, Upload, Plus } from 'lucide-react';
 import { useOrganigramme } from '../hooks/useOrganigramme';
 import { supabase } from '../integrations/supabase/client';
 import { useAuth } from '../hooks/useAuth';
@@ -40,6 +42,7 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
   const [selectedSection, setSelectedSection] = useState<Section | null>(null);
   const [isSectionDetailsSidebarOpen, setIsSectionDetailsSidebarOpen] = useState(false);
   const [isControlsMenuOpen, setIsControlsMenuOpen] = useState(false);
+  const [isImportOpen, setIsImportOpen] = useState(false);
 
   // Listen for custom events to open vacant positions sidebar
   React.useEffect(() => {
@@ -515,6 +518,15 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
                         <UserPlus className="w-4 h-4 mr-2" />
                         Ajouter un poste vacant
                       </Button>
+                      <Button
+                        onClick={() => { setIsImportOpen(true); setIsControlsMenuOpen(false); }}
+                        variant="outline"
+                        size="sm"
+                        className="w-full justify-start"
+                      >
+                        <Upload className="w-4 h-4 mr-2" />
+                        Importer bénévoles
+                      </Button>
                     </div>
                   </div>
                 )}
@@ -676,6 +688,16 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
               >
                 <UserPlus className="w-3.5 h-3.5 mr-1" />
                 <span className="text-xs">Poste vacant</span>
+              </Button>
+              
+              <Button
+                onClick={() => setIsImportOpen(true)}
+                variant="outline"
+                size="sm"
+                className="h-8 px-3"
+              >
+                <Upload className="w-3.5 h-3.5 mr-1" />
+                <span className="text-xs">Importer</span>
               </Button>
             </>
           )}
@@ -850,6 +872,19 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
         onSave={handleSaveVacantPosition}
         onDelete={handleDeleteVacantPosition}
       />
+
+      <Dialog open={isImportOpen} onOpenChange={setIsImportOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden">
+          <VolunteerImportManager
+            sections={data.sections}
+            onImportComplete={() => {
+              setIsImportOpen(false);
+              refetch();
+              toast.success("Bénévoles importés avec succès");
+            }}
+          />
+        </DialogContent>
+      </Dialog>
 
       <VacantPositionsSidebar
         isOpen={isVacantPositionsSidebarOpen}
