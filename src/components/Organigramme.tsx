@@ -542,27 +542,6 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
                   </div>
                 )}
 
-                {/* Connexion */}
-                <div>
-                  <Button
-                    onClick={() => { handleAuthAction(); setIsControlsMenuOpen(false); }}
-                    variant={user ? "default" : "outline"}
-                    size="sm"
-                    className="w-full"
-                  >
-                    {user ? (
-                      <>
-                        <LogOut className="w-4 h-4 mr-2" />
-                        Déconnexion
-                      </>
-                    ) : (
-                      <>
-                        <LogIn className="w-4 h-4 mr-2" />
-                        Connexion
-                      </>
-                    )}
-                  </Button>
-                </div>
               </div>
             </SheetContent>
           </Sheet>
@@ -589,25 +568,6 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
                 {isAdmin ? 'Postes vacants' : `${getAllVacantPositions().length} postes`}
               </Button>
             </div>
-
-            <Button
-              onClick={handleAuthAction}
-              variant={user ? "default" : "outline"}
-              size="sm"
-              className="h-8"
-            >
-              {user ? (
-                <>
-                  <LogOut className="w-3 h-3 mr-1" />
-                  <span className="ml-1">Déconnexion</span>
-                </>
-              ) : (
-                <>
-                  <LogIn className="w-3 h-3 mr-1" />
-                  <span className="ml-1">Connexion</span>
-                </>
-              )}
-            </Button>
           </div>
 
         {/* Controls - Desktop */}
