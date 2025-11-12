@@ -93,13 +93,16 @@ export default function Auth() {
     setLoading(true);
 
     try {
+      // Use the current window location origin for redirect
+      const redirectUrl = `${window.location.origin}/auth`;
+      
       const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
-        redirectTo: `${window.location.origin}/auth`,
+        redirectTo: redirectUrl,
       });
 
       if (error) throw error;
 
-      setMessage('Un email de réinitialisation a été envoyé à votre adresse.');
+      setMessage('Un email de réinitialisation a été envoyé à votre adresse. Vérifiez votre boîte mail.');
       setIsResetDialogOpen(false);
       setResetEmail('');
     } catch (error: any) {
