@@ -200,8 +200,12 @@ export const AIAssistant: React.FC = () => {
         {messages.length === 0 ? (
           <div className="text-center text-muted-foreground py-8">
             <MessageSquare className="h-12 w-12 mx-auto mb-4 opacity-50" />
-            <p>Posez-moi des questions sur l'organigramme</p>
-            <p className="text-sm mt-2">Je peux ajouter des personnes, créer des sections, analyser des images, etc.</p>
+            <p className="font-medium mb-2">Donnez-moi des informations à modifier</p>
+            <p className="text-sm">
+              Mentionnez simplement un nom, un titre, une section...
+              <br />
+              Je vous demanderai confirmation avant toute modification.
+            </p>
           </div>
         ) : (
           <div className="space-y-4">
