@@ -97,6 +97,51 @@ const tools = [
       },
     },
   },
+  {
+    type: "function",
+    function: {
+      name: "create_value_chain",
+      description: "Créer une nouvelle chaîne de valeur",
+      parameters: {
+        type: "object",
+        properties: {
+          title: { type: "string", description: "Titre de la chaîne" },
+          description: { type: "string", description: "Description (optionnel)" },
+          segments: { 
+            type: "array", 
+            items: { 
+              type: "object",
+              properties: {
+                function_name: { type: "string", description: "Nom de la fonction/segment" },
+                actors: { 
+                  type: "array", 
+                  items: { type: "string" },
+                  description: "Prénoms et/ou noms des acteurs pour ce segment"
+                }
+              },
+              required: ["function_name"]
+            },
+            description: "Liste des segments avec leurs acteurs"
+          },
+        },
+        required: ["title", "segments"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "search_value_chain",
+      description: "Rechercher une chaîne de valeur par titre",
+      parameters: {
+        type: "object",
+        properties: {
+          title: { type: "string", description: "Titre de la chaîne" },
+        },
+        required: ["title"],
+      },
+    },
+  },
 ];
 
 async function executeToolCall(toolName: string, args: any, supabaseClient: any) {
@@ -266,6 +311,94 @@ async function executeToolCall(toolName: string, args: any, supabaseClient: any)
         return { success: true, person: updated };
       }
 
+      case "create_value_chain": {
+        // Créer la chaîne de valeur
+        const { data: chain, error: chainError } = await supabaseClient
+          .from('value_chains')
+          .insert([{
+            title: args.title,
+            description: args.description || null,
+          }])
+          .select()
+          .single();
+
+        if (chainError) throw chainError;
+
+        // Récupérer toutes les personnes pour le matching
+        const { data: allPeople, error: peopleError } = await supabaseClient
+          .from('people')
+          .select('id, first_name, last_name');
+
+        if (peopleError) throw peopleError;
+
+        const createdSegments = [];
+        
+        // Créer chaque segment
+        for (let i = 0; i < args.segments.length; i++) {
+          const segment = args.segments[i];
+          
+          const { data: segmentData, error: segmentError } = await supabaseClient
+            .from('value_chain_segments')
+            .insert([{
+              value_chain_id: chain.id,
+              function_name: segment.function_name,
+              display_order: i,
+            }])
+            .select()
+            .single();
+
+          if (segmentError) throw segmentError;
+
+          // Assigner les acteurs si spécifiés
+          if (segment.actors && segment.actors.length > 0) {
+            for (const actorName of segment.actors) {
+              const query = actorName.toString().trim().toLowerCase();
+              const words = query.split(/\s+/);
+              
+              const person = allPeople.find((p: any) => {
+                const firstName = p.first_name.toLowerCase();
+                const lastName = p.last_name.toLowerCase();
+                const fullName = `${firstName} ${lastName}`;
+                
+                if (words.length === 1) {
+                  return firstName.includes(words[0]) || lastName.includes(words[0]);
+                }
+                return words.every(w => fullName.includes(w));
+              });
+
+              if (person) {
+                await supabaseClient
+                  .from('segment_actors')
+                  .insert([{
+                    segment_id: segmentData.id,
+                    person_id: person.id,
+                  }]);
+              }
+            }
+          }
+
+          createdSegments.push(segmentData);
+        }
+
+        return { success: true, chain, segments: createdSegments };
+      }
+
+      case "search_value_chain": {
+        const query = (args.title || '').toString().trim().toLowerCase();
+        
+        const { data: chains, error } = await supabaseClient
+          .from('value_chains')
+          .select('*');
+
+        if (error) throw error;
+
+        const matches = chains.filter((c: any) => 
+          c.title.toLowerCase().includes(query)
+        );
+
+        return { success: true, chains: matches };
+      }
+
       default:
         return { error: `Unknown tool: ${toolName}` };
     }
@@ -295,18 +428,47 @@ serve(async (req) => {
       { global: { headers: { Authorization: authHeader } } }
     );
 
-    const systemPrompt = `Assistant IA pour organigrammes.
+    const systemPrompt = `Assistant IA pour organigrammes et chaînes de valeur.
 
 RÈGLE : Toute info de l'utilisateur = demande de modification.
+
+CAPACITÉS :
+- Gérer les personnes (ajouter, modifier, renommer)
+- Gérer les sections de l'organigramme
+- Créer et gérer les chaînes de valeur avec segments et acteurs
 
 PROCESSUS RAPIDE :
 1. Nom mentionné ? → search_person(nom) ou rename_person_by_name si la question de confirmation contient l'ancien et le nouveau nom
 2. Pour un simple renommage "Voulez-vous renommer X en Y ?" → privilégier rename_person_by_name avec le prénom+nom actuels (X) et le nouveau nom (Y)
-3. "oui"/"ok" → exécuter l'outil choisi
-4. Pas trouvé ? → Demande si ajouter
+3. Chaîne de valeur mentionnée ? → utiliser create_value_chain avec les segments et acteurs
+4. "oui"/"ok" → exécuter l'outil choisi
+5. Pas trouvé ? → Demande si ajouter
 
-EXEMPLES :
+EXEMPLES PERSONNES :
 - User: "Rodolphe Guilhot"
+  → "Voulez-vous modifier Rodolphe Guilhot ?"
+- User: "oui"
+  → search_person("Rodolphe Guilhot")
+- User: "renommer rodolphe simon en rodolphe guilhot"
+  → rename_person_by_name({original_first_name: "Rodolphe", original_last_name: "Simon", new_last_name: "Guilhot"})
+
+EXEMPLES CHAÎNES DE VALEUR :
+- User: "Créer chaîne Edition avec segments : Design Nina, Gestion commandes Margot"
+  → create_value_chain({
+      title: "Edition",
+      segments: [
+        { function_name: "Design", actors: ["Nina"] },
+        { function_name: "Gestion commandes", actors: ["Margot"] }
+      ]
+    })
+
+IMPORTANT :
+- Utilisez les @ mentions dans les descriptions pour identifier les acteurs
+- Tous les acteurs doivent exister dans l'organigramme
+- Demandez confirmation avant de créer une chaîne complexe
+
+RÉPONSE : courte, structure seulement, pas de commentaires superflus.`;
+
   → search_person("Rodolphe")
   → Trouvé "Rodolphe Simon" (id: <UUID_RENVOYÉ_PAR_SEARCH_PERSON>)
   → "Voulez-vous renommer Rodolphe Simon en Rodolphe Guilhot ?"
