@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ValueChain, ValueChainSegment } from '@/types/valueChain';
 import { Person, Section } from '@/types/organigramme';
 import { Button } from '@/components/ui/button';
@@ -55,16 +55,25 @@ export const ValueChainForm: React.FC<ValueChainFormProps> = ({
   sections,
   onSave,
 }) => {
-  const [title, setTitle] = useState(chain?.title || '');
-  const [description, setDescription] = useState(chain?.description || '');
-  const [segments, setSegments] = useState<SegmentFormData[]>(
-    chain?.segments?.map((s) => ({
-      function_name: s.function_name,
-      actorIds: s.actors?.map((a) => a.id) || [],
-      sectionIds: s.sections?.map((sec) => sec.id) || [],
-    })) || []
-  );
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [segments, setSegments] = useState<SegmentFormData[]>([]);
   const [loading, setLoading] = useState(false);
+
+  // Initialiser ou réinitialiser le formulaire quand la chaîne change
+  useEffect(() => {
+    if (open) {
+      setTitle(chain?.title || '');
+      setDescription(chain?.description || '');
+      setSegments(
+        chain?.segments?.map((s) => ({
+          function_name: s.function_name,
+          actorIds: s.actors?.map((a) => a.id) || [],
+          sectionIds: s.sections?.map((sec) => sec.id) || [],
+        })) || []
+      );
+    }
+  }, [open, chain]);
 
   const addSegment = () => {
     setSegments([...segments, { function_name: '', actorIds: [], sectionIds: [] }]);
