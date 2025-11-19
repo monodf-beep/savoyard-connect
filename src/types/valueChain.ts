@@ -1,4 +1,4 @@
-import { Person } from './organigramme';
+import { Person, Section } from './organigramme';
 
 export interface ValueChain {
   id: string;
@@ -17,11 +17,19 @@ export interface ValueChainSegment {
   created_at?: string;
   updated_at?: string;
   actors?: Person[];
+  sections?: Section[];
 }
 
 export interface SegmentActor {
   id: string;
   segment_id: string;
   person_id: string;
+  created_at?: string;
+}
+
+export interface SegmentSection {
+  id: string;
+  segment_id: string;
+  section_id: string;
   created_at?: string;
 }

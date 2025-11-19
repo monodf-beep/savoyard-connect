@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { ValueChain, ValueChainSegment, SegmentActor } from '@/types/valueChain';
-import { Person } from '@/types/organigramme';
+import { Person, Section } from '@/types/organigramme';
 import { toast } from 'sonner';
 
 export const useValueChains = () => {
   const [chains, setChains] = useState<ValueChain[]>([]);
   const [people, setPeople] = useState<Person[]>([]);
+  const [sections, setSections] = useState<Section[]>([]);
   const [loading, setLoading] = useState(true);
 
   const loadData = async () => {
@@ -51,6 +52,30 @@ export const useValueChains = () => {
       
       if (actorsError) throw actorsError;
 
+      // Load segment sections
+      const { data: sectionsData, error: sectionsError } = await supabase
+        .from('segment_sections')
+        .select('*');
+      
+      if (sectionsError) throw sectionsError;
+
+      // Load all sections from organigramme
+      const { data: allSections, error: allSectionsError } = await supabase
+        .from('sections')
+        .select('*');
+      
+      if (allSectionsError) throw allSectionsError;
+
+      // Format sections
+      const formattedSections: Section[] = (allSections || []).map((s: any) => ({
+        id: s.id,
+        title: s.title,
+        type: 'commission' as const,
+        isExpanded: s.is_expanded,
+        members: [],
+      }));
+      setSections(formattedSections);
+
       // Build complete structure
       const chainsWithSegments: ValueChain[] = (chainsData || []).map((chain) => {
         const chainSegments = (segmentsData || [])
@@ -63,12 +88,30 @@ export const useValueChains = () => {
               .map((link: any) => formattedPeople.find((p) => p.id === link.person_id))
               .filter(Boolean) as Person[];
 
+            const segmentSectionLinks = (sectionsData || []).filter(
+              (section: any) => section.segment_id === seg.id
+            );
+            const segmentSections = segmentSectionLinks
+              .map((link: any) => {
+                const section = allSections?.find((s: any) => s.id === link.section_id);
+                if (!section) return null;
+                return {
+                  id: section.id,
+                  title: section.title,
+                  type: 'commission' as const,
+                  isExpanded: section.is_expanded,
+                  members: [],
+                };
+              })
+              .filter(Boolean) as any[];
+
             return {
               id: seg.id,
               value_chain_id: seg.value_chain_id,
               function_name: seg.function_name,
               display_order: seg.display_order,
               actors: segmentActors,
+              sections: segmentSections,
             };
           });
 
@@ -156,7 +199,10 @@ export const useValueChains = () => {
     }
   };
 
-  const saveSegments = async (chainId: string, segments: Array<{ function_name: string; actorIds: string[] }>) => {
+  const saveSegments = async (
+    chainId: string, 
+    segments: Array<{ function_name: string; actorIds: string[]; sectionIds?: string[] }>
+  ) => {
     try {
       // Delete existing segments for this chain
       const { error: deleteError } = await supabase
@@ -194,6 +240,20 @@ export const useValueChains = () => {
             .insert(actorInserts);
 
           if (actorError) throw actorError;
+        }
+
+        // Add sections to segment
+        if (segment.sectionIds && segment.sectionIds.length > 0) {
+          const sectionInserts = segment.sectionIds.map((sectionId) => ({
+            segment_id: segmentData.id,
+            section_id: sectionId,
+          }));
+
+          const { error: sectionError } = await supabase
+            .from('segment_sections')
+            .insert(sectionInserts);
+
+          if (sectionError) throw sectionError;
         }
       }
 
@@ -386,6 +446,7 @@ export const useValueChains = () => {
   return {
     chains,
     people,
+    sections,
     loading,
     createChain,
     updateChain,

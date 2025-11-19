@@ -373,6 +373,42 @@ export type Database = {
           },
         ]
       }
+      segment_sections: {
+        Row: {
+          created_at: string | null
+          id: string
+          section_id: string
+          segment_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          section_id: string
+          segment_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          section_id?: string
+          segment_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "segment_sections_section_id_fkey"
+            columns: ["section_id"]
+            isOneToOne: false
+            referencedRelation: "sections"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "segment_sections_segment_id_fkey"
+            columns: ["segment_id"]
+            isOneToOne: false
+            referencedRelation: "value_chain_segments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       spontaneous_applications: {
         Row: {
           availability: string | null

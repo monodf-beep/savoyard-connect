@@ -25,21 +25,27 @@ const SegmentNode = ({ data }: any) => {
     <Card className="p-4 min-w-[200px] max-w-[300px] bg-card border-2 border-border shadow-lg">
       <div className="font-semibold text-sm mb-3 text-foreground">{data.label}</div>
       <div className="space-y-2">
-        {data.actors && data.actors.length > 0 ? (
-          data.actors.map((actor: any) => (
-            <div key={actor.id} className="flex items-center gap-2 text-xs">
-              <Avatar className="h-6 w-6">
-                <AvatarImage src={actor.photo} alt={`${actor.firstName} ${actor.lastName}`} />
-                <AvatarFallback className="text-[10px]">
-                  {actor.firstName?.[0]}{actor.lastName?.[0]}
-                </AvatarFallback>
-              </Avatar>
-              <span className="text-muted-foreground truncate">
-                {actor.firstName} {actor.lastName}
-              </span>
-            </div>
-          ))
-        ) : (
+        {/* Display people actors */}
+        {data.actors && data.actors.length > 0 && data.actors.map((actor: any) => (
+          <div key={actor.id} className="flex items-center gap-2 text-xs">
+            <Avatar className="h-6 w-6">
+              <AvatarImage src={actor.photo} alt={`${actor.firstName} ${actor.lastName}`} />
+              <AvatarFallback className="text-[10px]">
+                {actor.firstName?.[0]}{actor.lastName?.[0]}
+              </AvatarFallback>
+            </Avatar>
+            <span className="text-muted-foreground truncate">
+              {actor.firstName} {actor.lastName}
+            </span>
+          </div>
+        ))}
+        {/* Display section actors */}
+        {data.sections && data.sections.length > 0 && data.sections.map((section: any) => (
+          <Badge key={section.id} variant="outline" className="text-xs flex items-center gap-1">
+            {section.title}
+          </Badge>
+        ))}
+        {(!data.actors || data.actors.length === 0) && (!data.sections || data.sections.length === 0) && (
           <Badge variant="outline" className="text-xs">Aucun acteur</Badge>
         )}
       </div>
@@ -67,6 +73,7 @@ export const ValueChainFlowDiagram: React.FC<ValueChainFlowDiagramProps> = ({
       data: {
         label: segment.function_name,
         actors: segment.actors || [],
+        sections: segment.sections || [],
       },
     }));
 
