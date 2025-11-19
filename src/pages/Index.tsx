@@ -1,7 +1,11 @@
 import { Organigramme } from '../components/Organigramme';
 import { Navbar } from '../components/Navbar';
+import { AIAssistant } from '../components/AIAssistant';
+import { useAuth } from '@/hooks/useAuth';
 
 const Index = () => {
+  const { isAdmin } = useAuth();
+  
   const handleAddPerson = () => {
     const event = new CustomEvent('openPersonForm');
     window.dispatchEvent(event);
@@ -31,6 +35,7 @@ const Index = () => {
         onImport={handleImport}
       />
       <Organigramme isAdminMode={false} />
+      {isAdmin && <AIAssistant />}
     </div>
   );
 };
