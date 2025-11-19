@@ -13,6 +13,7 @@ export const Navbar = () => {
   const navLinks = [
     { path: '/', label: 'Organigramme' },
     { path: '/projects', label: 'Projets' },
+    { path: '/value-chains', label: 'Chaînes de valeur' },
     { path: '/jobs', label: 'Offres' },
   ];
 
