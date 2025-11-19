@@ -248,7 +248,7 @@ export const AdminOnboarding: React.FC<AdminOnboardingProps> = ({ open, onOpenCh
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl">
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
         <DialogHeader>
           <div className="flex items-center justify-between">
             <DialogTitle>{slides[currentSlide].title}</DialogTitle>
@@ -265,7 +265,7 @@ export const AdminOnboarding: React.FC<AdminOnboardingProps> = ({ open, onOpenCh
           <p className="text-sm text-muted-foreground">{slides[currentSlide].description}</p>
         </DialogHeader>
 
-        <div className="py-6">
+        <div className="flex-1 overflow-y-auto py-6 px-1">
           {slides[currentSlide].content}
         </div>
 
