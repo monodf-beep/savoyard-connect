@@ -11,6 +11,20 @@ const tools = [
   {
     type: "function",
     function: {
+      name: "search_person",
+      description: "Rechercher une personne par nom. TOUJOURS utiliser AVANT edit_person. Retourne l'UUID exact.",
+      parameters: {
+        type: "object",
+        properties: {
+          name: { type: "string", description: "Prénom, nom ou les deux" },
+        },
+        required: ["name"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
       name: "add_person",
       description: "Ajouter une nouvelle personne à l'organigramme",
       parameters: {
@@ -19,13 +33,13 @@ const tools = [
           first_name: { type: "string", description: "Prénom" },
           last_name: { type: "string", description: "Nom de famille" },
           title: { type: "string", description: "Titre/poste" },
-          email: { type: "string", description: "Adresse email (optionnel)" },
+          email: { type: "string", description: "Email (optionnel)" },
           phone: { type: "string", description: "Téléphone (optionnel)" },
-          bio: { type: "string", description: "Biographie/description (optionnel)" },
-          linkedin: { type: "string", description: "URL LinkedIn (optionnel)" },
-          competences: { type: "array", items: { type: "string" }, description: "Liste de compétences (optionnel)" },
+          bio: { type: "string", description: "Bio (optionnel)" },
+          linkedin: { type: "string", description: "LinkedIn (optionnel)" },
+          competences: { type: "array", items: { type: "string" }, description: "Compétences (optionnel)" },
         },
-        required: ["first_name", "last_name", "title"],
+        required: ["first_name", "last_name"],
       },
     },
   },
@@ -33,19 +47,19 @@ const tools = [
     type: "function",
     function: {
       name: "edit_person",
-      description: "Modifier les informations d'une personne existante",
+      description: "Modifier une personne. UUID doit venir de search_person.",
       parameters: {
         type: "object",
         properties: {
-          person_id: { type: "string", description: "ID de la personne à modifier" },
-          first_name: { type: "string", description: "Prénom (optionnel)" },
-          last_name: { type: "string", description: "Nom de famille (optionnel)" },
-          title: { type: "string", description: "Titre/poste (optionnel)" },
-          email: { type: "string", description: "Adresse email (optionnel)" },
-          phone: { type: "string", description: "Téléphone (optionnel)" },
-          bio: { type: "string", description: "Biographie/description (optionnel)" },
-          linkedin: { type: "string", description: "URL LinkedIn (optionnel)" },
-          competences: { type: "array", items: { type: "string" }, description: "Liste de compétences (optionnel)" },
+          person_id: { type: "string", description: "UUID de search_person (format: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx)" },
+          first_name: { type: "string", description: "Prénom" },
+          last_name: { type: "string", description: "Nom" },
+          title: { type: "string", description: "Titre" },
+          email: { type: "string", description: "Email" },
+          phone: { type: "string", description: "Téléphone" },
+          bio: { type: "string", description: "Bio" },
+          linkedin: { type: "string", description: "LinkedIn" },
+          competences: { type: "array", items: { type: "string" }, description: "Compétences" },
         },
         required: ["person_id"],
       },
@@ -55,64 +69,55 @@ const tools = [
     type: "function",
     function: {
       name: "add_section",
-      description: "Ajouter une nouvelle section à l'organigramme",
+      description: "Ajouter une section",
       parameters: {
         type: "object",
         properties: {
-          title: { type: "string", description: "Nom de la section" },
-          parent_id: { type: "string", description: "ID de la section parente (optionnel, null pour section racine)" },
+          title: { type: "string", description: "Nom" },
+          parent_id: { type: "string", description: "UUID parent (optionnel)" },
         },
         required: ["title"],
-      },
-    },
-  },
-  {
-    type: "function",
-    function: {
-      name: "edit_section",
-      description: "Modifier une section existante",
-      parameters: {
-        type: "object",
-        properties: {
-          section_id: { type: "string", description: "ID de la section à modifier" },
-          title: { type: "string", description: "Nouveau nom de la section" },
-        },
-        required: ["section_id", "title"],
-      },
-    },
-  },
-  {
-    type: "function",
-    function: {
-      name: "get_organization_structure",
-      description: "Obtenir la structure complète de l'organigramme avec toutes les sections et personnes",
-      parameters: {
-        type: "object",
-        properties: {},
       },
     },
   },
 ];
 
 async function executeToolCall(toolName: string, args: any, supabaseClient: any) {
-  console.log(`Executing tool: ${toolName}`, args);
+  console.log(`Executing: ${toolName}`, JSON.stringify(args));
 
   try {
     switch (toolName) {
+      case "search_person": {
+        const searchTerm = args.name.toLowerCase();
+        const { data, error } = await supabaseClient
+          .from('people')
+          .select('id, first_name, last_name, title, bio');
+
+        if (error) throw error;
+
+        const matches = data.filter((p: any) => 
+          p.first_name.toLowerCase().includes(searchTerm) ||
+          p.last_name.toLowerCase().includes(searchTerm) ||
+          `${p.first_name} ${p.last_name}`.toLowerCase().includes(searchTerm)
+        );
+
+        return { found: matches.length > 0, people: matches };
+      }
+
       case "add_person": {
         const { data, error } = await supabaseClient
           .from('people')
           .insert([{
             first_name: args.first_name,
             last_name: args.last_name,
-            title: args.title,
+            title: args.title || '',
             email: args.email || null,
             phone: args.phone || null,
             bio: args.bio || null,
             linkedin: args.linkedin || null,
             competences: args.competences || [],
           }])
-          .select()
+          .select('id, first_name, last_name, title')
           .single();
 
         if (error) throw error;
@@ -120,10 +125,16 @@ async function executeToolCall(toolName: string, args: any, supabaseClient: any)
       }
 
       case "edit_person": {
+        // Validate UUID
+        const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+        if (!uuidRegex.test(args.person_id)) {
+          return { success: false, error: "UUID invalide. Utilisez search_person d'abord." };
+        }
+
         const updates: any = {};
-        if (args.first_name) updates.first_name = args.first_name;
-        if (args.last_name) updates.last_name = args.last_name;
-        if (args.title) updates.title = args.title;
+        if (args.first_name !== undefined) updates.first_name = args.first_name;
+        if (args.last_name !== undefined) updates.last_name = args.last_name;
+        if (args.title !== undefined) updates.title = args.title;
         if (args.email !== undefined) updates.email = args.email;
         if (args.phone !== undefined) updates.phone = args.phone;
         if (args.bio !== undefined) updates.bio = args.bio;
@@ -134,7 +145,7 @@ async function executeToolCall(toolName: string, args: any, supabaseClient: any)
           .from('people')
           .update(updates)
           .eq('id', args.person_id)
-          .select()
+          .select('id, first_name, last_name, title')
           .single();
 
         if (error) throw error;
@@ -155,42 +166,12 @@ async function executeToolCall(toolName: string, args: any, supabaseClient: any)
         return { success: true, section: data };
       }
 
-      case "edit_section": {
-        const { data, error } = await supabaseClient
-          .from('sections')
-          .update({ title: args.title })
-          .eq('id', args.section_id)
-          .select()
-          .single();
-
-        if (error) throw error;
-        return { success: true, section: data };
-      }
-
-      case "get_organization_structure": {
-        const [sectionsResult, peopleResult, membersResult] = await Promise.all([
-          supabaseClient.from('sections').select('*').order('display_order'),
-          supabaseClient.from('people').select('*'),
-          supabaseClient.from('section_members').select('*'),
-        ]);
-
-        if (sectionsResult.error) throw sectionsResult.error;
-        if (peopleResult.error) throw peopleResult.error;
-        if (membersResult.error) throw membersResult.error;
-
-        return {
-          sections: sectionsResult.data,
-          people: peopleResult.data,
-          members: membersResult.data,
-        };
-      }
-
       default:
         return { error: `Unknown tool: ${toolName}` };
     }
   } catch (error) {
-    console.error(`Error executing ${toolName}:`, error);
-    return { error: error.message };
+    console.error(`Error in ${toolName}:`, error);
+    return { success: false, error: error.message };
   }
 }
 
@@ -214,34 +195,30 @@ serve(async (req) => {
       { global: { headers: { Authorization: authHeader } } }
     );
 
-    const systemPrompt = `Tu es un assistant IA spécialisé dans la gestion d'organigrammes.
+    const systemPrompt = `Assistant IA pour organigrammes.
 
-RÈGLE PRINCIPALE : Toute information que l'utilisateur te donne est une demande de modification ou d'ajout dans l'organigramme.
+RÈGLE : Toute info de l'utilisateur = demande de modification.
 
-PROCESSUS À SUIVRE :
-1. Si tu n'as pas encore la structure de l'organigramme, commence TOUJOURS par appeler get_organization_structure
-2. Analyse l'information fournie par l'utilisateur
-3. Identifie quelle(s) action(s) effectuer (ajout, modification, suppression)
-4. Recherche dans la structure actuelle pour voir si l'entité existe déjà
-5. AVANT d'utiliser un outil de modification, pose TOUJOURS une question de confirmation claire à l'utilisateur
-6. Attends la confirmation explicite de l'utilisateur (oui, ok, confirmer, d'accord, valider, etc.)
-7. Une fois confirmé, utilise les outils appropriés pour effectuer les modifications
+PROCESSUS RAPIDE :
+1. Nom mentionné ? → search_person(nom) immédiatement
+2. Trouvé ? → Demande confirmation : "Voulez-vous modifier [nom trouvé] en [nouveau nom] ?"
+3. "oui"/"ok" → edit_person avec UUID exact de search_person
+4. Pas trouvé ? → Demande si ajouter
 
 EXEMPLES :
-- Utilisateur : "Rodolphe Guilhot"
-  → Appelle get_organization_structure, cherche "Rodolphe", puis réponds : "J'ai trouvé Rodolphe Simon dans l'organigramme. Voulez-vous modifier son nom en Rodolphe Guilhot ?"
-  
-- Utilisateur : "Jean Dupont, développeur"
-  → Appelle get_organization_structure, vérifie si Jean Dupont existe, puis réponds : "Souhaitez-vous ajouter Jean Dupont avec le titre de développeur dans l'organigramme ?"
+- User: "Rodolphe Guilhot"
+  → search_person("Rodolphe")
+  → Trouvé "Rodolphe Simon" (id: "20000...001")
+  → "Voulez-vous renommer Rodolphe Simon en Rodolphe Guilhot ?"
+  → Sur "oui" : edit_person(person_id: "20000...001", last_name: "Guilhot")
 
-- Utilisateur : "Marie Martin est maintenant directrice"
-  → Appelle get_organization_structure, trouve Marie Martin, puis réponds : "Voulez-vous modifier le titre de Marie Martin pour le changer en directrice ?"
+CRITIQUE :
+- TOUJOURS search_person AVANT edit_person
+- TOUJOURS utiliser l'UUID exact de search_person
+- JAMAIS inventer d'UUID
+- Être rapide et concis
 
-- Si l'utilisateur répond "oui", "ok", "confirmer", "d'accord" après ta question de confirmation, exécute immédiatement l'action appropriée.
-
-N'effectue JAMAIS une modification sans avoir obtenu une confirmation explicite de l'utilisateur.
-
-Réponds toujours en français de manière claire et concise.`;
+Français uniquement.`;
 
     let currentMessages = [
       { role: 'system', content: systemPrompt },
@@ -250,8 +227,12 @@ Réponds toujours en français de manière claire et concise.`;
 
     let continueLoop = true;
     let allContent = '';
+    let maxIterations = 4;
+    let iteration = 0;
 
-    while (continueLoop) {
+    while (continueLoop && iteration < maxIterations) {
+      iteration++;
+      
       const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
         method: 'POST',
         headers: {
@@ -269,6 +250,14 @@ Réponds toujours en français de manière claire et concise.`;
       if (!response.ok) {
         const errorText = await response.text();
         console.error('AI Gateway error:', response.status, errorText);
+        
+        if (response.status === 429) {
+          return new Response(
+            JSON.stringify({ error: "Trop de requêtes, attendez un instant." }),
+            { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+        
         throw new Error(`AI Gateway error: ${response.status}`);
       }
 
@@ -304,15 +293,19 @@ Réponds toujours en français de manière claire et concise.`;
       continueLoop = false;
     }
 
+    if (iteration >= maxIterations) {
+      allContent = "Requête trop complexe. Reformulez plus simplement svp.";
+    }
+
     return new Response(
       JSON.stringify({ content: allContent }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
   } catch (error) {
-    console.error('Error in ai-assistant:', error);
+    console.error('Error:', error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: error.message || "Erreur inconnue" }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
