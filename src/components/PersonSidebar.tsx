@@ -146,6 +146,28 @@ export const PersonSidebar: React.FC<PersonSidebarProps> = ({
           </div>
         )}
 
+        {/* LinkedIn */}
+        {person.linkedin && (
+          <div>
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full"
+              asChild
+            >
+              <a
+                href={person.linkedin}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-center gap-2"
+              >
+                <Linkedin className="w-4 h-4" />
+                Voir le profil LinkedIn
+              </a>
+            </Button>
+          </div>
+        )}
+
         {/* 4. Compétences */}
         {person.competences && person.competences.length > 0 && (
           <div>
