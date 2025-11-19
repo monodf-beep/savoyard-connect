@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 import { ProjectCard } from '@/components/ProjectCard';
 import { ProjectForm } from '@/components/ProjectForm';
+import { TutorialDialog } from '@/components/TutorialDialog';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Navbar } from '@/components/Navbar';
@@ -192,11 +193,46 @@ const Projects = () => {
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-bold">Projets</h1>
-            <p className="text-muted-foreground mt-1">
-              Découvrez les projets en cours et à venir des groupes et commissions
-            </p>
+          <div className="flex items-center gap-3">
+            <div>
+              <h1 className="text-3xl font-bold">Projets</h1>
+              <p className="text-muted-foreground mt-1">
+                Découvrez les projets en cours et à venir des groupes et commissions
+              </p>
+            </div>
+            <TutorialDialog
+              title="Gérer les projets"
+              description="Suivez et organisez les projets de votre organisation par section."
+              benefits={[
+                "Centraliser tous les projets de l'organisation",
+                "Suivre l'avancement de chaque projet (planifié, en cours, terminé)",
+                "Associer les projets aux bonnes sections/commissions",
+                "Partager des documents et feuilles de route",
+                "Maintenir un historique des réalisations"
+              ]}
+              steps={[
+                {
+                  title: "Créer un projet",
+                  description: "Cliquez sur 'Nouveau projet' pour ajouter un projet à une section. Remplissez les informations de base.",
+                  tips: ["Choisissez un titre clair et descriptif"]
+                },
+                {
+                  title: "Définir le statut",
+                  description: "Indiquez si le projet est planifié, en cours ou terminé pour suivre sa progression.",
+                  tips: ["Mettez à jour le statut régulièrement"]
+                },
+                {
+                  title: "Ajouter dates et documents",
+                  description: "Précisez les dates de début et fin, et joignez des documents pertinents (rapports, plans, etc.).",
+                  tips: ["Les documents restent accessibles à tous les membres"]
+                },
+                {
+                  title: "Décrire la feuille de route",
+                  description: "Utilisez le champ 'Roadmap' pour détailler les étapes et jalons du projet.",
+                  tips: ["Une feuille de route claire facilite la coordination"]
+                }
+              ]}
+            />
           </div>
           {isAdmin && (
             <Button onClick={handleAddProject}>
