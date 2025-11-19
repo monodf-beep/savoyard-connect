@@ -419,6 +419,17 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
   
   const totalMembers = getAllMembers(data.sections).length;
 
+  // Émettre un événement personnalisé avec les stats pour le header
+  React.useEffect(() => {
+    const event = new CustomEvent('organigrammeStats', {
+      detail: {
+        totalMembers,
+        vacantPositionsCount: getAllVacantPositions().length
+      }
+    });
+    window.dispatchEvent(event);
+  }, [totalMembers, getAllVacantPositions, data.sections]);
+
   if (loading || authLoading) {
     return (
       <div className="flex min-h-screen w-full items-center justify-center">
@@ -435,27 +446,8 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
       <div className={`organigramme-container transition-all duration-300 ${(isSidebarOpen || isVacantPositionsSidebarOpen) ? 'pr-80' : ''} flex-1 max-w-full px-4 py-4`}>
       {/* Header épuré */}
       <div className="mb-3 md:mb-6">
-        {/* Version mobile : stats + menu bouton */}
-        <div className="md:hidden flex items-center justify-between mb-2">
-          <div className="flex items-center gap-2">
-            <span className="text-xs bg-secondary/50 px-2 py-1 rounded-md">
-              {totalMembers} membres
-            </span>
-            <Button
-              onClick={() => {
-                setIsSidebarOpen(false);
-                setSelectedPerson(null);
-                setIsVacantPositionsSidebarOpen(true);
-              }}
-              variant="outline"
-              size="sm"
-              className="text-xs h-7"
-            >
-              <UserPlus className="w-3 h-3" />
-              <span className="ml-1">{getAllVacantPositions().length}</span>
-            </Button>
-          </div>
-
+        {/* Version mobile : menu bouton */}
+        <div className="md:hidden flex items-center justify-end mb-2">
           {/* Bouton Menu Modal */}
           <Sheet open={isControlsMenuOpen} onOpenChange={setIsControlsMenuOpen}>
             <SheetTrigger asChild>
@@ -591,27 +583,6 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
 
         {/* Version desktop/tablette : layout normal */}
         <div className="hidden md:block">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <span className="text-sm bg-secondary/50 px-2 py-1 rounded-md">
-                {totalMembers} membres
-              </span>
-              <Button
-                onClick={() => {
-                  setIsSidebarOpen(false);
-                  setSelectedPerson(null);
-                  setIsVacantPositionsSidebarOpen(true);
-                }}
-                variant="outline"
-                size="sm"
-                className="text-xs h-8"
-              >
-                <UserPlus className="w-3 h-3 mr-1" />
-                {isAdmin ? 'Postes vacants' : `${getAllVacantPositions().length} postes`}
-              </Button>
-            </div>
-          </div>
-
         {/* Controls - Desktop */}
         <div className="flex items-center gap-2 overflow-x-auto pb-1">
           {/* View Mode Toggle */}
