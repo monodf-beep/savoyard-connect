@@ -1,7 +1,6 @@
 import React from 'react';
 import { Organigramme } from '../components/Organigramme';
 import { Navbar } from '../components/Navbar';
-import { AIAssistant } from '../components/AIAssistant';
 import { TutorialDialog } from '../components/TutorialDialog';
 import { useAuth } from '@/hooks/useAuth';
 import { Info, UserPlus } from 'lucide-react';
@@ -120,7 +119,6 @@ const Index = () => {
       </div>
 
       <Organigramme isAdminMode={false} />
-      {isAdmin && <AIAssistant />}
     </div>
   );
 };

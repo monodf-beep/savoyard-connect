@@ -78,6 +78,10 @@ export const AIAssistant: React.FC = () => {
         role: 'assistant',
         content: data.content || "Aucune réponse reçue",
       }]);
+
+      // Émettre un événement pour rafraîchir l'organigramme après succès
+      const refreshEvent = new CustomEvent('aiAssistantSuccess');
+      window.dispatchEvent(refreshEvent);
     } catch (error: any) {
       // Supprimer le dernier message utilisateur en cas d'erreur serveur uniquement
       setMessages(prev => prev.slice(0, -1));
