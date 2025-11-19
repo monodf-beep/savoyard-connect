@@ -92,13 +92,13 @@ export const Navbar = ({
                           <li>
                             <button
                               onClick={onAddPerson}
-                              className="w-full block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground text-left"
+                              className="w-full block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground text-left group"
                             >
                               <div className="flex items-center gap-2 text-sm font-medium leading-none">
                                 <UserPlus className="h-4 w-4" />
                                 Ajouter une personne
                               </div>
-                              <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
+                              <p className="line-clamp-2 text-sm leading-snug text-muted-foreground group-hover:text-accent-foreground/80 transition-colors">
                                 Ajouter un nouveau membre à l'organisation
                               </p>
                             </button>
@@ -106,13 +106,13 @@ export const Navbar = ({
                           <li>
                             <button
                               onClick={onAddSection}
-                              className="w-full block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground text-left"
+                              className="w-full block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground text-left group"
                             >
                               <div className="flex items-center gap-2 text-sm font-medium leading-none">
                                 <PlusSquare className="h-4 w-4" />
                                 Ajouter une section
                               </div>
-                              <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
+                              <p className="line-clamp-2 text-sm leading-snug text-muted-foreground group-hover:text-accent-foreground/80 transition-colors">
                                 Créer une nouvelle section ou sous-section
                               </p>
                             </button>
@@ -120,13 +120,13 @@ export const Navbar = ({
                           <li>
                             <button
                               onClick={onAddVacantPosition}
-                              className="w-full block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground text-left"
+                              className="w-full block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground text-left group"
                             >
                               <div className="flex items-center gap-2 text-sm font-medium leading-none">
                                 <Plus className="h-4 w-4" />
                                 Ajouter un poste vacant
                               </div>
-                              <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
+                              <p className="line-clamp-2 text-sm leading-snug text-muted-foreground group-hover:text-accent-foreground/80 transition-colors">
                                 Créer une nouvelle position à pourvoir
                               </p>
                             </button>
@@ -134,13 +134,13 @@ export const Navbar = ({
                           <li>
                             <button
                               onClick={onImport}
-                              className="w-full block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground text-left"
+                              className="w-full block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground text-left group"
                             >
                               <div className="flex items-center gap-2 text-sm font-medium leading-none">
                                 <Upload className="h-4 w-4" />
                                 Importer des données
                               </div>
-                              <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
+                              <p className="line-clamp-2 text-sm leading-snug text-muted-foreground group-hover:text-accent-foreground/80 transition-colors">
                                 Importer en masse depuis LinkedIn ou autres sources
                               </p>
                             </button>
