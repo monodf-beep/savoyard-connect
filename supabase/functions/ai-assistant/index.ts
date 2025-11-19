@@ -80,6 +80,23 @@ const tools = [
       },
     },
   },
+  {
+    type: "function",
+    function: {
+      name: "rename_person_by_name",
+      description: "Renommer une personne en se basant sur son prénom+nom actuels (évite les problèmes d'UUID).",
+      parameters: {
+        type: "object",
+        properties: {
+          original_first_name: { type: "string", description: "Prénom actuel (ex: Rodolphe)" },
+          original_last_name: { type: "string", description: "Nom actuel (ex: Simon)" },
+          new_first_name: { type: "string", description: "Nouveau prénom" },
+          new_last_name: { type: "string", description: "Nouveau nom" },
+        },
+        required: ["original_first_name", "original_last_name", "new_last_name"],
+      },
+    },
+  },
 ];
 
 async function executeToolCall(toolName: string, args: any, supabaseClient: any) {
@@ -176,6 +193,40 @@ async function executeToolCall(toolName: string, args: any, supabaseClient: any)
         return { success: true, section: data };
       }
 
+      case "rename_person_by_name": {
+        const originalFirst = (args.original_first_name || '').toString().trim().toLowerCase();
+        const originalLast = (args.original_last_name || '').toString().trim().toLowerCase();
+
+        const { data: persons, error } = await supabaseClient
+          .from('people')
+          .select('id, first_name, last_name');
+
+        if (error) throw error;
+
+        const target = persons.find((p: any) =>
+          p.first_name.toLowerCase() === originalFirst &&
+          p.last_name.toLowerCase() === originalLast
+        );
+
+        if (!target) {
+          return { success: false, error: "Aucune personne trouvée avec ce prénom et nom dans l'organigramme." };
+        }
+
+        const updates: any = {};
+        if (args.new_first_name) updates.first_name = args.new_first_name;
+        if (args.new_last_name) updates.last_name = args.new_last_name;
+
+        const { data: updated, error: updateError } = await supabaseClient
+          .from('people')
+          .update(updates)
+          .eq('id', target.id)
+          .select('id, first_name, last_name, title')
+          .single();
+
+        if (updateError) throw updateError;
+        return { success: true, person: updated };
+      }
+
       default:
         return { error: `Unknown tool: ${toolName}` };
     }
@@ -210,9 +261,9 @@ serve(async (req) => {
 RÈGLE : Toute info de l'utilisateur = demande de modification.
 
 PROCESSUS RAPIDE :
-1. Nom mentionné ? → search_person(nom) immédiatement
-2. Trouvé ? → Demande confirmation : "Voulez-vous modifier [nom trouvé] en [nouveau nom] ?"
-3. "oui"/"ok" → edit_person avec UUID exact de search_person
+1. Nom mentionné ? → search_person(nom) ou rename_person_by_name si la question de confirmation contient l'ancien et le nouveau nom
+2. Pour un simple renommage "Voulez-vous renommer X en Y ?" → privilégier rename_person_by_name avec le prénom+nom actuels (X) et le nouveau nom (Y)
+3. "oui"/"ok" → exécuter l'outil choisi
 4. Pas trouvé ? → Demande si ajouter
 
 EXEMPLES :
@@ -220,11 +271,11 @@ EXEMPLES :
   → search_person("Rodolphe")
   → Trouvé "Rodolphe Simon" (id: <UUID_RENVOYÉ_PAR_SEARCH_PERSON>)
   → "Voulez-vous renommer Rodolphe Simon en Rodolphe Guilhot ?"
-  → Sur "oui" : edit_person(person_id: <MÊME_UUID_RENVOYÉ>, last_name: "Guilhot")
+  → Sur "oui" : rename_person_by_name(original_first_name: "Rodolphe", original_last_name: "Simon", new_last_name: "Guilhot")
 
 CRITIQUE :
-- TOUJOURS search_person AVANT edit_person
-- TOUJOURS utiliser l'UUID exact de search_person
+- Utiliser de préférence rename_person_by_name pour les renommages simples
+- TOUJOURS utiliser l'UUID exact de search_person si vous utilisez edit_person
 - JAMAIS inventer d'UUID
 - Être rapide et concis
 
