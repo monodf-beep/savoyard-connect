@@ -91,6 +91,18 @@ export const useValueChains = () => {
     loadData();
   }, []);
 
+  // Écouter les événements de succès de l'assistant IA pour rafraîchir automatiquement
+  useEffect(() => {
+    const handleAISuccess = () => {
+      loadData();
+    };
+
+    window.addEventListener('aiAssistantSuccess', handleAISuccess);
+    return () => {
+      window.removeEventListener('aiAssistantSuccess', handleAISuccess);
+    };
+  }, []);
+
   const createChain = async (title: string, description?: string) => {
     try {
       const { data, error } = await supabase
