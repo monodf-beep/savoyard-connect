@@ -88,18 +88,25 @@ async function executeToolCall(toolName: string, args: any, supabaseClient: any)
   try {
     switch (toolName) {
       case "search_person": {
-        const searchTerm = args.name.toLowerCase();
+        const raw = (args.name || '').toString().toLowerCase().trim();
+        const terms = raw.split(/\s+/).filter(Boolean);
+
         const { data, error } = await supabaseClient
           .from('people')
           .select('id, first_name, last_name, title, bio');
 
         if (error) throw error;
 
-        const matches = data.filter((p: any) => 
-          p.first_name.toLowerCase().includes(searchTerm) ||
-          p.last_name.toLowerCase().includes(searchTerm) ||
-          `${p.first_name} ${p.last_name}`.toLowerCase().includes(searchTerm)
-        );
+        const matches = data.filter((p: any) => {
+          const full = `${p.first_name} ${p.last_name}`.toLowerCase();
+          const first = p.first_name.toLowerCase();
+          const last = p.last_name.toLowerCase();
+          return terms.some((t: string) =>
+            first.includes(t) ||
+            last.includes(t) ||
+            full.includes(t)
+          );
+        });
 
         return { found: matches.length > 0, people: matches };
       }
@@ -146,9 +153,12 @@ async function executeToolCall(toolName: string, args: any, supabaseClient: any)
           .update(updates)
           .eq('id', args.person_id)
           .select('id, first_name, last_name, title')
-          .single();
+          .maybeSingle();
 
         if (error) throw error;
+        if (!data) {
+          return { success: false, error: "Aucune personne trouvée avec cet identifiant dans l'organigramme." };
+        }
         return { success: true, person: data };
       }
 

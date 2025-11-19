@@ -79,14 +79,16 @@ export const AIAssistant: React.FC = () => {
         content: data.content || "Aucune réponse reçue",
       }]);
     } catch (error: any) {
-      console.error('Error:', error);
-      
-      // Supprimer le dernier message utilisateur en cas d'erreur
+      // Supprimer le dernier message utilisateur en cas d'erreur serveur uniquement
       setMessages(prev => prev.slice(0, -1));
-      
+
+      const description = error.message?.includes("Aucune personne trouvée")
+        ? "Impossible de trouver cette personne dans l'organigramme. Vérifiez qu'elle existe bien ou importez-la d'abord."
+        : (error.message || "Impossible de traiter la demande");
+
       toast({
-        title: "Erreur",
-        description: error.message || "Impossible de traiter la demande",
+        title: "Erreur de l'assistant IA",
+        description,
         variant: "destructive",
       });
     } finally {
