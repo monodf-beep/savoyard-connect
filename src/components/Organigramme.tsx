@@ -672,15 +672,57 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
           </Button>
 
           {isAdmin && (
-            <Button
-              onClick={() => setIsNameCorrectionOpen(true)}
-              variant="outline"
-              size="sm"
-              className="h-8 px-3"
-            >
-              <CheckCircle2 className="w-3.5 h-3.5 mr-1" />
-              <span className="text-xs">Vérifier noms</span>
-            </Button>
+            <>
+              <Button
+                onClick={handleAddPerson}
+                variant="outline"
+                size="sm"
+                className="h-8 px-3"
+              >
+                <UserPlus className="w-3.5 h-3.5 mr-1" />
+                <span className="text-xs">Ajouter personne</span>
+              </Button>
+              
+              <Button
+                onClick={handleAddSection}
+                variant="outline"
+                size="sm"
+                className="h-8 px-3"
+              >
+                <FolderPlus className="w-3.5 h-3.5 mr-1" />
+                <span className="text-xs">Ajouter section</span>
+              </Button>
+              
+              <Button
+                onClick={handleAddVacantPosition}
+                variant="outline"
+                size="sm"
+                className="h-8 px-3"
+              >
+                <Plus className="w-3.5 h-3.5 mr-1" />
+                <span className="text-xs">Poste vacant</span>
+              </Button>
+              
+              <Button
+                onClick={() => setIsImportOpen(true)}
+                variant="outline"
+                size="sm"
+                className="h-8 px-3"
+              >
+                <Upload className="w-3.5 h-3.5 mr-1" />
+                <span className="text-xs">Importer</span>
+              </Button>
+              
+              <Button
+                onClick={() => setIsNameCorrectionOpen(true)}
+                variant="outline"
+                size="sm"
+                className="h-8 px-3"
+              >
+                <CheckCircle2 className="w-3.5 h-3.5 mr-1" />
+                <span className="text-xs">Vérifier noms</span>
+              </Button>
+            </>
           )}
         </div>
         </div>
