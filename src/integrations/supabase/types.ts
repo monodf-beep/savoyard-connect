@@ -91,6 +91,36 @@ export type Database = {
         }
         Relationships: []
       }
+      organization_settings: {
+        Row: {
+          created_at: string | null
+          id: string
+          logo_url: string | null
+          name: string
+          primary_color: string
+          secondary_color: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          logo_url?: string | null
+          name?: string
+          primary_color?: string
+          secondary_color?: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          logo_url?: string | null
+          name?: string
+          primary_color?: string
+          secondary_color?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       people: {
         Row: {
           adresse: string | null
