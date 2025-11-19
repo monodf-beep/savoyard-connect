@@ -142,6 +142,43 @@ const tools = [
       },
     },
   },
+  {
+    type: "function",
+    function: {
+      name: "assign_person_to_sections",
+      description: "Assigner une personne à une ou plusieurs sections",
+      parameters: {
+        type: "object",
+        properties: {
+          person_id: { type: "string", description: "UUID de la personne (obtenu via search_person)" },
+          section_titles: { 
+            type: "array", 
+            items: { type: "string" },
+            description: "Liste des noms des sections où assigner la personne" 
+          },
+        },
+        required: ["person_id", "section_titles"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "search_sections",
+      description: "Rechercher des sections par titre",
+      parameters: {
+        type: "object",
+        properties: {
+          titles: { 
+            type: "array",
+            items: { type: "string" },
+            description: "Liste des titres de sections à rechercher" 
+          },
+        },
+        required: ["titles"],
+      },
+    },
+  },
 ];
 
 async function executeToolCall(toolName: string, args: any, supabaseClient: any) {
@@ -399,6 +436,75 @@ async function executeToolCall(toolName: string, args: any, supabaseClient: any)
         return { success: true, chains: matches };
       }
 
+      case "assign_person_to_sections": {
+        // Récupérer toutes les sections
+        const { data: allSections, error: sectionsError } = await supabaseClient
+          .from('sections')
+          .select('id, title');
+        
+        if (sectionsError) throw sectionsError;
+
+        const assignments = [];
+        const notFound = [];
+
+        for (const sectionTitle of args.section_titles) {
+          const query = sectionTitle.toLowerCase().trim();
+          const section = allSections.find((s: any) => 
+            s.title.toLowerCase().includes(query) || query.includes(s.title.toLowerCase())
+          );
+
+          if (section) {
+            // Vérifier si l'assignation existe déjà
+            const { data: existing } = await supabaseClient
+              .from('section_members')
+              .select('id')
+              .eq('person_id', args.person_id)
+              .eq('section_id', section.id)
+              .maybeSingle();
+
+            if (!existing) {
+              const { error: assignError } = await supabaseClient
+                .from('section_members')
+                .insert([{
+                  person_id: args.person_id,
+                  section_id: section.id,
+                }]);
+
+              if (assignError) throw assignError;
+              assignments.push(section.title);
+            } else {
+              assignments.push(`${section.title} (déjà assigné)`);
+            }
+          } else {
+            notFound.push(sectionTitle);
+          }
+        }
+
+        return { 
+          success: true, 
+          assigned: assignments,
+          not_found: notFound.length > 0 ? notFound : undefined
+        };
+      }
+
+      case "search_sections": {
+        const { data: allSections, error } = await supabaseClient
+          .from('sections')
+          .select('id, title');
+        
+        if (error) throw error;
+
+        const results = args.titles.map((title: string) => {
+          const query = title.toLowerCase().trim();
+          const section = allSections.find((s: any) => 
+            s.title.toLowerCase().includes(query) || query.includes(s.title.toLowerCase())
+          );
+          return { query: title, found: !!section, section };
+        });
+
+        return { success: true, results };
+      }
+
       default:
         return { error: `Unknown tool: ${toolName}` };
     }
@@ -430,25 +536,43 @@ serve(async (req) => {
 
     const systemPrompt = `Assistant IA pour organigrammes et chaînes de valeur.
 
-RÈGLE : Toute info de l'utilisateur = demande de modification.
+VOTRE RÔLE : Décomposer et clarifier les requêtes complexes pour obtenir confirmation avant d'agir.
 
 CAPACITÉS :
-- Gérer les personnes (ajouter, modifier, renommer)
+- Gérer les personnes (ajouter, modifier, renommer, assigner à des sections)
 - Gérer les sections de l'organigramme
 - Créer et gérer les chaînes de valeur avec segments et acteurs
 
-PROCESSUS RAPIDE :
-1. Nom mentionné ? → search_person(nom) ou rename_person_by_name si la question de confirmation contient l'ancien et le nouveau nom
-2. Pour un simple renommage "Voulez-vous renommer X en Y ?" → privilégier rename_person_by_name avec le prénom+nom actuels (X) et le nouveau nom (Y)
-3. Chaîne de valeur mentionnée ? → utiliser create_value_chain avec les segments et acteurs
-4. "oui"/"ok" → exécuter l'outil choisi
-5. Pas trouvé ? → Demande si ajouter
+GESTION DES REQUÊTES COMPLEXES :
+Quand l'utilisateur donne une requête avec plusieurs informations :
+1. **Analyser et décomposer** : Identifier toutes les actions demandées
+2. **Reformuler clairement** : Présenter chaque action en langage simple
+3. **Demander confirmation** : "Voulez-vous que je :
+   - Ajoute [Prénom Nom]
+   - L'assigne à [Section 1], [Section 2], etc.
+   - [Autre action si applicable]
+   ?"
+4. **Attendre "oui"/"ok"** : Ne pas exécuter avant confirmation
+5. **Exécuter par étapes** : Ajouter personne d'abord, puis assigner aux sections
+
+EXEMPLE DE REQUÊTE COMPLEXE :
+User: "Ajoute une nouvelle bénévole qui s'appelle Martine de son prénom et Roger de son nom de famille. Mets-la dans « Commission littérature ». Ajoute également Margot dans « Commission littérature » et « Groupe de travail relations externes »."
+
+Réponse: "Voulez-vous que je :
+- Ajoute Martine Roger comme nouvelle bénévole
+- L'assigne à « Commission littérature »
+- Ajoute également Margot à « Commission littérature » et « Groupe de travail relations externes » ?
+
+Confirmez pour que j'exécute ces actions."
+
+PROCESSUS D'EXÉCUTION (après confirmation) :
+1. Rechercher si les personnes existent (search_person)
+2. Si nouveau : add_person → obtenir person_id
+3. Si sections mentionnées : assign_person_to_sections avec les titres exacts
+4. Confirmer le résultat final
 
 EXEMPLES PERSONNES :
-- User: "Rodolphe Guilhot"
-  → "Voulez-vous modifier Rodolphe Guilhot ?"
-- User: "oui"
-  → search_person("Rodolphe Guilhot")
+- User: "Rodolphe Guilhot" → "Voulez-vous modifier Rodolphe Guilhot ?"
 - User: "renommer rodolphe simon en rodolphe guilhot"
   → rename_person_by_name({original_first_name: "Rodolphe", original_last_name: "Simon", new_last_name: "Guilhot"})
 
@@ -463,11 +587,13 @@ EXEMPLES CHAÎNES DE VALEUR :
     })
 
 IMPORTANT :
-- Utilisez les @ mentions dans les descriptions pour identifier les acteurs
-- Tous les acteurs doivent exister dans l'organigramme
-- Demandez confirmation avant de créer une chaîne complexe
+- Ne jamais rejeter une requête comme "trop complexe"
+- Toujours décomposer et reformuler pour clarification
+- Utiliser les noms de sections tels que mentionnés par l'utilisateur
+- Demander confirmation avant toute action
+- Être concis mais précis dans les reformulations
 
-RÉPONSE : courte, structure seulement, pas de commentaires superflus.`;
+RÉPONSE : Claire, structurée, attendant confirmation explicite.`;
 
     let currentMessages = [
       { role: 'system', content: systemPrompt },
