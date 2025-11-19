@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { JobPosting } from '../types/organigramme';
 import { JobPostingCard } from '../components/JobPostingCard';
 import { JobPostingForm } from '../components/JobPostingForm';
+import { TutorialDialog } from '../components/TutorialDialog';
 import { Button } from '../components/ui/button';
 import { Plus, Briefcase, Settings, Info } from 'lucide-react';
 import { useIsWordPressAdmin } from '../utils/wordpress';
@@ -100,6 +101,42 @@ const Jobs = () => {
                 {activeJobPostings.length} poste{activeJobPostings.length > 1 ? 's' : ''} disponible{activeJobPostings.length > 1 ? 's' : ''}
               </p>
             </div>
+            <TutorialDialog
+              title="Gérer les offres d'emploi"
+              description="Publiez et gérez les offres d'emploi externes de votre organisation."
+              benefits={[
+                "Centraliser toutes les offres d'emploi au même endroit",
+                "Rendre visibles les opportunités de recrutement",
+                "Faciliter le processus de candidature avec des liens directs",
+                "Suivre les postes actifs et archivés",
+                "Attirer de nouveaux talents vers votre organisation"
+              ]}
+              steps={[
+                {
+                  title: "Activer le mode admin",
+                  description: "Cliquez sur le bouton 'Admin' pour activer les fonctionnalités de gestion des offres.",
+                  tips: ["Seuls les administrateurs peuvent créer et modifier les offres"]
+                },
+                {
+                  title: "Créer une offre",
+                  description: "Cliquez sur 'Ajouter un poste' pour créer une nouvelle offre d'emploi. Renseignez tous les détails importants.",
+                  tips: [
+                    "Soyez précis sur les compétences requises",
+                    "Indiquez clairement le type de contrat (CDI, CDD, Stage)"
+                  ]
+                },
+                {
+                  title: "Ajouter un lien de candidature",
+                  description: "Fournissez l'URL où les candidats peuvent postuler (formulaire externe, email, etc.).",
+                  tips: ["Testez le lien pour vous assurer qu'il fonctionne"]
+                },
+                {
+                  title: "Publier ou désactiver",
+                  description: "Marquez l'offre comme active ou inactive selon vos besoins. Les offres inactives ne sont pas visibles publiquement.",
+                  tips: ["Désactivez les offres pourvues plutôt que de les supprimer"]
+                }
+              ]}
+            />
           </div>
           
           <div className="flex items-center gap-2">

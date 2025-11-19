@@ -4,6 +4,7 @@ import { useValueChains } from '@/hooks/useValueChains';
 import { useAuth } from '@/hooks/useAuth';
 import { ValueChainFlowDiagram } from '@/components/valueChain/ValueChainFlowDiagram';
 import { ValueChainForm } from '@/components/valueChain/ValueChainForm';
+import { TutorialDialog } from '@/components/TutorialDialog';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import {
@@ -178,11 +179,58 @@ export default function ValueChains() {
       <main className="flex-1 container mx-auto px-4 py-8">
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
-            <div>
-              <h1 className="text-3xl font-bold text-foreground">Chaînes de valeur</h1>
-              <p className="text-muted-foreground mt-1">
-                Gestion des processus et flux opérationnels
-              </p>
+            <div className="flex items-center gap-3">
+              <div>
+                <h1 className="text-3xl font-bold text-foreground">Chaînes de valeur</h1>
+                <p className="text-muted-foreground mt-1">
+                  Gestion des processus et flux opérationnels
+                </p>
+              </div>
+              <TutorialDialog
+                title="Comprendre les chaînes de valeur"
+                description="Les chaînes de valeur permettent de visualiser et organiser les processus opérationnels de votre organisation."
+                benefits={[
+                  "Visualiser l'ensemble des processus et leur enchaînement",
+                  "Identifier les acteurs impliqués dans chaque étape",
+                  "Optimiser les flux de travail en détectant les goulots d'étranglement",
+                  "Faciliter la communication entre les différentes fonctions",
+                  "Assurer la traçabilité et la cohérence des processus"
+                ]}
+                steps={[
+                  {
+                    title: "Créer une nouvelle chaîne",
+                    description: "Cliquez sur 'Créer une chaîne' pour définir un nouveau processus opérationnel. Donnez-lui un nom et une description claire.",
+                    tips: ["Choisissez un nom descriptif qui reflète le processus global"]
+                  },
+                  {
+                    title: "Ajouter des segments fonctionnels",
+                    description: "Décomposez votre processus en étapes (segments). Chaque segment représente une fonction ou activité clé.",
+                    tips: [
+                      "Ordonnez les segments de manière logique selon le flux",
+                      "Un segment = une fonction précise (ex: Accueil, Traitement, Validation)"
+                    ]
+                  },
+                  {
+                    title: "Assigner des acteurs",
+                    description: "Pour chaque segment, sélectionnez les personnes de l'organigramme qui interviennent dans cette étape.",
+                    tips: [
+                      "Les acteurs doivent déjà exister dans l'organigramme",
+                      "Un acteur peut apparaître dans plusieurs segments",
+                      "Respectez la règle : un acteur par chaîne maximum"
+                    ]
+                  },
+                  {
+                    title: "Fusionner des chaînes",
+                    description: "Combinez deux chaînes existantes pour créer un processus plus complexe. Les segments sont concaténés.",
+                    tips: ["Utile pour regrouper des processus complémentaires"]
+                  },
+                  {
+                    title: "Scinder une chaîne",
+                    description: "Divisez une chaîne longue en deux parties distinctes pour mieux organiser vos processus.",
+                    tips: ["Permet de séparer des sous-processus indépendants"]
+                  }
+                ]}
+              />
             </div>
             {isAdmin && (
               <div className="flex gap-2">
