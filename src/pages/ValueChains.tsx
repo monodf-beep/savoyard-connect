@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Navbar } from '@/components/Navbar';
 import { useValueChains } from '@/hooks/useValueChains';
 import { useAuth } from '@/hooks/useAuth';
-import { ValueChainFlowDiagram } from '@/components/valueChain/ValueChainFlowDiagram';
+import { MinimalChainDisplay } from '@/components/valueChain/MinimalChainDisplay';
 import { ValueChainForm } from '@/components/valueChain/ValueChainForm';
 import { TutorialDialog } from '@/components/TutorialDialog';
 import { Button } from '@/components/ui/button';
@@ -61,6 +61,13 @@ export default function ValueChains() {
   } = useValueChains();
 
   const [selectedChain, setSelectedChain] = useState<ValueChain | null>(null);
+
+  // Sélectionner automatiquement la première chaîne
+  useEffect(() => {
+    if (chains.length > 0 && !selectedChain) {
+      setSelectedChain(chains[0]);
+    }
+  }, [chains, selectedChain]);
   const [formOpen, setFormOpen] = useState(false);
   const [editingChain, setEditingChain] = useState<ValueChain | undefined>();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -326,7 +333,7 @@ export default function ValueChains() {
                   )}
                 </div>
 
-                <ValueChainFlowDiagram chain={selectedChain} />
+                <MinimalChainDisplay chain={selectedChain} />
               </Card>
             )}
           </div>
