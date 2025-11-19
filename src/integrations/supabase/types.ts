@@ -337,6 +337,42 @@ export type Database = {
           },
         ]
       }
+      segment_actors: {
+        Row: {
+          created_at: string | null
+          id: string
+          person_id: string
+          segment_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          person_id: string
+          segment_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          person_id?: string
+          segment_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "segment_actors_person_id_fkey"
+            columns: ["person_id"]
+            isOneToOne: false
+            referencedRelation: "people"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "segment_actors_segment_id_fkey"
+            columns: ["segment_id"]
+            isOneToOne: false
+            referencedRelation: "value_chain_segments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       spontaneous_applications: {
         Row: {
           availability: string | null
@@ -449,6 +485,65 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      value_chain_segments: {
+        Row: {
+          created_at: string | null
+          display_order: number
+          function_name: string
+          id: string
+          updated_at: string | null
+          value_chain_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          display_order?: number
+          function_name: string
+          id?: string
+          updated_at?: string | null
+          value_chain_id: string
+        }
+        Update: {
+          created_at?: string | null
+          display_order?: number
+          function_name?: string
+          id?: string
+          updated_at?: string | null
+          value_chain_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "value_chain_segments_value_chain_id_fkey"
+            columns: ["value_chain_id"]
+            isOneToOne: false
+            referencedRelation: "value_chains"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      value_chains: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
       }
     }
     Views: {
