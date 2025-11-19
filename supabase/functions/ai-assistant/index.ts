@@ -469,19 +469,6 @@ IMPORTANT :
 
 RÉPONSE : courte, structure seulement, pas de commentaires superflus.`;
 
-  → search_person("Rodolphe")
-  → Trouvé "Rodolphe Simon" (id: <UUID_RENVOYÉ_PAR_SEARCH_PERSON>)
-  → "Voulez-vous renommer Rodolphe Simon en Rodolphe Guilhot ?"
-  → Sur "oui" : rename_person_by_name(original_first_name: "Rodolphe", original_last_name: "Simon", new_last_name: "Guilhot")
-
-CRITIQUE :
-- Utiliser de préférence rename_person_by_name pour les renommages simples
-- TOUJOURS utiliser l'UUID exact de search_person si vous utilisez edit_person
-- JAMAIS inventer d'UUID
-- Être rapide et concis
-
-Français uniquement.`;
-
     let currentMessages = [
       { role: 'system', content: systemPrompt },
       ...messages,
