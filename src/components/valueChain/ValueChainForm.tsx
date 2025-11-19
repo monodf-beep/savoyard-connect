@@ -301,6 +301,9 @@ export const ValueChainForm: React.FC<ValueChainFormProps> = ({
                                       <CommandGroup>
                                         {people
                                           .filter((p) => !segment.actorIds.includes(p.id))
+                                          .filter((p, index, self) => 
+                                            index === self.findIndex((t) => t.id === p.id)
+                                          )
                                           .map((person) => (
                                             <CommandItem
                                               key={person.id}
