@@ -105,25 +105,64 @@ async function executeToolCall(toolName: string, args: any, supabaseClient: any)
   try {
     switch (toolName) {
       case "search_person": {
-        const raw = (args.name || '').toString().toLowerCase().trim();
-        const terms = raw.split(/\s+/).filter(Boolean);
-
-        const { data, error } = await supabaseClient
+        const query = (args.name || '').toString().trim().toLowerCase();
+        
+        // Récupérer toutes les personnes
+        const { data: allPeople, error } = await supabaseClient
           .from('people')
           .select('id, first_name, last_name, title, bio');
 
         if (error) throw error;
 
-        const matches = data.filter((p: any) => {
-          const full = `${p.first_name} ${p.last_name}`.toLowerCase();
-          const first = p.first_name.toLowerCase();
-          const last = p.last_name.toLowerCase();
-          return terms.some((t: string) =>
-            first.includes(t) ||
-            last.includes(t) ||
-            full.includes(t)
-          );
+        // Fonction de normalisation (enlève accents, minuscules, trim)
+        const normalize = (str: string) => 
+          str.toLowerCase()
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .trim();
+
+        const normalizedQuery = normalize(query);
+
+        // Scoring de pertinence pour chaque personne
+        const scored = (allPeople || []).map((person: any) => {
+          const firstName = normalize(person.first_name);
+          const lastName = normalize(person.last_name);
+          const fullName = `${firstName} ${lastName}`;
+          
+          let score = 0;
+
+          // Correspondance exacte = score maximal
+          if (firstName === normalizedQuery || lastName === normalizedQuery) score += 100;
+          if (fullName === normalizedQuery) score += 150;
+
+          // Commence par la requête
+          if (firstName.startsWith(normalizedQuery)) score += 50;
+          if (lastName.startsWith(normalizedQuery)) score += 50;
+          if (fullName.startsWith(normalizedQuery)) score += 75;
+
+          // Contient la requête
+          if (firstName.includes(normalizedQuery)) score += 25;
+          if (lastName.includes(normalizedQuery)) score += 25;
+          if (fullName.includes(normalizedQuery)) score += 35;
+
+          // Recherche par mots individuels
+          const queryWords = normalizedQuery.split(/\s+/);
+          queryWords.forEach(word => {
+            if (word.length > 2) {
+              if (firstName.includes(word)) score += 15;
+              if (lastName.includes(word)) score += 15;
+            }
+          });
+
+          return { ...person, score };
         });
+
+        // Filtrer (score > 0) et trier par score décroissant
+        const matches = scored
+          .filter((p: any) => p.score > 0)
+          .sort((a: any, b: any) => b.score - a.score)
+          .slice(0, 10)
+          .map(({ score, ...person }: any) => person);
 
         return { found: matches.length > 0, people: matches };
       }
