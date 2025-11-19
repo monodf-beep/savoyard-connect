@@ -1,6 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
 import { Button } from './ui/button';
-import { TutorialDialog } from './TutorialDialog';
 import { useAuth } from '@/hooks/useAuth';
 import { 
   LogOut, 
@@ -14,7 +13,6 @@ import {
   UserPlus,
   PlusSquare,
   Upload,
-  Info,
 } from 'lucide-react';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
@@ -88,56 +86,6 @@ export const Navbar = ({
                             </p>
                           </Link>
                         </NavigationMenuLink>
-                      </li>
-                      <li>
-                        <div className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2 text-sm font-medium leading-none">
-                              <Info className="h-4 w-4" />
-                              Guide d'utilisation
-                            </div>
-                            <TutorialDialog
-                              title="Comprendre l'organigramme"
-                              description="L'organigramme est l'outil central pour gérer votre organisation."
-                              benefits={[
-                                "Visualiser toute la structure de l'organisation en un coup d'œil",
-                                "Gérer les membres, leurs rôles et compétences",
-                                "Organiser les sections et sous-sections hiérarchiques",
-                                "Publier des postes vacants pour recruter de nouveaux talents",
-                                "Faciliter la communication interne et externe"
-                              ]}
-                              steps={[
-                                {
-                                  title: "Naviguer dans les vues",
-                                  description: "Utilisez les boutons Ligne, Tuiles et Membres pour changer de vue. Chaque vue offre une perspective différente sur votre organisation.",
-                                  tips: [
-                                    "Vue Ligne : hiérarchie complète",
-                                    "Vue Tuiles : sections en cartes",
-                                    "Vue Membres : focus sur les personnes"
-                                  ]
-                                },
-                                {
-                                  title: "Ajouter des membres",
-                                  description: "Cliquez sur 'Ajouter une personne' dans le menu Organisation. Remplissez les informations (nom, titre, compétences, etc.).",
-                                  tips: ["Utilisez l'import LinkedIn pour gagner du temps"]
-                                },
-                                {
-                                  title: "Créer des sections",
-                                  description: "Organisez votre structure avec des sections (Bureau, Commissions, Groupes). Créez des hiérarchies en définissant des parents.",
-                                  tips: ["Une bonne structure facilite la navigation"]
-                                },
-                                {
-                                  title: "Gérer les postes vacants",
-                                  description: "Publiez des postes à pourvoir pour attirer de nouveaux bénévoles. Ils apparaîtront dans l'organigramme et pourront recevoir des candidatures spontanées.",
-                                  tips: ["Soyez précis sur le rôle et les attentes"]
-                                }
-                              ]}
-                            />
-                          </div>
-                          <p className="text-sm leading-snug text-muted-foreground">
-                            Apprenez à utiliser toutes les fonctionnalités
-                          </p>
-                        </div>
                       </li>
                       {isOrgPage && isAdmin && (
                         <>

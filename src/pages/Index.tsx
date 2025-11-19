@@ -1,7 +1,9 @@
 import { Organigramme } from '../components/Organigramme';
 import { Navbar } from '../components/Navbar';
 import { AIAssistant } from '../components/AIAssistant';
+import { TutorialDialog } from '../components/TutorialDialog';
 import { useAuth } from '@/hooks/useAuth';
+import { Info } from 'lucide-react';
 
 const Index = () => {
   const { isAdmin } = useAuth();
@@ -34,6 +36,53 @@ const Index = () => {
         onAddVacantPosition={handleAddVacantPosition}
         onImport={handleImport}
       />
+      
+      <div className="container mx-auto px-4 py-6">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h1 className="text-3xl font-bold">Organigramme</h1>
+            <p className="text-muted-foreground">Vue complète de la structure organisationnelle</p>
+          </div>
+          <TutorialDialog
+            title="Comprendre l'organigramme"
+            description="L'organigramme est l'outil central pour gérer votre organisation."
+            benefits={[
+              "Visualiser toute la structure de l'organisation en un coup d'œil",
+              "Gérer les membres, leurs rôles et compétences",
+              "Organiser les sections et sous-sections hiérarchiques",
+              "Publier des postes vacants pour recruter de nouveaux talents",
+              "Faciliter la communication interne et externe"
+            ]}
+            steps={[
+              {
+                title: "Naviguer dans les vues",
+                description: "Utilisez les boutons Ligne, Tuiles et Membres pour changer de vue. Chaque vue offre une perspective différente sur votre organisation.",
+                tips: [
+                  "Vue Ligne : hiérarchie complète",
+                  "Vue Tuiles : sections en cartes",
+                  "Vue Membres : focus sur les personnes"
+                ]
+              },
+              {
+                title: "Ajouter des membres",
+                description: "Cliquez sur 'Ajouter une personne' dans le menu Organisation. Remplissez les informations (nom, titre, compétences, etc.).",
+                tips: ["Utilisez l'import LinkedIn pour gagner du temps"]
+              },
+              {
+                title: "Créer des sections",
+                description: "Organisez votre structure avec des sections (Bureau, Commissions, Groupes). Créez des hiérarchies en définissant des parents.",
+                tips: ["Une bonne structure facilite la navigation"]
+              },
+              {
+                title: "Gérer les postes vacants",
+                description: "Publiez des postes à pourvoir pour attirer de nouveaux bénévoles. Ils apparaîtront dans l'organigramme et pourront recevoir des candidatures spontanées.",
+                tips: ["Soyez précis sur le rôle et les attentes"]
+              }
+            ]}
+          />
+        </div>
+      </div>
+
       <Organigramme isAdminMode={false} />
       {isAdmin && <AIAssistant />}
     </div>
