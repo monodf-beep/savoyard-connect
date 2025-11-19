@@ -145,6 +145,20 @@ export const Navbar = ({
                               </p>
                             </button>
                           </li>
+                          <li className="border-t pt-3 mt-3">
+                            <button
+                              onClick={() => (window as any).restartAdminOnboarding?.()}
+                              className="w-full block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground text-left group"
+                            >
+                              <div className="flex items-center gap-2 text-sm font-medium leading-none">
+                                <span className="text-lg">🎓</span>
+                                Guide d'utilisation
+                              </div>
+                              <p className="line-clamp-2 text-sm leading-snug text-muted-foreground group-hover:text-accent-foreground/80 transition-colors">
+                                Revoir le tutoriel d'introduction
+                              </p>
+                            </button>
+                          </li>
                         </>
                       )}
                     </ul>
@@ -312,6 +326,16 @@ export const Navbar = ({
                   >
                     <Upload className="h-4 w-4" />
                     Importer
+                  </button>
+                  <button
+                    onClick={() => {
+                      (window as any).restartAdminOnboarding?.();
+                      setMobileMenuOpen(false);
+                    }}
+                    className="w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors text-muted-foreground hover:bg-muted text-left border-t mt-2 pt-2"
+                  >
+                    <span className="text-lg">🎓</span>
+                    Guide d'utilisation
                   </button>
                 </>
               )}
