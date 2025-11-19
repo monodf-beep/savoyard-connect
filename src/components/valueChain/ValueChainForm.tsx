@@ -195,9 +195,8 @@ export const ValueChainForm: React.FC<ValueChainFormProps> = ({
               </Button>
             </div>
 
-            <ScrollArea className="h-[400px] pr-4">
-              <div className="space-y-4">
-                {segments.map((segment, index) => (
+            <div className="space-y-4">
+              {segments.map((segment, index) => (
                   <div key={index} className="border border-border rounded-lg p-4 space-y-3">
                     <div className="flex items-start gap-2">
                       <div className="flex flex-col gap-1 pt-2">
@@ -360,7 +359,6 @@ export const ValueChainForm: React.FC<ValueChainFormProps> = ({
                   </div>
                 ))}
               </div>
-            </ScrollArea>
           </div>
         </div>
 
