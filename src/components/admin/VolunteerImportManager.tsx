@@ -38,7 +38,7 @@ const volunteersData: VolunteerData[] = [
     phone: '0638851950',
     email: 'theo@patoue.fr',
     department: 'Bellecombe Bauges (73)',
-    dateEngagement: '2025',
+    dateEngagement: '2025-01-01',
     commissions: 'Web/Marketing',
     timeAvailable: '1h à ½ journée',
     competence1: 'Informatique-Réseau-Programmation',
@@ -52,7 +52,7 @@ const volunteersData: VolunteerData[] = [
     phone: '0661397949',
     email: 'minh@alveo3D.com',
     department: 'Le Bourget du Lac (73)',
-    dateEngagement: '2024',
+    dateEngagement: '2024-01-01',
     commissions: 'Marketing-Développement commercial',
     timeAvailable: '½ h/semaine',
     competence1: 'Marketing digital',
@@ -190,7 +190,7 @@ const volunteersData: VolunteerData[] = [
 
 export const VolunteerImportManager: React.FC<VolunteerImportManagerProps> = ({ sections, onImportComplete }) => {
   const [selectedVolunteers, setSelectedVolunteers] = useState<Record<string, boolean>>({});
-  const [sectionMapping, setSectionMapping] = useState<Record<string, string>>({});
+  const [sectionMapping, setSectionMapping] = useState<Record<string, string[]>>({});
   const [isImporting, setIsImporting] = useState(false);
   const { toast } = useToast();
 
@@ -204,10 +204,12 @@ export const VolunteerImportManager: React.FC<VolunteerImportManagerProps> = ({ 
   };
 
   const handleSectionChange = (volunteerIndex: number, sectionId: string) => {
-    setSectionMapping(prev => ({
-      ...prev,
-      [volunteerIndex]: sectionId
-    }));
+    setSectionMapping(prev => {
+      const current = prev[volunteerIndex] || [];
+      const exists = current.includes(sectionId);
+      const next = exists ? current.filter(id => id !== sectionId) : [...current, sectionId];
+      return { ...prev, [volunteerIndex]: next };
+    });
   };
 
   const handleImport = async () => {
@@ -215,7 +217,7 @@ export const VolunteerImportManager: React.FC<VolunteerImportManagerProps> = ({ 
     try {
       const volunteersToImport = volunteersData
         .map((v, i) => ({ ...v, index: i }))
-        .filter(v => selectedVolunteers[v.index] && sectionMapping[v.index]);
+        .filter(v => selectedVolunteers[v.index] && (sectionMapping[v.index]?.length ?? 0) > 0);
 
       if (volunteersToImport.length === 0) {
         toast({
@@ -246,16 +248,19 @@ export const VolunteerImportManager: React.FC<VolunteerImportManagerProps> = ({ 
 
         if (personError) throw personError;
 
-        // Link to section
-        const { error: linkError } = await supabase
-          .from('section_members')
-          .insert({
-            person_id: person.id,
-            section_id: sectionMapping[volunteer.index],
-            role: volunteer.commissions || 'Membre'
-          });
+        // Link to sections (one membership per selected section)
+        const sectionIds = sectionMapping[volunteer.index] || [];
+        if (sectionIds.length > 0) {
+          const { error: linkError } = await supabase
+            .from('section_members')
+            .insert(sectionIds.map(sectionId => ({
+              person_id: person.id,
+              section_id: sectionId,
+              role: volunteer.commissions || 'Membre'
+            })));
 
-        if (linkError) throw linkError;
+          if (linkError) throw linkError;
+        }
       }
 
       toast({
@@ -284,7 +289,7 @@ export const VolunteerImportManager: React.FC<VolunteerImportManagerProps> = ({ 
           Import des bénévoles
         </CardTitle>
         <CardDescription>
-          Sélectionnez les bénévoles à importer et assignez-les aux sections appropriées
+          Sélectionnez les bénévoles à importer, voyez leurs données sources, et assignez-les aux sections appropriées (une personne peut appartenir à plusieurs sections).
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -322,21 +327,25 @@ export const VolunteerImportManager: React.FC<VolunteerImportManagerProps> = ({ 
                   )}
 
                   {selectedVolunteers[index] && (
-                    <Select
-                      value={sectionMapping[index]}
-                      onValueChange={(value) => handleSectionChange(index, value)}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Choisir une section..." />
-                      </SelectTrigger>
-                      <SelectContent>
+                    <div className="mt-3 space-y-1">
+                      <div className="text-sm text-muted-foreground">
+                        Sections dans l'organigramme (sélection multiple possible)
+                      </div>
+                      <div className="max-h-48 overflow-y-auto space-y-1 pr-1">
                         {allSections.map(section => (
-                          <SelectItem key={section.id} value={section.id}>
+                          <Label
+                            key={section.id}
+                            className="flex items-center gap-2 text-sm cursor-pointer"
+                          >
+                            <Checkbox
+                              checked={sectionMapping[index]?.includes(section.id) || false}
+                              onCheckedChange={() => handleSectionChange(index, section.id)}
+                            />
                             {section.title}
-                          </SelectItem>
+                          </Label>
                         ))}
-                      </SelectContent>
-                    </Select>
+                      </div>
+                    </div>
                   )}
                 </div>
               </div>
