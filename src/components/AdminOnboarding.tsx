@@ -183,6 +183,95 @@ export const AdminOnboarding: React.FC<AdminOnboardingProps> = ({ open, onOpenCh
       ),
     },
     {
+      title: "Gestion des projets",
+      description: "Suivez et organisez les projets de votre organisation",
+      content: (
+        <div className="space-y-4">
+          <div className="aspect-video bg-gradient-to-br from-green-500/20 to-teal-500/20 rounded-lg flex items-center justify-center">
+            <div className="text-center p-8">
+              <div className="grid grid-cols-3 gap-3 mb-4">
+                <div className="bg-background p-3 rounded-lg shadow-lg">
+                  <div className="text-xs font-semibold mb-1">Planifié</div>
+                  <div className="text-2xl">📋</div>
+                </div>
+                <div className="bg-background p-3 rounded-lg shadow-lg">
+                  <div className="text-xs font-semibold mb-1">En cours</div>
+                  <div className="text-2xl">⚡</div>
+                </div>
+                <div className="bg-background p-3 rounded-lg shadow-lg">
+                  <div className="text-xs font-semibold mb-1">Terminé</div>
+                  <div className="text-2xl">✅</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="space-y-3 text-sm">
+            <div className="flex items-start gap-3">
+              <Badge variant="secondary" className="mt-0.5">1</Badge>
+              <div>
+                <div className="font-semibold">Créez des projets par section</div>
+                <p className="text-muted-foreground text-xs">Chaque projet est rattaché à une section</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3">
+              <Badge variant="secondary" className="mt-0.5">2</Badge>
+              <div>
+                <div className="font-semibold">Suivez l'avancement</div>
+                <p className="text-muted-foreground text-xs">Statut, dates, description, roadmap et documents</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3">
+              <Badge variant="secondary" className="mt-0.5">3</Badge>
+              <div>
+                <div className="font-semibold">Vue d'ensemble</div>
+                <p className="text-muted-foreground text-xs">Visualisez tous les projets en cours</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      ),
+    },
+    {
+      title: "Recrutement et offres",
+      description: "Gérez les postes vacants et les candidatures",
+      content: (
+        <div className="space-y-4">
+          <div className="aspect-video bg-gradient-to-br from-orange-500/20 to-red-500/20 rounded-lg flex items-center justify-center">
+            <div className="text-center p-8">
+              <div className="inline-block bg-background p-6 rounded-lg shadow-lg">
+                <div className="text-4xl mb-2">💼</div>
+                <div className="text-sm font-semibold mb-1">Postes vacants</div>
+                <div className="text-xs text-muted-foreground">Publiez et gérez vos offres</div>
+              </div>
+            </div>
+          </div>
+          <div className="space-y-3 text-sm">
+            <div className="flex items-start gap-3">
+              <Badge variant="secondary" className="mt-0.5">1</Badge>
+              <div>
+                <div className="font-semibold">Créez des postes vacants</div>
+                <p className="text-muted-foreground text-xs">Définissez les postes recherchés par section</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3">
+              <Badge variant="secondary" className="mt-0.5">2</Badge>
+              <div>
+                <div className="font-semibold">Recevez des candidatures</div>
+                <p className="text-muted-foreground text-xs">Les candidats postulent directement via l'organigramme</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3">
+              <Badge variant="secondary" className="mt-0.5">3</Badge>
+              <div>
+                <div className="font-semibold">Publiez des offres détaillées</div>
+                <p className="text-muted-foreground text-xs">Page Jobs pour offres d'emploi complètes</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      ),
+    },
+    {
       title: "Vous êtes prêt !",
       description: "Commencez à gérer votre organisation efficacement",
       content: (
@@ -249,19 +338,15 @@ export const AdminOnboarding: React.FC<AdminOnboardingProps> = ({ open, onOpenCh
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
+        <button
+          onClick={handleSkip}
+          className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground"
+        >
+          <X className="h-4 w-4" />
+          <span className="sr-only">Close</span>
+        </button>
         <DialogHeader>
-          <div className="flex items-center justify-between">
-            <DialogTitle>{slides[currentSlide].title}</DialogTitle>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleSkip}
-              className="h-8 px-2 text-muted-foreground"
-            >
-              Passer
-              <X className="ml-2 h-4 w-4" />
-            </Button>
-          </div>
+          <DialogTitle>{slides[currentSlide].title}</DialogTitle>
           <p className="text-sm text-muted-foreground">{slides[currentSlide].description}</p>
         </DialogHeader>
 
