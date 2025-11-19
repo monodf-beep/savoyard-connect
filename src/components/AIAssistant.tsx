@@ -156,7 +156,31 @@ export const AIAssistant: React.FC = () => {
     }
   };
 
+  const cancelRecording = () => {
+    if (mediaRecorderRef.current && isRecording) {
+      // Stop the recording without processing
+      mediaRecorderRef.current.ondataavailable = null;
+      mediaRecorderRef.current.onstop = null;
+      mediaRecorderRef.current.stop();
+      
+      // Stop all tracks
+      if (mediaRecorderRef.current.stream) {
+        mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
+      }
+      
+      // Clear audio chunks
+      audioChunksRef.current = [];
+      setIsRecording(false);
+      
+      toast({
+        title: "Enregistrement annulé",
+        description: "L'enregistrement audio a été annulé",
+      });
+    }
+  };
+
   const transcribeAudio = async (audioBlob: Blob) => {
+    setIsLoading(true);
     try {
       const reader = new FileReader();
       reader.readAsDataURL(audioBlob);
@@ -164,21 +188,36 @@ export const AIAssistant: React.FC = () => {
         const base64Audio = reader.result as string;
         const base64Data = base64Audio.split(',')[1];
 
-        // Note: Vous devrez créer une edge function pour la transcription
-        // Pour l'instant, on ajoute juste un placeholder
-        setInput(prev => prev + '[Transcription audio à implémenter]');
-        toast({
-          title: "Info",
-          description: "La transcription audio nécessite une configuration supplémentaire",
+        console.log('Transcribing audio...');
+        
+        const { data, error } = await supabase.functions.invoke('transcribe-audio', {
+          body: { audio: base64Data },
         });
+
+        if (error) {
+          console.error('Transcription error:', error);
+          throw new Error(error.message || 'Erreur de transcription');
+        }
+
+        if (data?.text) {
+          setInput(data.text);
+          toast({
+            title: "Transcription réussie",
+            description: "L'audio a été transcrit automatiquement",
+          });
+        } else {
+          throw new Error('Aucune transcription reçue');
+        }
       };
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error transcribing audio:', error);
       toast({
-        title: "Erreur",
-        description: "Impossible de transcrire l'audio",
+        title: "Erreur de transcription",
+        description: error.message || "Impossible de transcrire l'audio",
         variant: "destructive",
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -298,14 +337,36 @@ export const AIAssistant: React.FC = () => {
             <ImageIcon className="h-4 w-4" />
           </Button>
 
-          <Button
-            onClick={isRecording ? stopRecording : startRecording}
-            variant={isRecording ? "destructive" : "outline"}
-            size="icon"
-            disabled={isLoading}
-          >
-            {isRecording ? <StopCircle className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
-          </Button>
+          {isRecording ? (
+            <>
+              <Button
+                onClick={stopRecording}
+                variant="default"
+                size="icon"
+                disabled={isLoading}
+                className="bg-green-600 hover:bg-green-700"
+              >
+                <StopCircle className="h-4 w-4" />
+              </Button>
+              <Button
+                onClick={cancelRecording}
+                variant="destructive"
+                size="icon"
+                disabled={isLoading}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </>
+          ) : (
+            <Button
+              onClick={startRecording}
+              variant="outline"
+              size="icon"
+              disabled={isLoading}
+            >
+              <Mic className="h-4 w-4" />
+            </Button>
+          )}
 
           <Textarea
             value={input}
