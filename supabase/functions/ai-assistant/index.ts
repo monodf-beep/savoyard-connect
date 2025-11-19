@@ -208,9 +208,9 @@ PROCESSUS RAPIDE :
 EXEMPLES :
 - User: "Rodolphe Guilhot"
   → search_person("Rodolphe")
-  → Trouvé "Rodolphe Simon" (id: "20000...001")
+  → Trouvé "Rodolphe Simon" (id: <UUID_RENVOYÉ_PAR_SEARCH_PERSON>)
   → "Voulez-vous renommer Rodolphe Simon en Rodolphe Guilhot ?"
-  → Sur "oui" : edit_person(person_id: "20000...001", last_name: "Guilhot")
+  → Sur "oui" : edit_person(person_id: <MÊME_UUID_RENVOYÉ>, last_name: "Guilhot")
 
 CRITIQUE :
 - TOUJOURS search_person AVANT edit_person
