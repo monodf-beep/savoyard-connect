@@ -60,6 +60,28 @@ const Projects = () => {
     fetchProjects();
   }, [toast]);
 
+  // Écouter les événements de succès de l'assistant IA pour rafraîchir automatiquement
+  useEffect(() => {
+    const handleAISuccess = async () => {
+      const { data, error } = await supabase
+        .from('projects')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (!error && data) {
+        setProjects(data.map(p => ({
+          ...p,
+          documents: (p.documents as any) || [],
+        })));
+      }
+    };
+
+    window.addEventListener('aiAssistantSuccess', handleAISuccess);
+    return () => {
+      window.removeEventListener('aiAssistantSuccess', handleAISuccess);
+    };
+  }, []);
+
   const handleSaveProject = async (projectData: Partial<Project>) => {
     // Basic validation (Select required isn't enforced by the Radix Select)
     if (!projectData.title || !projectData.title.trim()) {
