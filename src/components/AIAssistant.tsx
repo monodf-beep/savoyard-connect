@@ -37,7 +37,7 @@ export const AIAssistant: React.FC = () => {
 
     const userMessage: Message = {
       role: 'user',
-      content: input,
+      content: input || "Analyser l'image",
       ...(selectedImage && { image: selectedImage }),
     };
 
@@ -65,17 +65,28 @@ export const AIAssistant: React.FC = () => {
         body: { messages: apiMessages },
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Function error:', error);
+        throw new Error(error.message || "Erreur de communication");
+      }
+
+      if (data?.error) {
+        throw new Error(data.error);
+      }
 
       setMessages(prev => [...prev, {
         role: 'assistant',
-        content: data.content,
+        content: data.content || "Aucune réponse reçue",
       }]);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error:', error);
+      
+      // Supprimer le dernier message utilisateur en cas d'erreur
+      setMessages(prev => prev.slice(0, -1));
+      
       toast({
         title: "Erreur",
-        description: error.message || "Impossible de communiquer avec l'assistant",
+        description: error.message || "Impossible de traiter la demande",
         variant: "destructive",
       });
     } finally {
