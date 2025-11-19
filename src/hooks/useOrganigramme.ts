@@ -401,6 +401,18 @@ export const useOrganigramme = (isAdmin: boolean = false) => {
     loadData();
   }, []);
 
+  // Écouter les événements de succès de l'assistant IA pour rafraîchir automatiquement
+  useEffect(() => {
+    const handleAISuccess = () => {
+      loadData();
+    };
+
+    window.addEventListener('aiAssistantSuccess', handleAISuccess);
+    return () => {
+      window.removeEventListener('aiAssistantSuccess', handleAISuccess);
+    };
+  }, []);
+
   return {
     data,
     loading,
