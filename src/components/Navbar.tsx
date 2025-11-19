@@ -13,9 +13,11 @@ import {
   UserPlus,
   PlusSquare,
   Upload,
+  Settings,
 } from 'lucide-react';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
+import { useOrganizationSettings } from '@/hooks/useOrganizationSettings';
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -46,6 +48,7 @@ export const Navbar = ({
   const location = useLocation();
   const { user, isAdmin, signOut } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { settings } = useOrganizationSettings();
 
   const isActive = (path: string) => location.pathname === path;
   const isOrgPage = location.pathname === '/';
@@ -56,8 +59,16 @@ export const Navbar = ({
         <div className="flex h-16 items-center justify-between">
           {/* Logo/Title */}
           <Link to="/" className="text-xl font-bold flex items-center gap-2">
-            <Building2 className="h-6 w-6 text-primary" />
-            Association
+            {settings?.logo_url ? (
+              <img 
+                src={settings.logo_url} 
+                alt={settings.name} 
+                className="h-8 w-auto object-contain"
+              />
+            ) : (
+              <Building2 className="h-6 w-6 text-primary" />
+            )}
+            <span>{settings?.name || 'Association'}</span>
           </Link>
 
           {/* Desktop Navigation - Mega Menu */}
@@ -159,6 +170,24 @@ export const Navbar = ({
                               </p>
                             </button>
                           </li>
+                          {isAdmin && (
+                            <li>
+                              <NavigationMenuLink asChild>
+                                <Link
+                                  to="/settings"
+                                  className="w-full block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground text-left group"
+                                >
+                                  <div className="flex items-center gap-2 text-sm font-medium leading-none">
+                                    <Settings className="h-4 w-4" />
+                                    Paramètres
+                                  </div>
+                                  <p className="line-clamp-2 text-sm leading-snug text-muted-foreground group-hover:text-accent-foreground/80 transition-colors">
+                                    Personnaliser nom, logo et couleurs
+                                  </p>
+                                </Link>
+                              </NavigationMenuLink>
+                            </li>
+                          )}
                         </>
                       )}
                     </ul>
@@ -337,6 +366,16 @@ export const Navbar = ({
                     <span className="text-lg">🎓</span>
                     Guide d'utilisation
                   </button>
+                  {isAdmin && (
+                    <Link
+                      to="/settings"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors text-muted-foreground hover:bg-muted text-left"
+                    >
+                      <Settings className="h-4 w-4" />
+                      Paramètres
+                    </Link>
+                  )}
                 </>
               )}
             </div>
