@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ValueChain, ValueChainSegment } from '@/types/valueChain';
-import { Person } from '@/types/organigramme';
+import { Person, Section } from '@/types/organigramme';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -13,7 +13,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Plus, Trash2, GripVertical, X } from 'lucide-react';
+import { Plus, Trash2, GripVertical, X, Building2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -30,10 +30,12 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface SegmentFormData {
   function_name: string;
   actorIds: string[];
+  sectionIds: string[];
 }
 
 interface ValueChainFormProps {
@@ -41,6 +43,7 @@ interface ValueChainFormProps {
   onOpenChange: (open: boolean) => void;
   chain?: ValueChain;
   people: Person[];
+  sections: Section[];
   onSave: (title: string, description: string, segments: SegmentFormData[]) => Promise<void>;
 }
 
@@ -49,6 +52,7 @@ export const ValueChainForm: React.FC<ValueChainFormProps> = ({
   onOpenChange,
   chain,
   people,
+  sections,
   onSave,
 }) => {
   const [title, setTitle] = useState(chain?.title || '');
@@ -57,12 +61,13 @@ export const ValueChainForm: React.FC<ValueChainFormProps> = ({
     chain?.segments?.map((s) => ({
       function_name: s.function_name,
       actorIds: s.actors?.map((a) => a.id) || [],
+      sectionIds: s.sections?.map((sec) => sec.id) || [],
     })) || []
   );
   const [loading, setLoading] = useState(false);
 
   const addSegment = () => {
-    setSegments([...segments, { function_name: '', actorIds: [] }]);
+    setSegments([...segments, { function_name: '', actorIds: [], sectionIds: [] }]);
   };
 
   const removeSegment = (index: number) => {
@@ -88,6 +93,22 @@ export const ValueChainForm: React.FC<ValueChainFormProps> = ({
       segmentIndex,
       'actorIds',
       segment.actorIds.filter((id) => id !== actorId)
+    );
+  };
+
+  const addSectionToSegment = (segmentIndex: number, sectionId: string) => {
+    const segment = segments[segmentIndex];
+    if (!segment.sectionIds.includes(sectionId)) {
+      updateSegment(segmentIndex, 'sectionIds', [...segment.sectionIds, sectionId]);
+    }
+  };
+
+  const removeSectionFromSegment = (segmentIndex: number, sectionId: string) => {
+    const segment = segments[segmentIndex];
+    updateSegment(
+      segmentIndex,
+      'sectionIds',
+      segment.sectionIds.filter((id) => id !== sectionId)
     );
   };
 
@@ -201,8 +222,9 @@ export const ValueChainForm: React.FC<ValueChainFormProps> = ({
                         </div>
 
                         <div className="space-y-2">
-                          <Label className="text-xs">Acteurs assignés</Label>
+                          <Label className="text-xs">Acteurs & Sections assignés</Label>
                           <div className="flex flex-wrap gap-2 min-h-[40px] p-2 border border-border rounded-md">
+                            {/* Display people actors */}
                             {segment.actorIds.map((actorId) => {
                               const actor = people.find((p) => p.id === actorId);
                               if (!actor) return null;
@@ -229,50 +251,98 @@ export const ValueChainForm: React.FC<ValueChainFormProps> = ({
                                 </Badge>
                               );
                             })}
+                            {/* Display section actors */}
+                            {segment.sectionIds.map((sectionId) => {
+                              const section = sections.find((s) => s.id === sectionId);
+                              if (!section) return null;
+                              return (
+                                <Badge
+                                  key={sectionId}
+                                  variant="outline"
+                                  className="flex items-center gap-1 pr-1"
+                                >
+                                  <Building2 className="h-3 w-3" />
+                                  <span className="text-xs">{section.title}</span>
+                                  <X
+                                    className="h-3 w-3 cursor-pointer hover:text-destructive"
+                                    onClick={() => removeSectionFromSegment(index, sectionId)}
+                                  />
+                                </Badge>
+                              );
+                            })}
                           </div>
 
                           <Popover>
                             <PopoverTrigger asChild>
                               <Button variant="outline" size="sm" className="w-full">
                                 <Plus className="h-4 w-4 mr-1" />
-                                Ajouter un acteur
+                                Ajouter un acteur ou section
                               </Button>
                             </PopoverTrigger>
-                            <PopoverContent className="w-[300px] p-0" align="start">
-                              <Command>
-                                <CommandInput placeholder="Rechercher un acteur..." />
-                                <CommandList>
-                                  <CommandEmpty>Aucun acteur trouvé</CommandEmpty>
-                                  <CommandGroup>
-                                    {people
-                                      .filter((p) => !segment.actorIds.includes(p.id))
-                                      .map((person) => (
-                                        <CommandItem
-                                          key={person.id}
-                                          onSelect={() => addActorToSegment(index, person.id)}
-                                        >
-                                          <Avatar className="h-6 w-6 mr-2">
-                                            <AvatarImage src={person.photo} />
-                                            <AvatarFallback className="text-xs">
-                                              {person.firstName?.[0]}
-                                              {person.lastName?.[0]}
-                                            </AvatarFallback>
-                                          </Avatar>
-                                          <div className="flex-1">
-                                            <div className="text-sm font-medium">
-                                              {person.firstName} {person.lastName}
-                                            </div>
-                                            {person.role && (
-                                              <div className="text-xs text-muted-foreground">
-                                                {person.role}
+                            <PopoverContent className="w-[340px] p-0" align="start">
+                              <Tabs defaultValue="people" className="w-full">
+                                <TabsList className="w-full grid grid-cols-2">
+                                  <TabsTrigger value="people">Personnes</TabsTrigger>
+                                  <TabsTrigger value="sections">Sections</TabsTrigger>
+                                </TabsList>
+                                <TabsContent value="people" className="m-0">
+                                  <Command>
+                                    <CommandInput placeholder="Rechercher une personne..." />
+                                    <CommandList>
+                                      <CommandEmpty>Aucune personne trouvée</CommandEmpty>
+                                      <CommandGroup>
+                                        {people
+                                          .filter((p) => !segment.actorIds.includes(p.id))
+                                          .map((person) => (
+                                            <CommandItem
+                                              key={person.id}
+                                              onSelect={() => addActorToSegment(index, person.id)}
+                                            >
+                                              <Avatar className="h-6 w-6 mr-2">
+                                                <AvatarImage src={person.photo} />
+                                                <AvatarFallback className="text-xs">
+                                                  {person.firstName?.[0]}
+                                                  {person.lastName?.[0]}
+                                                </AvatarFallback>
+                                              </Avatar>
+                                              <div className="flex-1">
+                                                <div className="text-sm font-medium">
+                                                  {person.firstName} {person.lastName}
+                                                </div>
+                                                {person.role && (
+                                                  <div className="text-xs text-muted-foreground">
+                                                    {person.role}
+                                                  </div>
+                                                )}
                                               </div>
-                                            )}
-                                          </div>
-                                        </CommandItem>
-                                      ))}
-                                  </CommandGroup>
-                                </CommandList>
-                              </Command>
+                                            </CommandItem>
+                                          ))}
+                                      </CommandGroup>
+                                    </CommandList>
+                                  </Command>
+                                </TabsContent>
+                                <TabsContent value="sections" className="m-0">
+                                  <Command>
+                                    <CommandInput placeholder="Rechercher une section..." />
+                                    <CommandList>
+                                      <CommandEmpty>Aucune section trouvée</CommandEmpty>
+                                      <CommandGroup>
+                                        {sections
+                                          .filter((s) => !segment.sectionIds.includes(s.id))
+                                          .map((section) => (
+                                            <CommandItem
+                                              key={section.id}
+                                              onSelect={() => addSectionToSegment(index, section.id)}
+                                            >
+                                              <Building2 className="h-4 w-4 mr-2" />
+                                              <span className="text-sm">{section.title}</span>
+                                            </CommandItem>
+                                          ))}
+                                      </CommandGroup>
+                                    </CommandList>
+                                  </Command>
+                                </TabsContent>
+                              </Tabs>
                             </PopoverContent>
                           </Popover>
                         </div>

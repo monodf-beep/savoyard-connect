@@ -50,6 +50,7 @@ export default function ValueChains() {
   const {
     chains,
     people,
+    sections,
     loading,
     createChain,
     updateChain,
@@ -81,7 +82,7 @@ export default function ValueChains() {
   const handleCreateOrUpdate = async (
     title: string,
     description: string,
-    segments: Array<{ function_name: string; actorIds: string[] }>
+    segments: Array<{ function_name: string; actorIds: string[]; sectionIds?: string[] }>
   ) => {
     if (editingChain) {
       await updateChain(editingChain.id, { title, description });
@@ -342,6 +343,7 @@ export default function ValueChains() {
           }}
           chain={editingChain}
           people={people}
+          sections={sections}
           onSave={handleCreateOrUpdate}
         />
       )}
