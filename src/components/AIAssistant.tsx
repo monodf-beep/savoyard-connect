@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { MessageSquare, X, Send, Mic, Image as ImageIcon, Loader2, StopCircle } from 'lucide-react';
+import { MessageSquare, X, Send, Mic, Image as ImageIcon, Loader2, StopCircle, Sparkles } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
@@ -183,7 +183,7 @@ export const AIAssistant: React.FC = () => {
         className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg z-50"
         size="icon"
       >
-        <MessageSquare className="h-6 w-6" />
+        <Sparkles className="h-6 w-6" />
       </Button>
     );
   }
@@ -193,7 +193,7 @@ export const AIAssistant: React.FC = () => {
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b">
         <div className="flex items-center gap-2">
-          <MessageSquare className="h-5 w-5 text-primary" />
+          <Sparkles className="h-5 w-5 text-primary" />
           <h3 className="font-semibold">Assistant IA</h3>
         </div>
         <Button
