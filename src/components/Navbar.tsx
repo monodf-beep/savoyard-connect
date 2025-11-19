@@ -9,10 +9,6 @@ import {
   Briefcase, 
   Building2, 
   Network,
-  Plus,
-  UserPlus,
-  PlusSquare,
-  Upload,
 } from 'lucide-react';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
@@ -26,29 +22,14 @@ import {
   navigationMenuTriggerStyle,
 } from '@/components/ui/navigation-menu';
 
-interface NavbarProps {
-  onExpandAll?: () => void;
-  onCollapseAll?: () => void;
-  onAddPerson?: () => void;
-  onAddSection?: () => void;
-  onAddVacantPosition?: () => void;
-  onImport?: () => void;
-}
+interface NavbarProps {}
 
-export const Navbar = ({ 
-  onExpandAll,
-  onCollapseAll,
-  onAddPerson,
-  onAddSection,
-  onAddVacantPosition,
-  onImport
-}: NavbarProps) => {
+export const Navbar = ({}: NavbarProps) => {
   const location = useLocation();
   const { user, isAdmin, signOut } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const isActive = (path: string) => location.pathname === path;
-  const isOrgPage = location.pathname === '/';
 
   return (
     <nav className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
@@ -66,89 +47,18 @@ export const Navbar = ({
               <NavigationMenuList>
                 {/* Organisation Menu */}
                 <NavigationMenuItem>
-                  <NavigationMenuTrigger className="bg-background">
-                    Organisation
-                  </NavigationMenuTrigger>
-                  <NavigationMenuContent>
-                    <ul className="grid gap-3 p-6 w-[400px] bg-popover z-50">
-                      <li>
-                        <NavigationMenuLink asChild>
-                          <Link
-                            to="/"
-                            className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
-                          >
-                            <div className="flex items-center gap-2 text-sm font-medium leading-none">
-                              <Users className="h-4 w-4" />
-                              Organigramme
-                            </div>
-                            <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
-                              Vue complète de la structure organisationnelle
-                            </p>
-                          </Link>
-                        </NavigationMenuLink>
-                      </li>
-                      {isOrgPage && isAdmin && (
-                        <>
-                          <li>
-                            <button
-                              onClick={onAddPerson}
-                              className="w-full block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground text-left"
-                            >
-                              <div className="flex items-center gap-2 text-sm font-medium leading-none">
-                                <UserPlus className="h-4 w-4" />
-                                Ajouter une personne
-                              </div>
-                              <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
-                                Ajouter un nouveau membre à l'organisation
-                              </p>
-                            </button>
-                          </li>
-                          <li>
-                            <button
-                              onClick={onAddSection}
-                              className="w-full block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground text-left"
-                            >
-                              <div className="flex items-center gap-2 text-sm font-medium leading-none">
-                                <PlusSquare className="h-4 w-4" />
-                                Ajouter une section
-                              </div>
-                              <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
-                                Créer une nouvelle section ou sous-section
-                              </p>
-                            </button>
-                          </li>
-                          <li>
-                            <button
-                              onClick={onAddVacantPosition}
-                              className="w-full block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground text-left"
-                            >
-                              <div className="flex items-center gap-2 text-sm font-medium leading-none">
-                                <Plus className="h-4 w-4" />
-                                Ajouter un poste vacant
-                              </div>
-                              <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
-                                Créer une nouvelle position à pourvoir
-                              </p>
-                            </button>
-                          </li>
-                          <li>
-                            <button
-                              onClick={onImport}
-                              className="w-full block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground text-left"
-                            >
-                              <div className="flex items-center gap-2 text-sm font-medium leading-none">
-                                <Upload className="h-4 w-4" />
-                                Importer des données
-                              </div>
-                              <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
-                                Importer en masse depuis LinkedIn ou autres sources
-                              </p>
-                            </button>
-                          </li>
-                        </>
+                  <NavigationMenuLink asChild>
+                    <Link
+                      to="/"
+                      className={cn(
+                        navigationMenuTriggerStyle(),
+                        'bg-background',
+                        isActive('/') && 'text-primary'
                       )}
-                    </ul>
-                  </NavigationMenuContent>
+                    >
+                      Organigramme
+                    </Link>
+                  </NavigationMenuLink>
                 </NavigationMenuItem>
 
                 {/* Activités Menu */}
@@ -251,13 +161,10 @@ export const Navbar = ({
           </Button>
         </div>
 
-        {/* Mobile Navigation */}
+          {/* Mobile Navigation */}
         {mobileMenuOpen && (
           <div className="lg:hidden pb-4 space-y-2">
             <div className="space-y-1">
-              <div className="px-3 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                Organisation
-              </div>
               <Link
                 to="/"
                 onClick={() => setMobileMenuOpen(false)}
@@ -271,56 +178,6 @@ export const Navbar = ({
                 <Users className="h-4 w-4" />
                 Organigramme
               </Link>
-              {isOrgPage && isAdmin && (
-                <>
-                  <button
-                    onClick={() => {
-                      onAddPerson?.();
-                      setMobileMenuOpen(false);
-                    }}
-                    className="w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors text-muted-foreground hover:bg-muted text-left"
-                  >
-                    <UserPlus className="h-4 w-4" />
-                    Ajouter une personne
-                  </button>
-                  <button
-                    onClick={() => {
-                      onAddSection?.();
-                      setMobileMenuOpen(false);
-                    }}
-                    className="w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors text-muted-foreground hover:bg-muted text-left"
-                  >
-                    <PlusSquare className="h-4 w-4" />
-                    Ajouter une section
-                  </button>
-                  <button
-                    onClick={() => {
-                      onAddVacantPosition?.();
-                      setMobileMenuOpen(false);
-                    }}
-                    className="w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors text-muted-foreground hover:bg-muted text-left"
-                  >
-                    <Plus className="h-4 w-4" />
-                    Ajouter un poste vacant
-                  </button>
-                  <button
-                    onClick={() => {
-                      onImport?.();
-                      setMobileMenuOpen(false);
-                    }}
-                    className="w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors text-muted-foreground hover:bg-muted text-left"
-                  >
-                    <Upload className="h-4 w-4" />
-                    Importer
-                  </button>
-                </>
-              )}
-            </div>
-
-            <div className="space-y-1 pt-2 border-t">
-              <div className="px-3 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                Activités
-              </div>
               <Link
                 to="/projects"
                 onClick={() => setMobileMenuOpen(false)}
