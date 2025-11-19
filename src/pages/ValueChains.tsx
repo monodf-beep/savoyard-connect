@@ -58,6 +58,7 @@ export default function ValueChains() {
     saveSegments,
     mergeChains,
     splitChain,
+    refetch,
   } = useValueChains();
 
   const [selectedChain, setSelectedChain] = useState<ValueChain | null>(null);
@@ -100,6 +101,7 @@ export default function ValueChains() {
         await saveSegments(newChain.id, segments);
       }
     }
+    await refetch();
     setEditingChain(undefined);
   };
 
