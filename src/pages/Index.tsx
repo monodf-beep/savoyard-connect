@@ -2,9 +2,34 @@ import { Organigramme } from '../components/Organigramme';
 import { Navbar } from '../components/Navbar';
 
 const Index = () => {
+  const handleAddPerson = () => {
+    const event = new CustomEvent('openPersonForm');
+    window.dispatchEvent(event);
+  };
+
+  const handleAddSection = () => {
+    const event = new CustomEvent('openSectionForm');
+    window.dispatchEvent(event);
+  };
+
+  const handleAddVacantPosition = () => {
+    const event = new CustomEvent('openVacantPositionForm');
+    window.dispatchEvent(event);
+  };
+
+  const handleImport = () => {
+    const event = new CustomEvent('openImportDialog');
+    window.dispatchEvent(event);
+  };
+
   return (
     <div className="min-h-screen bg-background">
-      <Navbar />
+      <Navbar 
+        onAddPerson={handleAddPerson}
+        onAddSection={handleAddSection}
+        onAddVacantPosition={handleAddVacantPosition}
+        onImport={handleImport}
+      />
       <Organigramme isAdminMode={false} />
     </div>
   );
