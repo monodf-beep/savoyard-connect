@@ -63,6 +63,48 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
     };
   }, [isAdmin]);
 
+  // Listen for navbar actions
+  React.useEffect(() => {
+    const handleOpenPersonForm = () => {
+      if (isAdmin) {
+        setEditingPerson(null);
+        setIsPersonFormOpen(true);
+      }
+    };
+
+    const handleOpenSectionForm = () => {
+      if (isAdmin) {
+        setEditingSection(null);
+        setIsSectionFormOpen(true);
+      }
+    };
+
+    const handleOpenVacantPositionForm = () => {
+      if (isAdmin) {
+        setEditingVacantPosition(null);
+        setIsVacantPositionFormOpen(true);
+      }
+    };
+
+    const handleOpenImportDialog = () => {
+      if (isAdmin) {
+        setIsImportOpen(true);
+      }
+    };
+
+    window.addEventListener('openPersonForm', handleOpenPersonForm);
+    window.addEventListener('openSectionForm', handleOpenSectionForm);
+    window.addEventListener('openVacantPositionForm', handleOpenVacantPositionForm);
+    window.addEventListener('openImportDialog', handleOpenImportDialog);
+
+    return () => {
+      window.removeEventListener('openPersonForm', handleOpenPersonForm);
+      window.removeEventListener('openSectionForm', handleOpenSectionForm);
+      window.removeEventListener('openVacantPositionForm', handleOpenVacantPositionForm);
+      window.removeEventListener('openImportDialog', handleOpenImportDialog);
+    };
+  }, [isAdmin]);
+
   const toggleSection = useCallback(async (sectionId: string) => {
     const findSectionRecursively = (sections: Section[]): Section | null => {
       for (const section of sections) {
