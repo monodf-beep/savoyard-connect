@@ -48,15 +48,15 @@ export const PersonCard: React.FC<PersonCardProps> = ({
 
   if (compact) {
     const compactClass = isBureau 
-      ? "inline-flex items-center gap-3 px-4 py-2 text-base bg-card hover:bg-accent/50 border border-border rounded-lg transition-colors h-[44px] relative group/compact"
-      : "inline-flex items-center gap-2 px-3 py-1.5 text-sm bg-card hover:bg-accent/50 border border-border rounded-md transition-colors h-[44px] relative group/compact";
+      ? "inline-flex items-center gap-3 px-4 py-2 text-base bg-card hover:bg-accent/50 border border-border rounded-lg transition-colors h-[44px]"
+      : "inline-flex items-center gap-2 px-3 py-1.5 text-sm bg-card hover:bg-accent/50 border border-border rounded-md transition-colors h-[44px]";
     
     const avatarClass = isBureau ? "w-8 h-8" : "w-6 h-6";
     const textClass = isBureau ? "font-semibold" : "font-medium";
     const iconClass = isBureau ? "w-4 h-4" : "w-3 h-3";
     
     return (
-      <div className="relative flex items-center">
+      <div className="relative flex items-center group">
         <button
           onClick={handleClick}
           className={compactClass}
@@ -80,7 +80,7 @@ export const PersonCard: React.FC<PersonCardProps> = ({
           )}
         </button>
         {isAdmin && sectionId && sectionTitle && onUpdate && (
-          <div className="opacity-0 group-hover/compact:opacity-100 transition-opacity ml-1">
+          <div className="ml-1 opacity-0 group-hover:opacity-100 transition-opacity">
             <PersonQuickActions
               person={person}
               currentSectionId={sectionId}
