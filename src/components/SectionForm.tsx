@@ -47,7 +47,7 @@ export const SectionForm: React.FC<SectionFormProps> = ({
 
     const sectionData = {
       ...formData,
-      id: formData.id || formData.title.toLowerCase().replace(/\s+/g, '-')
+      id: formData.id || crypto.randomUUID()
     };
 
     onSave(sectionData);
