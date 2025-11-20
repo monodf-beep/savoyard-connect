@@ -333,6 +333,7 @@ export type Database = {
           id: string
           is_expanded: boolean | null
           is_hidden: boolean | null
+          leader_id: string | null
           parent_id: string | null
           title: string
           updated_at: string | null
@@ -343,6 +344,7 @@ export type Database = {
           id?: string
           is_expanded?: boolean | null
           is_hidden?: boolean | null
+          leader_id?: string | null
           parent_id?: string | null
           title: string
           updated_at?: string | null
@@ -353,11 +355,19 @@ export type Database = {
           id?: string
           is_expanded?: boolean | null
           is_hidden?: boolean | null
+          leader_id?: string | null
           parent_id?: string | null
           title?: string
           updated_at?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "sections_leader_id_fkey"
+            columns: ["leader_id"]
+            isOneToOne: false
+            referencedRelation: "people"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "sections_parent_id_fkey"
             columns: ["parent_id"]

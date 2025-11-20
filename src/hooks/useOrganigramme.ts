@@ -121,6 +121,32 @@ export const useOrganigramme = (isAdmin: boolean = false) => {
               } : null;
             }).filter(Boolean) as Person[];
 
+            // Trouver le responsable de la section
+            const leaderPerson = section.leader_id 
+              ? peopleData?.find(p => p.id === section.leader_id)
+              : null;
+            
+            const leader = leaderPerson ? {
+              id: leaderPerson.id,
+              firstName: leaderPerson.first_name,
+              lastName: leaderPerson.last_name,
+              photo: leaderPerson.avatar_url || '',
+              role: leaderPerson.title || '',
+              description: leaderPerson.bio || '',
+              sectionId: section.id,
+              email: leaderPerson.email || '',
+              phone: leaderPerson.phone || '',
+              linkedin: leaderPerson.linkedin || '',
+              formation: '',
+              experience: '',
+              competences: leaderPerson.competences || [],
+              dateEntree: leaderPerson.date_entree || '',
+              adresse: leaderPerson.adresse || '',
+              specialite: '',
+              langues: [],
+              hobbies: ''
+            } : undefined;
+
             return {
               id: section.id,
               title: section.title,
@@ -130,6 +156,7 @@ export const useOrganigramme = (isAdmin: boolean = false) => {
               parentId: section.parent_id,
               displayOrder: section.display_order,
               members: members as Person[],
+              leader,
               vacantPositions: vacantPositionsData?.filter(vp => vp.section_id === section.id).map(vp => ({
                 id: vp.id,
                 sectionId: vp.section_id,
