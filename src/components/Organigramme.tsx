@@ -235,9 +235,14 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
       // Récupérer d'abord toutes les sections
       const { data: allSections, error: fetchError } = await supabase
         .from('sections')
-        .select('id');
+        .select('id, title, is_expanded');
       
-      if (fetchError) throw fetchError;
+      console.log('Sections récupérées:', allSections);
+      
+      if (fetchError) {
+        console.error('Erreur fetch:', fetchError);
+        throw fetchError;
+      }
       
       if (!allSections || allSections.length === 0) {
         toast.info('Aucune section à replier');
@@ -245,16 +250,34 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
       }
 
       // Mettre à jour chaque section individuellement
-      const updates = allSections.map(section =>
-        supabase
+      console.log(`Mise à jour de ${allSections.length} sections...`);
+      
+      const updatePromises = allSections.map(async (section) => {
+        const { data, error } = await supabase
           .from('sections')
           .update({ is_expanded: false })
           .eq('id', section.id)
-      );
+          .select();
+        
+        if (error) {
+          console.error(`Erreur update section ${section.title}:`, error);
+        } else {
+          console.log(`✓ Section ${section.title} mise à jour:`, data);
+        }
+        
+        return { data, error };
+      });
 
-      await Promise.all(updates);
+      const results = await Promise.all(updatePromises);
+      const errors = results.filter(r => r.error);
+      
+      if (errors.length > 0) {
+        console.error(`${errors.length} erreurs lors de la mise à jour`);
+        toast.error(`Erreur: ${errors.length} sections n'ont pas pu être repliées`);
+      }
       
       // Recharger les données
+      console.log('Rechargement des données...');
       await refetch();
       toast.success('Toutes les sections ont été repliées');
     } catch (error: any) {
