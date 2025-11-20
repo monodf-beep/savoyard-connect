@@ -48,49 +48,51 @@ export const PersonCard: React.FC<PersonCardProps> = ({
 
   if (compact) {
     const compactClass = isBureau 
-      ? "inline-flex items-center gap-3 px-4 py-2 text-base bg-card hover:bg-accent/50 border border-border rounded-lg transition-colors h-[44px]"
-      : "inline-flex items-center gap-2 px-3 py-1.5 text-sm bg-card hover:bg-accent/50 border border-border rounded-md transition-colors h-[44px]";
+      ? "inline-flex items-center gap-3 px-4 py-2 text-base bg-card hover:bg-accent/50 border border-border rounded-lg transition-colors h-[44px] w-full"
+      : "inline-flex items-center gap-2 px-3 py-1.5 text-sm bg-card hover:bg-accent/50 border border-border rounded-md transition-colors h-[44px] w-full";
     
     const avatarClass = isBureau ? "w-8 h-8" : "w-6 h-6";
     const textClass = isBureau ? "font-semibold" : "font-medium";
     const iconClass = isBureau ? "w-4 h-4" : "w-3 h-3";
     
     return (
-      <div className="relative flex items-center group">
-        <button
-          onClick={handleClick}
-          className={compactClass}
-        >
-          <Avatar className={avatarClass}>
-            <AvatarImage 
-              src={person.photo} 
-              alt={`${person.firstName} ${person.lastName}`}
-              className="object-cover object-center w-full h-full"
-              style={{ imageRendering: 'auto' }}
-            />
-            <AvatarFallback className="text-xs bg-primary/10">
-              {person.firstName.charAt(0)}
-            </AvatarFallback>
-          </Avatar>
-          <span className={`${textClass} truncate whitespace-nowrap`}>
-            {person.firstName} {person.lastName}
-          </span>
-          {person.linkedin && (
-            <Linkedin className={`${iconClass} text-muted-foreground opacity-60`} />
+      <div className="relative group w-full">
+        <div className={compactClass}>
+          <button
+            onClick={handleClick}
+            className="flex items-center gap-2 flex-1 min-w-0"
+          >
+            <Avatar className={avatarClass}>
+              <AvatarImage 
+                src={person.photo} 
+                alt={`${person.firstName} ${person.lastName}`}
+                className="object-cover object-center w-full h-full"
+                style={{ imageRendering: 'auto' }}
+              />
+              <AvatarFallback className="text-xs bg-primary/10">
+                {person.firstName.charAt(0)}
+              </AvatarFallback>
+            </Avatar>
+            <span className={`${textClass} truncate whitespace-nowrap`}>
+              {person.firstName} {person.lastName}
+            </span>
+            {person.linkedin && (
+              <Linkedin className={`${iconClass} text-muted-foreground opacity-60`} />
+            )}
+          </button>
+          {isAdmin && sectionId && sectionTitle && onUpdate && (
+            <div className="opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" onClick={(e) => e.stopPropagation()}>
+              <PersonQuickActions
+                person={person}
+                currentSectionId={sectionId}
+                currentSectionTitle={sectionTitle}
+                allSections={allSections}
+                onEdit={() => onEdit?.(person)}
+                onUpdate={onUpdate}
+              />
+            </div>
           )}
-        </button>
-        {isAdmin && sectionId && sectionTitle && onUpdate && (
-          <div className="ml-1 opacity-0 group-hover:opacity-100 transition-opacity">
-            <PersonQuickActions
-              person={person}
-              currentSectionId={sectionId}
-              currentSectionTitle={sectionTitle}
-              allSections={allSections}
-              onEdit={() => onEdit?.(person)}
-              onUpdate={onUpdate}
-            />
-          </div>
-        )}
+        </div>
       </div>
     );
   }
