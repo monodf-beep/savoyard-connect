@@ -4,7 +4,12 @@ import { useAuth } from '@/hooks/useAuth';
 import { Navigate } from 'react-router-dom';
 
 const Settings = () => {
-  const { isAdmin } = useAuth();
+  const { isAdmin, loading } = useAuth();
+
+  // Show nothing while loading to prevent flash of redirect
+  if (loading) {
+    return null;
+  }
 
   // Only admins can access settings
   if (!isAdmin) {
