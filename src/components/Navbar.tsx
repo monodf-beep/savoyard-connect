@@ -170,24 +170,6 @@ export const Navbar = ({
                               </p>
                             </button>
                           </li>
-                          {isAdmin && (
-                            <li>
-                              <NavigationMenuLink asChild>
-                                <Link
-                                  to="/settings"
-                                  className="w-full block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground text-left group"
-                                >
-                                  <div className="flex items-center gap-2 text-sm font-medium leading-none">
-                                    <Settings className="h-4 w-4" />
-                                    Paramètres
-                                  </div>
-                                  <p className="line-clamp-2 text-sm leading-snug text-muted-foreground group-hover:text-accent-foreground/80 transition-colors">
-                                    Personnaliser nom, logo et couleurs
-                                  </p>
-                                </Link>
-                              </NavigationMenuLink>
-                            </li>
-                          )}
                         </>
                       )}
                     </ul>
@@ -252,6 +234,35 @@ export const Navbar = ({
                     </Link>
                   </NavigationMenuLink>
                 </NavigationMenuItem>
+
+                {/* Admin Menu */}
+                {isAdmin && (
+                  <NavigationMenuItem>
+                    <NavigationMenuTrigger className="bg-background">
+                      Admin
+                    </NavigationMenuTrigger>
+                    <NavigationMenuContent>
+                      <ul className="grid gap-3 p-6 w-[400px] bg-popover z-50">
+                        <li>
+                          <NavigationMenuLink asChild>
+                            <Link
+                              to="/settings"
+                              className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+                            >
+                              <div className="flex items-center gap-2 text-sm font-medium leading-none">
+                                <Settings className="h-4 w-4" />
+                                Paramètres
+                              </div>
+                              <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
+                                Personnaliser nom, logo et couleurs
+                              </p>
+                            </Link>
+                          </NavigationMenuLink>
+                        </li>
+                      </ul>
+                    </NavigationMenuContent>
+                  </NavigationMenuItem>
+                )}
               </NavigationMenuList>
             </NavigationMenu>
 
@@ -366,19 +377,30 @@ export const Navbar = ({
                     <span className="text-lg">🎓</span>
                     Guide d'utilisation
                   </button>
-                  {isAdmin && (
-                    <Link
-                      to="/settings"
-                      onClick={() => setMobileMenuOpen(false)}
-                      className="w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors text-muted-foreground hover:bg-muted text-left"
-                    >
-                      <Settings className="h-4 w-4" />
-                      Paramètres
-                    </Link>
-                  )}
                 </>
               )}
             </div>
+
+            {isAdmin && (
+              <div className="space-y-1 pt-2 border-t">
+                <div className="px-3 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                  Admin
+                </div>
+                <Link
+                  to="/settings"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={cn(
+                    "w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors",
+                    isActive('/settings')
+                      ? "bg-primary/10 text-primary"
+                      : "text-muted-foreground hover:bg-muted"
+                  )}
+                >
+                  <Settings className="h-4 w-4" />
+                  Paramètres
+                </Link>
+              </div>
+            )}
 
             <div className="space-y-1 pt-2 border-t">
               <div className="px-3 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
