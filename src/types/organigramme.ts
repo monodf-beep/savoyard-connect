@@ -50,6 +50,8 @@ export interface Section {
   type: 'bureau' | 'conseil' | 'commission' | 'groupe';
   isExpanded: boolean;
   isHidden?: boolean;
+  parentId?: string | null;
+  displayOrder?: number;
   subsections?: Section[];
   members: Person[];
   vacantPositions?: VacantPosition[];

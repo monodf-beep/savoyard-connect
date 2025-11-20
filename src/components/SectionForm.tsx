@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Section } from '../types/organigramme';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { X, Trash2 } from 'lucide-react';
 import { sectionSchema } from '../lib/validations';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 
 interface SectionFormProps {
   section?: Section | null;
@@ -27,8 +28,73 @@ export const SectionForm: React.FC<SectionFormProps> = ({
     id: section?.id || '',
     title: section?.title || '',
     type: section?.type || 'commission' as Section['type'],
-    isExpanded: section?.isExpanded ?? true
+    isExpanded: section?.isExpanded ?? true,
+    parentId: section?.parentId || null,
+    displayOrder: section?.displayOrder ?? 0
   });
+  const [allSections, setAllSections] = useState<Section[]>([]);
+  const [level, setLevel] = useState(0);
+
+  useEffect(() => {
+    if (isOpen) {
+      loadSections();
+    }
+  }, [isOpen]);
+
+  useEffect(() => {
+    // Calculer le niveau hiérarchique
+    calculateLevel(formData.parentId);
+  }, [formData.parentId, allSections]);
+
+  const loadSections = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('sections')
+        .select('*')
+        .order('title');
+      
+      if (error) throw error;
+      
+      const sections = data?.map(s => ({
+        id: s.id,
+        title: s.title,
+        type: 'bureau' as const,
+        isExpanded: s.is_expanded,
+        parentId: s.parent_id,
+        displayOrder: s.display_order,
+        members: [],
+        subsections: []
+      })) || [];
+      
+      setAllSections(sections);
+    } catch (error) {
+      console.error('Erreur lors du chargement des sections:', error);
+    }
+  };
+
+  const calculateLevel = (parentId: string | null) => {
+    if (!parentId) {
+      setLevel(0);
+      return;
+    }
+    
+    let currentLevel = 1;
+    let currentParentId = parentId;
+    
+    while (currentParentId) {
+      const parent = allSections.find(s => s.id === currentParentId);
+      if (!parent || !parent.parentId) break;
+      currentParentId = parent.parentId;
+      currentLevel++;
+    }
+    
+    setLevel(currentLevel);
+  };
+
+  const getAvailableParents = () => {
+    // Exclure la section actuelle et ses descendants
+    return allSections.filter(s => s.id !== section?.id);
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -58,7 +124,7 @@ export const SectionForm: React.FC<SectionFormProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-      <div className="bg-card rounded-lg border border-border w-full max-w-md">
+      <div className="bg-card rounded-lg border border-border w-full max-w-md max-h-[90vh] overflow-y-auto">
         <div className="sticky top-0 bg-card border-b border-border p-4 flex items-center justify-between">
           <h2 className="text-lg font-semibold">
             {section ? 'Modifier la section' : 'Ajouter une section'}
@@ -71,7 +137,46 @@ export const SectionForm: React.FC<SectionFormProps> = ({
           >
             <X className="w-4 h-4" />
           </Button>
-        </div>
+          </div>
+
+          <div>
+            <Label htmlFor="parentId">Section parente (optionnel)</Label>
+            <Select 
+              value={formData.parentId || 'none'} 
+              onValueChange={(value) => 
+                setFormData(prev => ({ ...prev, parentId: value === 'none' ? null : value }))
+              }
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Aucune (niveau principal)" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">Aucune (niveau principal - N)</SelectItem>
+                {getAvailableParents().map(s => (
+                  <SelectItem key={s.id} value={s.id}>
+                    {s.title}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground mt-1">
+              Niveau hiérarchique actuel : <strong>N{level > 0 ? `-${level}` : ''}</strong>
+            </p>
+          </div>
+
+          <div>
+            <Label htmlFor="displayOrder">Ordre d'affichage</Label>
+            <Input
+              id="displayOrder"
+              type="number"
+              value={formData.displayOrder}
+              onChange={(e) => setFormData(prev => ({ ...prev, displayOrder: parseInt(e.target.value) || 0 }))}
+              min="0"
+            />
+            <p className="text-xs text-muted-foreground mt-1">
+              Plus le nombre est petit, plus la section apparaît en premier
+            </p>
+          </div>
 
         <form onSubmit={handleSubmit} className="p-4 space-y-4">
           <div>
