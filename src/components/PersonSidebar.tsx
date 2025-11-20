@@ -279,6 +279,16 @@ export const PersonSidebar: React.FC<PersonSidebarProps> = ({
                     if (!emailInput.trim()) return;
                     
                     try {
+                      // Sauvegarder l'email dans le profil si différent
+                      if (emailInput !== person.email) {
+                        const { error: updateError } = await supabase
+                          .from('people')
+                          .update({ email: emailInput })
+                          .eq('id', person.id);
+                        
+                        if (updateError) throw updateError;
+                      }
+
                       const token = crypto.randomUUID().replace(/-/g, "");
                       const expiresAt = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString();
                       
