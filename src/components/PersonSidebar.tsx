@@ -106,18 +106,30 @@ export const PersonSidebar: React.FC<PersonSidebarProps> = ({
       }
 
       // Ensuite on envoie l'invitation
-      const { error } = await supabase.functions.invoke('send-invite', {
+      const { data, error } = await supabase.functions.invoke('send-invite', {
         body: { email, baseUrl: window.location.origin },
       });
       
-      if (error) throw error;
+      if (error) {
+        console.error('Invite error:', error);
+        toast.error(error.message || "Échec de l'envoi de l'invitation");
+        setIsSending(false);
+        return;
+      }
+
+      if (data?.error) {
+        console.error('Invite data error:', data);
+        toast.error(data.details || data.error);
+        setIsSending(false);
+        return;
+      }
       
       toast.success("Invitation envoyée à " + email);
       setIsEditingEmail(false);
       setEmailInput('');
-    } catch (e) {
-      if (import.meta.env.DEV) console.error(e);
-      toast.error("Échec de l'envoi de l'invitation");
+    } catch (e: any) {
+      console.error('Catch error:', e);
+      toast.error(e.message || "Échec de l'envoi de l'invitation");
     } finally {
       setIsSending(false);
     }
