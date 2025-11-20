@@ -94,25 +94,8 @@ export const SectionCard: React.FC<SectionCardProps> = ({
   const isMainSection = level === 0;
   const marginLeft = level * 20;
 
-  const handleChangeLevel = async (newLevel: 'N0' | 'N-1' | 'N-2') => {
+  const handleMoveToSection = async (newParentId: string | null) => {
     try {
-      let newParentId: string | null = null;
-
-      if (newLevel === 'N-1') {
-        // Trouver une section N0 pour en faire le parent
-        const rootSection = allSections.find(s => !s.parentId && s.id !== section.id);
-        if (rootSection) {
-          newParentId = rootSection.id;
-        }
-      } else if (newLevel === 'N-2') {
-        // Trouver une section N-1 pour en faire le parent
-        const n1Section = allSections.find(s => s.parentId && !allSections.find(p => p.id === s.parentId && p.parentId) && s.id !== section.id);
-        if (n1Section) {
-          newParentId = n1Section.id;
-        }
-      }
-      // N0 = newParentId reste null
-
       const { error } = await supabase
         .from('sections')
         .update({ parent_id: newParentId })
@@ -122,12 +105,22 @@ export const SectionCard: React.FC<SectionCardProps> = ({
       
       onUpdate?.();
     } catch (error) {
-      console.error('Error changing section level:', error);
+      console.error('Error moving section:', error);
     }
   };
 
+  // Obtenir les sections racines (N0)
+  const rootSections = allSections.filter(s => !s.parentId && s.id !== section.id);
+  
+  // Obtenir les sections N-1 (qui ont un parent N0)
+  const n1Sections = allSections.filter(s => {
+    if (!s.parentId || s.id === section.id) return false;
+    const parent = allSections.find(p => p.id === s.parentId);
+    return parent && !parent.parentId;
+  });
+
   const getCurrentLevel = () => {
-    if (!section.parentId) return 'N0';
+    if (!section.parentId) return 'N0 (Racine)';
     const parent = allSections.find(s => s.id === section.parentId);
     if (parent && !parent.parentId) return 'N-1';
     return 'N-2';
@@ -203,20 +196,55 @@ export const SectionCard: React.FC<SectionCardProps> = ({
                     <MoreVertical className="w-4 h-4" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuContent align="end" className="w-56">
                   <DropdownMenuLabel className="text-xs text-muted-foreground">
                     Niveau actuel : {getCurrentLevel()}
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleChangeLevel('N0'); }}>
-                    Niveau N0 (Racine)
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleChangeLevel('N-1'); }}>
-                    Niveau N-1 (Sous-section)
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleChangeLevel('N-2'); }}>
-                    Niveau N-2 (Sous-sous-section)
-                  </DropdownMenuItem>
+                  
+                  {!section.parentId ? (
+                    <DropdownMenuItem disabled>
+                      Déjà au niveau racine (N0)
+                    </DropdownMenuItem>
+                  ) : (
+                    <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleMoveToSection(null); }}>
+                      → Déplacer vers Racine (N0)
+                    </DropdownMenuItem>
+                  )}
+                  
+                  <DropdownMenuSeparator />
+                  <DropdownMenuLabel className="text-xs font-semibold">Déplacer sous :</DropdownMenuLabel>
+                  
+                  {rootSections.length > 0 ? (
+                    rootSections.map(rootSection => (
+                      <DropdownMenuItem 
+                        key={rootSection.id}
+                        onClick={(e) => { e.stopPropagation(); handleMoveToSection(rootSection.id); }}
+                        disabled={section.parentId === rootSection.id}
+                      >
+                        {section.parentId === rootSection.id ? '✓ ' : '→ '}{rootSection.title} (N-1)
+                      </DropdownMenuItem>
+                    ))
+                  ) : (
+                    <DropdownMenuItem disabled>
+                      Aucune section racine disponible
+                    </DropdownMenuItem>
+                  )}
+                  
+                  {n1Sections.length > 0 && (
+                    <>
+                      <DropdownMenuSeparator />
+                      {n1Sections.map(n1Section => (
+                        <DropdownMenuItem 
+                          key={n1Section.id}
+                          onClick={(e) => { e.stopPropagation(); handleMoveToSection(n1Section.id); }}
+                          disabled={section.parentId === n1Section.id}
+                        >
+                          {section.parentId === n1Section.id ? '✓ ' : '→ '}{n1Section.title} (N-2)
+                        </DropdownMenuItem>
+                      ))}
+                    </>
+                  )}
                 </DropdownMenuContent>
               </DropdownMenu>
             )}
@@ -352,20 +380,55 @@ export const SectionCard: React.FC<SectionCardProps> = ({
                     <MoreVertical className="w-4 h-4" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuContent align="end" className="w-56">
                   <DropdownMenuLabel className="text-xs text-muted-foreground">
                     Niveau actuel : {getCurrentLevel()}
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleChangeLevel('N0'); }}>
-                    Niveau N0 (Racine)
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleChangeLevel('N-1'); }}>
-                    Niveau N-1 (Sous-section)
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleChangeLevel('N-2'); }}>
-                    Niveau N-2 (Sous-sous-section)
-                  </DropdownMenuItem>
+                  
+                  {!section.parentId ? (
+                    <DropdownMenuItem disabled>
+                      Déjà au niveau racine (N0)
+                    </DropdownMenuItem>
+                  ) : (
+                    <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleMoveToSection(null); }}>
+                      → Déplacer vers Racine (N0)
+                    </DropdownMenuItem>
+                  )}
+                  
+                  <DropdownMenuSeparator />
+                  <DropdownMenuLabel className="text-xs font-semibold">Déplacer sous :</DropdownMenuLabel>
+                  
+                  {rootSections.length > 0 ? (
+                    rootSections.map(rootSection => (
+                      <DropdownMenuItem 
+                        key={rootSection.id}
+                        onClick={(e) => { e.stopPropagation(); handleMoveToSection(rootSection.id); }}
+                        disabled={section.parentId === rootSection.id}
+                      >
+                        {section.parentId === rootSection.id ? '✓ ' : '→ '}{rootSection.title} (N-1)
+                      </DropdownMenuItem>
+                    ))
+                  ) : (
+                    <DropdownMenuItem disabled>
+                      Aucune section racine disponible
+                    </DropdownMenuItem>
+                  )}
+                  
+                  {n1Sections.length > 0 && (
+                    <>
+                      <DropdownMenuSeparator />
+                      {n1Sections.map(n1Section => (
+                        <DropdownMenuItem 
+                          key={n1Section.id}
+                          onClick={(e) => { e.stopPropagation(); handleMoveToSection(n1Section.id); }}
+                          disabled={section.parentId === n1Section.id}
+                        >
+                          {section.parentId === n1Section.id ? '✓ ' : '→ '}{n1Section.title} (N-2)
+                        </DropdownMenuItem>
+                      ))}
+                    </>
+                  )}
                 </DropdownMenuContent>
               </DropdownMenu>
             )}
