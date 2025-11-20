@@ -6,7 +6,7 @@ import { VacantPositionCard } from './VacantPositionCard';
 import { OpenPositionCard } from './OpenPositionCard';
 import { SpontaneousApplicationForm } from './SpontaneousApplicationForm';
 import { SectionReassuranceDialog } from './SectionReassuranceDialog';
-import { ChevronDown, ChevronRight, Users, Star } from 'lucide-react';
+import { ChevronDown, ChevronRight, Users, Star, MoreVertical } from 'lucide-react';
 import { useDroppable } from '@dnd-kit/core';
 import {
   Tooltip,
@@ -14,6 +14,16 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from './ui/tooltip';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+  DropdownMenuLabel,
+} from './ui/dropdown-menu';
+import { Button } from './ui/button';
+import { supabase } from '@/integrations/supabase/client';
 
 interface SectionCardProps {
   section: Section;
@@ -84,6 +94,45 @@ export const SectionCard: React.FC<SectionCardProps> = ({
   const isMainSection = level === 0;
   const marginLeft = level * 20;
 
+  const handleChangeLevel = async (newLevel: 'N0' | 'N-1' | 'N-2') => {
+    try {
+      let newParentId: string | null = null;
+
+      if (newLevel === 'N-1') {
+        // Trouver une section N0 pour en faire le parent
+        const rootSection = allSections.find(s => !s.parentId && s.id !== section.id);
+        if (rootSection) {
+          newParentId = rootSection.id;
+        }
+      } else if (newLevel === 'N-2') {
+        // Trouver une section N-1 pour en faire le parent
+        const n1Section = allSections.find(s => s.parentId && !allSections.find(p => p.id === s.parentId && p.parentId) && s.id !== section.id);
+        if (n1Section) {
+          newParentId = n1Section.id;
+        }
+      }
+      // N0 = newParentId reste null
+
+      const { error } = await supabase
+        .from('sections')
+        .update({ parent_id: newParentId })
+        .eq('id', section.id);
+
+      if (error) throw error;
+      
+      onUpdate?.();
+    } catch (error) {
+      console.error('Error changing section level:', error);
+    }
+  };
+
+  const getCurrentLevel = () => {
+    if (!section.parentId) return 'N0';
+    const parent = allSections.find(s => s.id === section.parentId);
+    if (parent && !parent.parentId) return 'N-1';
+    return 'N-2';
+  };
+
   // Pour les sections principales, affichage plus épuré
   if (isMainSection) {
     return (
@@ -111,7 +160,7 @@ export const SectionCard: React.FC<SectionCardProps> = ({
             className={`section-header ${section.type} ${hasContent ? 'cursor-pointer' : 'cursor-default'} group hover:shadow-sm`}
             onClick={hasContent ? handleToggle : undefined}
           >
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 flex-1">
               {(section.subsections && section.subsections.length > 0) ? (
                 section.isExpanded ? <ChevronDown className="w-5 h-5 text-muted-foreground" /> : <ChevronRight className="w-5 h-5 text-muted-foreground" />
               ) : (
@@ -143,6 +192,34 @@ export const SectionCard: React.FC<SectionCardProps> = ({
                 </div>
               </div>
             </div>
+            {isAdmin && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="opacity-0 group-hover:opacity-100 transition-opacity ml-2"
+                  >
+                    <MoreVertical className="w-4 h-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuLabel className="text-xs text-muted-foreground">
+                    Niveau actuel : {getCurrentLevel()}
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleChangeLevel('N0'); }}>
+                    Niveau N0 (Racine)
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleChangeLevel('N-1'); }}>
+                    Niveau N-1 (Sous-section)
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleChangeLevel('N-2'); }}>
+                    Niveau N-2 (Sous-sous-section)
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
           </div>
 
           {section.isExpanded && hasContent && (
@@ -241,7 +318,7 @@ export const SectionCard: React.FC<SectionCardProps> = ({
           className="flex items-center justify-between p-3 border border-border rounded-lg hover:bg-muted/30 hover:border-primary/30 transition-all cursor-pointer group shadow-sm"
           onClick={handleToggle}
         >
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2.5 flex-1">
             {section.isExpanded ? <ChevronDown className="w-4 h-4 text-muted-foreground" /> : <ChevronRight className="w-4 h-4 text-muted-foreground" />}
             <h4 className="font-medium text-sm text-foreground">{section.title}</h4>
             {section.leader && (
@@ -260,9 +337,39 @@ export const SectionCard: React.FC<SectionCardProps> = ({
               </TooltipProvider>
             )}
           </div>
-          <span className="text-xs font-medium text-muted-foreground bg-muted/50 px-2 py-1 rounded-full">
-            {totalMemberCount}
-          </span>
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-medium text-muted-foreground bg-muted/50 px-2 py-1 rounded-full">
+              {totalMemberCount}
+            </span>
+            {isAdmin && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8 p-0"
+                  >
+                    <MoreVertical className="w-4 h-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuLabel className="text-xs text-muted-foreground">
+                    Niveau actuel : {getCurrentLevel()}
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleChangeLevel('N0'); }}>
+                    Niveau N0 (Racine)
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleChangeLevel('N-1'); }}>
+                    Niveau N-1 (Sous-section)
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleChangeLevel('N-2'); }}>
+                    Niveau N-2 (Sous-sous-section)
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
+          </div>
         </div>
 
         {section.isExpanded && hasContent && (
