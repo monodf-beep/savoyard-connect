@@ -10,6 +10,7 @@ export interface Person {
   instagram?: string;
   description?: string;
   sectionId?: string;
+  sectionIds?: string[]; // Pour la sélection multiple lors de la création
   // Nouvelles informations détaillées
   email?: string;
   phone?: string;

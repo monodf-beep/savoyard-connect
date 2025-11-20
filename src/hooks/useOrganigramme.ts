@@ -250,33 +250,43 @@ export const useOrganigramme = (isAdmin: boolean = false) => {
 
       if (error) throw error;
 
-      // Si une section est sélectionnée, assigner la personne à cette section
-      if (person.sectionId) {
-        if (import.meta.env.DEV) console.log('Assignment à la section:', person.sectionId);
+      // Gérer les assignations multiples de sections
+      const sectionIdsToAssign = person.sectionIds || (person.sectionId ? [person.sectionId] : []);
+      
+      if (sectionIdsToAssign.length > 0) {
+        if (import.meta.env.DEV) console.log('Assignment aux sections:', sectionIdsToAssign);
         
-        // Vérifier si l'entrée existe déjà
-        const { data: existingMembership } = await supabase
-          .from('section_members')
-          .select('id')
-          .eq('person_id', person.id)
-          .eq('section_id', person.sectionId)
-          .maybeSingle();
-
-        if (!existingMembership) {
-          // Créer l'entrée dans section_members
-          const { error: memberError } = await supabase
+        // Pour chaque section sélectionnée
+        for (const sectionId of sectionIdsToAssign) {
+          // Vérifier si l'entrée existe déjà
+          const { data: existingMembership } = await supabase
             .from('section_members')
-            .insert({
-              person_id: person.id,
-              section_id: person.sectionId,
-              role: person.role || null
-            });
+            .select('id')
+            .eq('person_id', person.id)
+            .eq('section_id', sectionId)
+            .maybeSingle();
 
-          if (memberError) {
-            console.error('Erreur lors de l\'assignment à la section:', memberError);
-            toast.error('Personne sauvegardée mais erreur lors de l\'assignment à la section');
+          if (!existingMembership) {
+            // Créer l'entrée dans section_members
+            const { error: memberError } = await supabase
+              .from('section_members')
+              .insert({
+                person_id: person.id,
+                section_id: sectionId,
+                role: person.role || null
+              });
+
+            if (memberError) {
+              // Si c'est une erreur de contrainte unique, on l'ignore silencieusement
+              if (!memberError.message.includes('unique')) {
+                console.error('Erreur lors de l\'assignment à la section:', memberError);
+                toast.error(`Erreur lors de l'assignment à une section`);
+              }
+            } else {
+              if (import.meta.env.DEV) console.log(`Personne assignée à la section ${sectionId} avec succès`);
+            }
           } else {
-            if (import.meta.env.DEV) console.log('Personne assignée à la section avec succès');
+            if (import.meta.env.DEV) console.log(`Personne déjà assignée à la section ${sectionId}`);
           }
         }
       }
