@@ -127,6 +127,8 @@ export const useOrganigramme = (isAdmin: boolean = false) => {
               type: 'bureau' as const,
               isExpanded: section.is_expanded,
               isHidden: section.is_hidden || false,
+              parentId: section.parent_id,
+              displayOrder: section.display_order,
               members: members as Person[],
               vacantPositions: vacantPositionsData?.filter(vp => vp.section_id === section.id).map(vp => ({
                 id: vp.id,
@@ -256,7 +258,9 @@ export const useOrganigramme = (isAdmin: boolean = false) => {
         .upsert({
           id: section.id,
           title: section.title,
-          is_expanded: section.isExpanded
+          is_expanded: section.isExpanded,
+          parent_id: section.parentId || null,
+          display_order: section.displayOrder ?? 0
         })
         .select()
         .maybeSingle();
