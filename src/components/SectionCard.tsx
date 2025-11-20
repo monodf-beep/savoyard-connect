@@ -125,7 +125,7 @@ export const SectionCard: React.FC<SectionCardProps> = ({
                       <TooltipProvider>
                         <Tooltip>
                           <TooltipTrigger asChild>
-                            <span className="text-xs font-semibold flex items-center gap-1 bg-primary text-primary-foreground px-2 py-0.5 rounded-full shadow-sm">\
+                            <span className="text-xs font-semibold flex items-center gap-1 bg-primary text-primary-foreground px-2 py-0.5 rounded-full shadow-sm">
                               <Star className="w-3 h-3 fill-current" />
                               {section.leader.firstName} {section.leader.lastName}
                             </span>
