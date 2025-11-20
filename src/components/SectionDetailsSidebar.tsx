@@ -200,8 +200,8 @@ export const SectionDetailsSidebar: React.FC<SectionDetailsSidebarProps> = ({
               <div className="flex items-center gap-2 mb-1">
                 <h2 className="text-2xl font-bold">{section.title}</h2>
                 {section.leader && (
-                  <span className="text-xs text-primary font-medium flex items-center gap-1 bg-primary/10 px-2 py-0.5 rounded-full border border-primary/20">
-                    <Star className="w-3 h-3 fill-primary" />
+                  <span className="text-xs font-semibold flex items-center gap-1 bg-primary text-primary-foreground px-2 py-0.5 rounded-full shadow-sm">
+                    <Star className="w-3 h-3 fill-current" />
                     {section.leader.firstName} {section.leader.lastName}
                   </span>
                 )}
@@ -274,8 +274,8 @@ export const SectionDetailsSidebar: React.FC<SectionDetailsSidebarProps> = ({
                           <div className="flex items-center gap-2">
                             <h4 className="font-medium text-sm">{subsection.title}</h4>
                             {subsection.leader && (
-                              <span className="text-xs text-primary font-medium flex items-center gap-1 bg-primary/10 px-1.5 py-0.5 rounded-full border border-primary/20">
-                                <Star className="w-2.5 h-2.5 fill-primary" />
+                              <span className="text-[10px] font-bold flex items-center gap-0.5 bg-primary text-primary-foreground px-1.5 py-0.5 rounded-full shadow-sm">
+                                <Star className="w-2 h-2 fill-current" />
                                 {subsection.leader.firstName} {subsection.leader.lastName}
                               </span>
                             )}

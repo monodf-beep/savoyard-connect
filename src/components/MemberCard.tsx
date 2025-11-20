@@ -84,11 +84,11 @@ export const MemberCard: React.FC<MemberCardProps> = ({ person, sectionTitle, on
           </div>
         )}
 
-        {/* Bouton au survol - Desktop uniquement */}
+        {/* Bouton au survol - Desktop, visible sur mobile */}
         <Button 
-          variant="outline" 
+          variant="default" 
           size="sm"
-          className="hidden md:block opacity-0 group-hover:opacity-100 transition-opacity duration-200 absolute bottom-4"
+          className="md:absolute md:bottom-4 md:opacity-0 md:group-hover:opacity-100 md:transition-opacity md:duration-200 w-full md:w-auto bg-primary text-primary-foreground hover:bg-primary/90"
         >
           Voir le profil →
         </Button>
