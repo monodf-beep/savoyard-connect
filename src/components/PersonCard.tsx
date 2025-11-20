@@ -1,8 +1,14 @@
 import React from 'react';
 import { Person, Section } from '../types/organigramme';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
-import { Edit2, Linkedin } from 'lucide-react';
+import { Edit2, Linkedin, Sparkles } from 'lucide-react';
 import { PersonQuickActions } from './PersonQuickActions';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from './ui/tooltip';
 
 interface PersonCardProps {
   person: Person;
@@ -46,6 +52,10 @@ export const PersonCard: React.FC<PersonCardProps> = ({
     }
   };
 
+  // Trouver les sections dont cette personne est responsable
+  const ledSections = allSections.filter(section => section.leader?.id === person.id);
+  const isLeader = ledSections.length > 0;
+
   if (compact) {
     const compactClass = isBureau 
       ? "inline-flex items-center gap-3 px-4 py-2 text-base bg-card hover:bg-accent/50 border border-border rounded-lg transition-colors h-[44px] w-full"
@@ -73,11 +83,25 @@ export const PersonCard: React.FC<PersonCardProps> = ({
                 {person.firstName.charAt(0)}
               </AvatarFallback>
             </Avatar>
-            <span className={`${textClass} truncate whitespace-nowrap`}>
-              {person.firstName} {person.lastName}
-            </span>
+            <div className="flex items-center gap-1 flex-1 min-w-0">
+              <span className={`${textClass} truncate whitespace-nowrap`}>
+                {person.firstName} {person.lastName}
+              </span>
+              {isLeader && (
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Sparkles className="w-3.5 h-3.5 text-primary flex-shrink-0" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Responsable de {ledSections.map(s => s.title).join(', ')}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
+            </div>
             {person.linkedin && (
-              <Linkedin className={`${iconClass} text-muted-foreground opacity-60`} />
+              <Linkedin className={`${iconClass} text-muted-foreground opacity-60 flex-shrink-0`} />
             )}
           </button>
           {isAdmin && sectionId && sectionTitle && onUpdate && (
@@ -114,9 +138,23 @@ export const PersonCard: React.FC<PersonCardProps> = ({
         
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between">
-            <h4 className="font-semibold text-sm truncate">
-              {person.firstName} {person.lastName}
-            </h4>
+            <div className="flex items-center gap-1.5 flex-1 min-w-0">
+              <h4 className="font-semibold text-sm truncate">
+                {person.firstName} {person.lastName}
+              </h4>
+              {isLeader && (
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Sparkles className="w-3.5 h-3.5 text-primary flex-shrink-0" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Responsable de {ledSections.map(s => s.title).join(', ')}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
+            </div>
             <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
               {person.linkedin && (
                 <button
