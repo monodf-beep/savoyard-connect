@@ -34,12 +34,6 @@
 
     --radius: 0.5rem;
 
-    /* Palette complémentaire */
-    --ocean-blue: 210 70% 50%;
-    --forest-green: 160 60% 45%;
-    --slate-blue: 220 40% 60%;
-    --emerald: 140 65% 50%;
-
     --sidebar-background: 0 0% 100%;
     --sidebar-foreground: 215 25% 25%;
     --sidebar-primary: 210 70% 50%;
@@ -116,15 +110,15 @@
   }
 
   .section-header.conseil {
-    @apply border-l-4 border-l-slate-blue;
+    @apply border-l-4 border-l-primary/80;
   }
 
   .section-header.commission {
-    @apply border-l-4 border-l-forest-green;
+    @apply border-l-4 border-l-primary/60;
   }
 
   .section-header.groupe {
-    @apply border-l-4 border-l-emerald;
+    @apply border-l-4 border-l-primary/40;
   }
 
   /* Cartes de personnes */

@@ -52,11 +52,6 @@ export default {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
 				},
-				// Couleurs modernes
-				'ocean-blue': 'hsl(var(--ocean-blue))',
-				'forest-green': 'hsl(var(--forest-green))',
-				'slate-blue': 'hsl(var(--slate-blue))',
-				'emerald': 'hsl(var(--emerald))',
 				sidebar: {
 					DEFAULT: 'hsl(var(--sidebar-background))',
 					foreground: 'hsl(var(--sidebar-foreground))',
