@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Person } from '../types/organigramme';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { Badge } from './ui/badge';
@@ -11,6 +11,7 @@ import { useIsMobile } from '../hooks/use-mobile';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { z } from 'zod';
+import { Input } from './ui/input';
 
 // Composant pour afficher les sections d'une personne
 const PersonSections: React.FC<{ personId: string }> = ({ personId }) => {
@@ -76,25 +77,58 @@ export const PersonSidebar: React.FC<PersonSidebarProps> = ({
   onEdit 
 }) => {
   const isMobile = useIsMobile();
+  const [isEditingEmail, setIsEditingEmail] = useState(false);
+  const [emailInput, setEmailInput] = useState('');
+  const [isSending, setIsSending] = useState(false);
 
   if (!person) return null;
 
-  const sendInvite = async () => {
-    const email = (person.email || '').trim();
+  const sendInvite = async (emailToUse?: string) => {
+    const email = (emailToUse || person.email || '').trim();
     const emailSchema = z.string().email();
+    
     if (!emailSchema.safeParse(email).success) {
-      toast.error('Veuillez d\'abord ajouter une adresse email valide pour cette personne');
+      toast.error('Veuillez saisir une adresse email valide');
       return;
     }
+
+    setIsSending(true);
+    
     try {
+      // Si on a saisi un nouvel email, on met à jour d'abord la personne
+      if (emailToUse && emailToUse !== person.email) {
+        const { error: updateError } = await supabase
+          .from('people')
+          .update({ email: emailToUse })
+          .eq('id', person.id);
+        
+        if (updateError) throw updateError;
+      }
+
+      // Ensuite on envoie l'invitation
       const { error } = await supabase.functions.invoke('send-invite', {
         body: { email, baseUrl: window.location.origin },
       });
+      
       if (error) throw error;
+      
       toast.success("Invitation envoyée à " + email);
+      setIsEditingEmail(false);
+      setEmailInput('');
     } catch (e) {
       if (import.meta.env.DEV) console.error(e);
       toast.error("Échec de l'envoi de l'invitation");
+    } finally {
+      setIsSending(false);
+    }
+  };
+
+  const handleInviteClick = () => {
+    if (!person.email) {
+      setIsEditingEmail(true);
+      setEmailInput('');
+    } else {
+      sendInvite();
     }
   };
 
@@ -192,19 +226,46 @@ export const PersonSidebar: React.FC<PersonSidebarProps> = ({
 
         {/* Invitation (Admin only) */}
         {isAdmin && (
-          <div>
-            <Button
-              onClick={sendInvite}
-              variant="default"
-              size="sm"
-              className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold"
-            >
-              <Send className="w-4 h-4 mr-2" />
-              Inviter à compléter son profil
-            </Button>
-            {!person.email && (
-              <p className="text-xs text-muted-foreground mt-2 text-center">
-                ⚠️ Email manquant - ajoutez d'abord une adresse email
+          <div className="space-y-2">
+            {isEditingEmail ? (
+              <div className="flex gap-2">
+                <Input
+                  type="email"
+                  placeholder="email@exemple.com"
+                  value={emailInput}
+                  onChange={(e) => setEmailInput(e.target.value)}
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter' && emailInput.trim()) {
+                      sendInvite(emailInput);
+                    }
+                  }}
+                  className="flex-1"
+                  autoFocus
+                />
+                <Button
+                  onClick={() => sendInvite(emailInput)}
+                  disabled={!emailInput.trim() || isSending}
+                  size="sm"
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground"
+                >
+                  <Send className="w-4 h-4" />
+                </Button>
+              </div>
+            ) : (
+              <Button
+                onClick={handleInviteClick}
+                disabled={isSending}
+                variant="default"
+                size="sm"
+                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold"
+              >
+                <Send className="w-4 h-4 mr-2" />
+                Inviter à compléter son profil
+              </Button>
+            )}
+            {!person.email && !isEditingEmail && (
+              <p className="text-xs text-muted-foreground text-center">
+                ⚠️ Email manquant - cliquez pour ajouter
               </p>
             )}
           </div>
