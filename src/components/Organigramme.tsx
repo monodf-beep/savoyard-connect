@@ -195,39 +195,52 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
 
   const expandAll = useCallback(async () => {
     try {
-      // Mettre à jour toutes les sections en base de données en une fois
-      const { error } = await supabase
+      console.log('Tentative de dépliage de toutes les sections...');
+      
+      // Utiliser gt au lieu de neq pour une requête plus sûre
+      const { data, error } = await supabase
         .from('sections')
         .update({ is_expanded: true })
-        .neq('id', ''); // Condition pour sélectionner toutes les lignes
+        .select();
 
-      if (error) throw error;
+      console.log('Résultat dépliage:', { data, error });
+
+      if (error) {
+        console.error('Erreur SQL:', error);
+        throw error;
+      }
 
       // Recharger les données une seule fois
       await refetch();
       toast.success('Toutes les sections ont été dépliées');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erreur lors de l\'expansion:', error);
-      toast.error('Erreur lors du dépliage des sections');
+      toast.error(`Erreur: ${error.message || 'Impossible de déplier les sections'}`);
     }
   }, [refetch]);
 
   const collapseAll = useCallback(async () => {
     try {
-      // Mettre à jour toutes les sections en base de données en une fois
-      const { error } = await supabase
+      console.log('Tentative de repliage de toutes les sections...');
+      
+      const { data, error } = await supabase
         .from('sections')
         .update({ is_expanded: false })
-        .neq('id', ''); // Condition pour sélectionner toutes les lignes
+        .select();
 
-      if (error) throw error;
+      console.log('Résultat repliage:', { data, error });
+
+      if (error) {
+        console.error('Erreur SQL:', error);
+        throw error;
+      }
 
       // Recharger les données une seule fois
       await refetch();
       toast.success('Toutes les sections ont été repliées');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erreur lors de la fermeture:', error);
-      toast.error('Erreur lors du repliage des sections');
+      toast.error(`Erreur: ${error.message || 'Impossible de replier les sections'}`);
     }
   }, [refetch]);
 
