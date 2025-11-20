@@ -234,7 +234,7 @@ export const PersonQuickActions: React.FC<PersonQuickActionsProps> = ({
 
           <DropdownMenuItem
             onClick={handleRemoveFromSection}
-            className="text-destructive focus:text-destructive"
+            className="text-destructive focus:text-destructive focus:bg-destructive/10"
           >
             <Trash2 className="w-4 h-4 mr-2" />
             Retirer de cette section
