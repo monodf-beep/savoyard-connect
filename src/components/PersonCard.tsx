@@ -64,10 +64,13 @@ export const PersonCard: React.FC<PersonCardProps> = ({
     return result;
   };
 
-  // Trouver les sections dont cette personne est responsable
+  // Vérifier si la personne est responsable de LA SECTION ACTUELLE uniquement
   const allFlatSections = flattenSections(allSections);
+  const currentSection = sectionId ? allFlatSections.find(s => s.id === sectionId) : null;
+  const isLeaderOfCurrentSection = currentSection?.leader?.id === person.id;
+  
+  // Pour affichage tooltip: toutes les sections dont la personne est responsable
   const ledSections = allFlatSections.filter(section => section.leader?.id === person.id);
-  const isLeader = ledSections.length > 0;
 
   if (compact) {
     const compactClass = isBureau 
@@ -100,14 +103,14 @@ export const PersonCard: React.FC<PersonCardProps> = ({
               <span className={`${textClass} truncate whitespace-nowrap`}>
                 {person.firstName} {person.lastName}
               </span>
-              {isLeader && (
+              {isLeaderOfCurrentSection && (
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Sparkles className="w-3.5 h-3.5 text-primary flex-shrink-0" />
                     </TooltipTrigger>
                     <TooltipContent>
-                      <p>Responsable de {ledSections.map(s => s.title).join(', ')}</p>
+                      <p>Responsable de cette section</p>
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
@@ -155,14 +158,14 @@ export const PersonCard: React.FC<PersonCardProps> = ({
               <h4 className="font-semibold text-sm truncate">
                 {person.firstName} {person.lastName}
               </h4>
-              {isLeader && (
+              {isLeaderOfCurrentSection && (
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Sparkles className="w-3.5 h-3.5 text-primary flex-shrink-0" />
                     </TooltipTrigger>
                     <TooltipContent>
-                      <p>Responsable de {ledSections.map(s => s.title).join(', ')}</p>
+                      <p>Responsable de cette section</p>
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
