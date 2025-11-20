@@ -197,21 +197,29 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
     try {
       console.log('Tentative de dépliage de toutes les sections...');
       
-      // Ajouter une condition pour sélectionner toutes les lignes
-      const { data, error } = await supabase
+      // Récupérer d'abord toutes les sections
+      const { data: allSections, error: fetchError } = await supabase
         .from('sections')
-        .update({ is_expanded: true })
-        .not('id', 'is', null)
-        .select();
-
-      console.log('Résultat dépliage:', { data, error });
-
-      if (error) {
-        console.error('Erreur SQL:', error);
-        throw error;
+        .select('id');
+      
+      if (fetchError) throw fetchError;
+      
+      if (!allSections || allSections.length === 0) {
+        toast.info('Aucune section à déplier');
+        return;
       }
 
-      // Recharger les données une seule fois
+      // Mettre à jour chaque section individuellement
+      const updates = allSections.map(section =>
+        supabase
+          .from('sections')
+          .update({ is_expanded: true })
+          .eq('id', section.id)
+      );
+
+      await Promise.all(updates);
+      
+      // Recharger les données
       await refetch();
       toast.success('Toutes les sections ont été dépliées');
     } catch (error: any) {
@@ -224,20 +232,29 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
     try {
       console.log('Tentative de repliage de toutes les sections...');
       
-      const { data, error } = await supabase
+      // Récupérer d'abord toutes les sections
+      const { data: allSections, error: fetchError } = await supabase
         .from('sections')
-        .update({ is_expanded: false })
-        .not('id', 'is', null)
-        .select();
-
-      console.log('Résultat repliage:', { data, error });
-
-      if (error) {
-        console.error('Erreur SQL:', error);
-        throw error;
+        .select('id');
+      
+      if (fetchError) throw fetchError;
+      
+      if (!allSections || allSections.length === 0) {
+        toast.info('Aucune section à replier');
+        return;
       }
 
-      // Recharger les données une seule fois
+      // Mettre à jour chaque section individuellement
+      const updates = allSections.map(section =>
+        supabase
+          .from('sections')
+          .update({ is_expanded: false })
+          .eq('id', section.id)
+      );
+
+      await Promise.all(updates);
+      
+      // Recharger les données
       await refetch();
       toast.success('Toutes les sections ont été repliées');
     } catch (error: any) {
