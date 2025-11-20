@@ -102,7 +102,7 @@ const Index = () => {
             <p className="text-muted-foreground">Vue complète de la structure organisationnelle</p>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-sm bg-secondary/50 px-2 py-1 rounded-md">
+            <span className="text-sm bg-primary/10 text-primary font-medium px-3 py-1 rounded-full border border-primary/20">
               {orgStats.totalMembers} membres
             </span>
             <Button

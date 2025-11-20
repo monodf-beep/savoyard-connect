@@ -109,11 +109,11 @@ export const AdminOnboarding: React.FC<AdminOnboardingProps> = ({ open, onOpenCh
       description: "Gagnez du temps avec l'assistant intelligent",
       content: (
         <div className="space-y-4">
-          <div className="aspect-video bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-lg flex items-center justify-center">
+          <div className="aspect-video bg-gradient-to-br from-primary/10 to-primary/5 rounded-lg flex items-center justify-center">
             <div className="text-center p-8">
-              <div className="inline-flex items-center gap-2 bg-background px-4 py-2 rounded-full shadow-lg mb-4">
-                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                <span className="text-sm font-medium">Assistant IA actif</span>
+              <div className="inline-flex items-center gap-2 bg-background px-4 py-2 rounded-full shadow-lg mb-4 border border-primary/20">
+                <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
+                <span className="text-sm font-medium text-primary">Assistant IA actif</span>
               </div>
               <div className="space-y-2 text-left max-w-md mx-auto">
                 <div className="bg-primary/10 p-3 rounded-lg">
@@ -126,15 +126,15 @@ export const AdminOnboarding: React.FC<AdminOnboardingProps> = ({ open, onOpenCh
             </div>
           </div>
           <div className="space-y-3 text-sm">
-            <div className="p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg">
+            <div className="p-3 bg-primary/10 border border-primary/20 rounded-lg">
               <div className="font-semibold mb-1">💡 Commandes vocales</div>
               <p className="text-muted-foreground text-xs">Dictez vos modifications à haute voix</p>
             </div>
-            <div className="p-3 bg-purple-500/10 border border-purple-500/20 rounded-lg">
+            <div className="p-3 bg-primary/10 border border-primary/20 rounded-lg">
               <div className="font-semibold mb-1">🖼️ Analyse d'images</div>
               <p className="text-muted-foreground text-xs">Uploadez des photos de trombinoscope</p>
             </div>
-            <div className="p-3 bg-green-500/10 border border-green-500/20 rounded-lg">
+            <div className="p-3 bg-primary/10 border border-primary/20 rounded-lg">
               <div className="font-semibold mb-1">✨ Suggestions intelligentes</div>
               <p className="text-muted-foreground text-xs">L'IA propose des améliorations contextuelles</p>
             </div>
@@ -149,11 +149,11 @@ export const AdminOnboarding: React.FC<AdminOnboardingProps> = ({ open, onOpenCh
         <div className="space-y-4">
           <div className="aspect-video bg-muted rounded-lg flex items-center justify-center">
             <div className="flex items-center gap-2 p-6">
-              <div className="px-4 py-2 bg-primary/20 rounded-lg border-2 border-primary">Édition</div>
-              <div className="text-2xl">→</div>
-              <div className="px-4 py-2 bg-accent/20 rounded-lg border-2 border-accent">Relecture</div>
-              <div className="text-2xl">→</div>
-              <div className="px-4 py-2 bg-green-500/20 rounded-lg border-2 border-green-500">Publication</div>
+              <div className="px-4 py-2 bg-primary/20 rounded-lg border-2 border-primary font-medium">Édition</div>
+              <div className="text-2xl text-muted-foreground">→</div>
+              <div className="px-4 py-2 bg-primary/15 rounded-lg border-2 border-primary/60 font-medium">Relecture</div>
+              <div className="text-2xl text-muted-foreground">→</div>
+              <div className="px-4 py-2 bg-primary/10 rounded-lg border-2 border-primary/40 font-medium">Publication</div>
             </div>
           </div>
           <div className="space-y-3 text-sm">

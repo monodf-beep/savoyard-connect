@@ -344,7 +344,7 @@ export const AIAssistant: React.FC = () => {
                 variant="default"
                 size="icon"
                 disabled={isLoading}
-                className="bg-green-600 hover:bg-green-700"
+                className="bg-primary hover:bg-primary/90"
               >
                 <StopCircle className="h-4 w-4" />
               </Button>
