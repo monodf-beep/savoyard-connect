@@ -56,8 +56,19 @@ export const DraggablePersonCard: React.FC<DraggablePersonCardProps> = ({
     <div
       ref={setNodeRef}
       style={style}
-      className={`relative ${isDragging ? 'z-50' : ''}`}
+      className={`relative group/drag ${isDragging ? 'z-50' : ''}`}
     >
+      {isAdmin && compact && (
+        <div
+          {...listeners}
+          {...attributes}
+          className="absolute left-0 top-1/2 -translate-y-1/2 -ml-5 cursor-grab active:cursor-grabbing p-1 hover:bg-muted rounded-md transition-all opacity-0 group-hover/drag:opacity-100 z-10"
+          title="Glisser pour déplacer vers une autre section"
+        >
+          <GripVertical className="w-3 h-3 text-muted-foreground" />
+        </div>
+      )}
+      
       {isAdmin && !compact && (
         <div
           {...listeners}
