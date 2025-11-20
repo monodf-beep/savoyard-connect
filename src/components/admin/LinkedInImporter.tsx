@@ -259,15 +259,22 @@ export const LinkedInImporter = ({ onProfileExtracted, currentData }: LinkedInIm
   };
 
   return (
-    <Card>
+    <Card className="opacity-60 pointer-events-none">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Download className="h-5 w-5" />
-          Importer depuis LinkedIn
-        </CardTitle>
-        <CardDescription>
-          Entrez l'URL d'un profil LinkedIn public pour extraire automatiquement les informations
-        </CardDescription>
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle className="flex items-center gap-2">
+              <Download className="h-5 w-5" />
+              Importer depuis LinkedIn
+            </CardTitle>
+            <CardDescription>
+              Entrez l'URL d'un profil LinkedIn public pour extraire automatiquement les informations
+            </CardDescription>
+          </div>
+          <Badge variant="secondary" className="bg-muted text-muted-foreground">
+            À venir prochainement
+          </Badge>
+        </div>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="flex gap-2">
@@ -276,24 +283,22 @@ export const LinkedInImporter = ({ onProfileExtracted, currentData }: LinkedInIm
             placeholder="https://www.linkedin.com/in/username"
             value={linkedinUrl}
             onChange={(e) => setLinkedinUrl(e.target.value)}
-            disabled={isLoading}
+            disabled={true}
           />
           <Button 
             onClick={handleExtract} 
-            disabled={isLoading || !linkedinUrl.trim()}
+            disabled={true}
           >
-            {isLoading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Extraction...
-              </>
-            ) : (
-              <>
-                <Download className="mr-2 h-4 w-4" />
-                Extraire
-              </>
-            )}
+            <Download className="mr-2 h-4 w-4" />
+            Extraire
           </Button>
+        </div>
+        
+        <div className="flex items-start gap-2 p-3 bg-muted/30 rounded-md border border-dashed">
+          <AlertCircle className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+          <p className="text-sm text-muted-foreground">
+            Cette fonctionnalité sera disponible prochainement. En attendant, vous pouvez saisir manuellement les informations dans le formulaire ci-dessous.
+          </p>
         </div>
 
         {showComparison && comparisons.length > 0 && (
