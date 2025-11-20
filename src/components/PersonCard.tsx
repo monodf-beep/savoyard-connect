@@ -52,8 +52,21 @@ export const PersonCard: React.FC<PersonCardProps> = ({
     }
   };
 
+  // Fonction pour aplatir toutes les sections (incluant les sous-sections)
+  const flattenSections = (sections: Section[]): Section[] => {
+    const result: Section[] = [];
+    for (const section of sections) {
+      result.push(section);
+      if (section.subsections && section.subsections.length > 0) {
+        result.push(...flattenSections(section.subsections));
+      }
+    }
+    return result;
+  };
+
   // Trouver les sections dont cette personne est responsable
-  const ledSections = allSections.filter(section => section.leader?.id === person.id);
+  const allFlatSections = flattenSections(allSections);
+  const ledSections = allFlatSections.filter(section => section.leader?.id === person.id);
   const isLeader = ledSections.length > 0;
 
   if (compact) {
