@@ -218,7 +218,7 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({
                   cy="200" 
                   r="140" 
                   fill="none" 
-                  stroke="#3b82f6" 
+                  stroke="hsl(var(--primary))" 
                   strokeWidth="3" 
                   strokeDasharray="10,5"
                 />

@@ -27,8 +27,16 @@ const AppContent = () => {
   // Apply custom colors to design system
   useEffect(() => {
     if (settings) {
-      document.documentElement.style.setProperty('--primary', settings.primary_color);
-      document.documentElement.style.setProperty('--secondary', settings.secondary_color);
+      const root = document.documentElement;
+      // Primary color and its derivatives
+      root.style.setProperty('--primary', settings.primary_color);
+      root.style.setProperty('--accent', settings.primary_color);
+      root.style.setProperty('--ring', settings.primary_color);
+      root.style.setProperty('--sidebar-primary', settings.primary_color);
+      root.style.setProperty('--sidebar-ring', settings.primary_color);
+      
+      // Secondary color
+      root.style.setProperty('--secondary', settings.secondary_color);
     }
   }, [settings]);
 
