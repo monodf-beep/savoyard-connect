@@ -178,7 +178,7 @@ export const NameCorrectionTool = () => {
       <CardContent className="space-y-4">
         {corrections.length === 0 ? (
           <div className="text-center py-8">
-            <CheckCircle2 className="h-12 w-12 text-green-500 mx-auto mb-2" />
+            <CheckCircle2 className="h-12 w-12 text-primary mx-auto mb-2" />
             <p className="text-muted-foreground">Tous les noms sont corrects !</p>
           </div>
         ) : (
@@ -193,10 +193,10 @@ export const NameCorrectionTool = () => {
                           {item.person.first_name} {item.person.last_name || '(pas de nom)'}
                         </span>
                         {item.status === 'success' && (
-                          <CheckCircle2 className="h-4 w-4 text-green-500" />
+                          <CheckCircle2 className="h-4 w-4 text-primary" />
                         )}
                         {item.status === 'error' && (
-                          <XCircle className="h-4 w-4 text-red-500" />
+                          <XCircle className="h-4 w-4 text-destructive" />
                         )}
                         {item.status === 'pending' && (
                           <Badge variant="outline">À corriger</Badge>
@@ -207,23 +207,23 @@ export const NameCorrectionTool = () => {
                         {item.correction.firstName && (
                           <div className="text-muted-foreground">
                             Prénom: <span className="line-through">{item.person.first_name}</span> → 
-                            <span className="text-green-600 font-medium ml-1">{item.correction.firstName}</span>
+                            <span className="text-primary font-medium ml-1">{item.correction.firstName}</span>
                           </div>
                         )}
                         {item.correction.lastName && (
                           <div className="text-muted-foreground">
                             Nom: <span className="line-through">{item.person.last_name || '(vide)'}</span> → 
-                            <span className="text-green-600 font-medium ml-1">{item.correction.lastName}</span>
+                            <span className="text-primary font-medium ml-1">{item.correction.lastName}</span>
                           </div>
                         )}
                         {item.correction.email && (
                           <div className="text-muted-foreground">
-                            Email: <span className="text-green-600 font-medium">{item.correction.email}</span>
+                            Email: <span className="text-primary font-medium">{item.correction.email}</span>
                           </div>
                         )}
                         {item.correction.phone && (
                           <div className="text-muted-foreground">
-                            Tél: <span className="text-green-600 font-medium">{item.correction.phone}</span>
+                            Tél: <span className="text-primary font-medium">{item.correction.phone}</span>
                           </div>
                         )}
                       </div>

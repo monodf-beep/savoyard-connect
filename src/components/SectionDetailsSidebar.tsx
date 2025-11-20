@@ -307,10 +307,10 @@ export const SectionDetailsSidebar: React.FC<SectionDetailsSidebarProps> = ({
                         <span
                           className={`text-xs px-2 py-0.5 rounded-full ${
                             project.status === 'completed'
-                              ? 'bg-green-500/10 text-green-700 dark:text-green-400'
+                              ? 'bg-secondary/50 text-secondary-foreground border border-secondary'
                               : project.status === 'in_progress'
-                              ? 'bg-blue-500/10 text-blue-700 dark:text-blue-400'
-                              : 'bg-gray-500/10 text-gray-700 dark:text-gray-400'
+                              ? 'bg-primary/10 text-primary border border-primary/20'
+                              : 'bg-muted text-muted-foreground border border-border'
                           }`}
                         >
                           {project.status === 'completed'

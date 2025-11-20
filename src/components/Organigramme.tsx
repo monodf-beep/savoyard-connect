@@ -726,10 +726,10 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
       </div>
 
       {isAdmin && (
-        <div className="mb-4 p-3 bg-accent/10 border border-accent/20 rounded-md">
+        <div className="mb-4 p-3 bg-primary/5 border border-primary/20 rounded-lg">
           <div className="flex items-center gap-2 text-sm">
-            <Settings className="w-3 h-3 text-accent" />
-            <span className="font-medium text-accent">Mode Administrateur</span>
+            <Settings className="w-4 h-4 text-primary" />
+            <span className="font-medium text-primary">Mode Administrateur</span>
             <span className="text-xs text-muted-foreground">• Cliquez sur les icônes d'édition</span>
           </div>
         </div>
