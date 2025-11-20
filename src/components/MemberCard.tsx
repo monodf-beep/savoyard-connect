@@ -64,7 +64,7 @@ export const MemberCard: React.FC<MemberCardProps> = ({ person, sectionTitle, on
         {displayedCompetences.length > 0 && (
           <div className="hidden sm:flex flex-wrap gap-1.5 justify-center w-full">
             {displayedCompetences.map((competence, index) => (
-              <Badge key={index} variant="secondary" className="text-xs">
+              <Badge key={index} variant="outline" className="text-xs bg-muted/50 border-border font-medium">
                 {competence}
               </Badge>
             ))}

@@ -22,7 +22,7 @@ const statusLabels = {
 const statusColors = {
   planned: 'bg-muted text-muted-foreground border border-border',
   in_progress: 'bg-primary/10 text-primary border border-primary/20',
-  completed: 'bg-secondary/50 text-secondary-foreground border border-secondary',
+  completed: 'bg-muted/70 text-foreground border border-border font-medium',
 };
 
 export const ProjectCard = ({ project, isAdmin, onEdit, onDelete }: ProjectCardProps) => {

@@ -212,7 +212,7 @@ export const JobPostingForm: React.FC<JobPostingFormProps> = ({
               </div>
               <div className="flex flex-wrap gap-2">
                 {formData.requirements?.map((req, index) => (
-                  <Badge key={index} variant="secondary" className="flex items-center gap-1">
+                  <Badge key={index} variant="outline" className="flex items-center gap-1 bg-muted/50 border-border font-medium">
                     {req}
                     <button
                       type="button"

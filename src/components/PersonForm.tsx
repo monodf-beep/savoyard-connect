@@ -412,7 +412,7 @@ export const PersonForm: React.FC<PersonFormProps> = ({
               </div>
               <div className="flex flex-wrap gap-2">
                 {formData.competences?.map((competence, index) => (
-                  <Badge key={index} variant="secondary" className="flex items-center gap-1">
+                  <Badge key={index} variant="outline" className="flex items-center gap-1 bg-muted/50 border-border font-medium">
                     {competence}
                     <button
                       type="button"

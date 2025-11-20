@@ -839,7 +839,7 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
                         {section.members.slice(0, 3).map(member => (
                           <div
                             key={member.id}
-                            className="flex items-center gap-2 bg-secondary/50 px-2 py-1 rounded-md text-xs hover:bg-secondary transition-colors"
+                            className="flex items-center gap-2 bg-muted/50 border border-border px-2 py-1 rounded-md text-xs hover:bg-muted transition-colors font-medium"
                             onClick={(e) => {
                               e.stopPropagation();
                               handlePersonClick(member);
