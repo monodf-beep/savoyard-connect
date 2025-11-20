@@ -69,7 +69,7 @@ export const useOrganigramme = (isAdmin: boolean = false) => {
         sectionMembersData = [];
       }
 
-      // Charger les offres d'emploi
+      // Charger les opportunités de bénévolat
       let jobsData: any[] = [];
       try {
         const { data: jd, error: jobsError } = await supabase
@@ -83,7 +83,7 @@ export const useOrganigramme = (isAdmin: boolean = false) => {
         jobsData = [];
       }
 
-      // Charger les postes vacants
+      // Charger les recherches de bénévoles
       let vacantPositionsData: any[] = [];
       try {
         const { data: vpd, error: vacantPositionsError } = await supabase
@@ -404,7 +404,7 @@ export const useOrganigramme = (isAdmin: boolean = false) => {
     }
   };
 
-  // Sauvegarder un poste vacant
+  // Sauvegarder une recherche de bénévoles
   const saveVacantPosition = async (position: Omit<VacantPosition, 'id'>) => {
     try {
       const { data: savedPosition, error } = await supabase
@@ -420,7 +420,7 @@ export const useOrganigramme = (isAdmin: boolean = false) => {
 
       if (error) throw error;
 
-      toast.success('Poste vacant créé avec succès');
+      toast.success('Recherche de bénévoles créée avec succès');
       await loadData(); // Recharger les données
       return savedPosition;
     } catch (error) {
@@ -430,7 +430,7 @@ export const useOrganigramme = (isAdmin: boolean = false) => {
     }
   };
 
-  // Mettre à jour un poste vacant
+  // Mettre à jour une recherche de bénévoles
   const updateVacantPosition = async (positionId: string, position: Omit<VacantPosition, 'id'>) => {
     try {
       const { data: updatedPosition, error } = await supabase
@@ -447,7 +447,7 @@ export const useOrganigramme = (isAdmin: boolean = false) => {
 
       if (error) throw error;
 
-      toast.success('Poste vacant modifié avec succès');
+      toast.success('Recherche de bénévoles modifiée avec succès');
       await loadData(); // Recharger les données
       return updatedPosition;
     } catch (error) {
@@ -457,7 +457,7 @@ export const useOrganigramme = (isAdmin: boolean = false) => {
     }
   };
 
-  // Supprimer un poste vacant
+  // Supprimer une recherche de bénévoles
   const deleteVacantPosition = async (positionId: string) => {
     try {
       const { error } = await supabase
@@ -467,7 +467,7 @@ export const useOrganigramme = (isAdmin: boolean = false) => {
 
       if (error) throw error;
 
-      toast.success('Poste vacant supprimé avec succès');
+      toast.success('Recherche de bénévoles supprimée avec succès');
       await loadData(); // Recharger les données
     } catch (error) {
       if (import.meta.env.DEV) console.error('Erreur lors de la suppression:', error);

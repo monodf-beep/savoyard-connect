@@ -96,33 +96,33 @@ const Jobs = () => {
           <div className="flex items-center gap-3">
             <Briefcase className="w-8 h-8 text-primary" />
             <div>
-              <h1 className="text-3xl font-bold">Postes Vacants</h1>
+              <h1 className="text-3xl font-bold">Bénévolat</h1>
               <p className="text-muted-foreground">
-                {activeJobPostings.length} poste{activeJobPostings.length > 1 ? 's' : ''} disponible{activeJobPostings.length > 1 ? 's' : ''}
+                {activeJobPostings.length} opportunité{activeJobPostings.length > 1 ? 's' : ''} disponible{activeJobPostings.length > 1 ? 's' : ''}
               </p>
             </div>
             <TutorialDialog
-              title="Gérer les offres d'emploi"
-              description="Publiez et gérez les offres d'emploi externes de votre organisation."
+              title="Gérer le bénévolat"
+              description="Publiez et gérez les opportunités de bénévolat de votre organisation."
               benefits={[
-                "Centraliser toutes les offres d'emploi au même endroit",
-                "Rendre visibles les opportunités de recrutement",
+                "Centraliser toutes les opportunités de bénévolat au même endroit",
+                "Rendre visibles les besoins de l'association",
                 "Faciliter le processus de candidature avec des liens directs",
-                "Suivre les postes actifs et archivés",
-                "Attirer de nouveaux talents vers votre organisation"
+                "Suivre les missions actives et archivées",
+                "Attirer de nouveaux bénévoles vers votre organisation"
               ]}
               steps={[
                 {
                   title: "Activer le mode admin",
-                  description: "Cliquez sur le bouton 'Admin' pour activer les fonctionnalités de gestion des offres.",
-                  tips: ["Seuls les administrateurs peuvent créer et modifier les offres"]
+                  description: "Cliquez sur le bouton 'Admin' pour activer les fonctionnalités de gestion des opportunités.",
+                  tips: ["Seuls les administrateurs peuvent créer et modifier les opportunités"]
                 },
                 {
-                  title: "Créer une offre",
-                  description: "Cliquez sur 'Ajouter un poste' pour créer une nouvelle offre d'emploi. Renseignez tous les détails importants.",
+                  title: "Créer une opportunité",
+                  description: "Cliquez sur 'Ajouter une mission' pour créer une nouvelle opportunité de bénévolat. Renseignez tous les détails importants.",
                   tips: [
-                    "Soyez précis sur les compétences requises",
-                    "Indiquez clairement le type de contrat (CDI, CDD, Stage)"
+                    "Soyez précis sur les compétences souhaitées",
+                    "Indiquez clairement le type d'engagement et la disponibilité requise"
                   ]
                 },
                 {
@@ -132,8 +132,8 @@ const Jobs = () => {
                 },
                 {
                   title: "Publier ou désactiver",
-                  description: "Marquez l'offre comme active ou inactive selon vos besoins. Les offres inactives ne sont pas visibles publiquement.",
-                  tips: ["Désactivez les offres pourvues plutôt que de les supprimer"]
+                  description: "Marquez l'opportunité comme active ou inactive selon vos besoins. Les opportunités inactives ne sont pas visibles publiquement.",
+                  tips: ["Désactivez les missions pourvues plutôt que de les supprimer"]
                 }
               ]}
             />
@@ -150,7 +150,7 @@ const Jobs = () => {
                   </TooltipTrigger>
                   <TooltipContent className="max-w-xs">
                     <p className="font-semibold mb-1">Mode Admin activé</p>
-                    <p className="text-sm">• Cliquez sur "Ajouter un poste" pour créer une offre</p>
+                    <p className="text-sm">• Cliquez sur "Ajouter une mission" pour créer une opportunité</p>
                     <p className="text-sm">• Cliquez sur une carte pour modifier/supprimer</p>
                   </TooltipContent>
                 </Tooltip>
@@ -169,7 +169,7 @@ const Jobs = () => {
             {isAdmin && (
               <Button onClick={handleAddJobPosting}>
                 <Plus className="w-4 h-4 mr-2" />
-                Ajouter un poste
+                Ajouter une mission
               </Button>
             )}
           </div>
@@ -179,9 +179,9 @@ const Jobs = () => {
         {activeJobPostings.length === 0 ? (
           <div className="text-center py-12">
             <Briefcase className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-lg font-semibold mb-2">Aucun poste disponible</h3>
+            <h3 className="text-lg font-semibold mb-2">Aucune mission disponible</h3>
             <p className="text-muted-foreground">
-              Il n'y a actuellement aucun poste vacant.
+              Il n'y a actuellement aucune recherche de bénévoles.
             </p>
           </div>
         ) : (

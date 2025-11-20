@@ -101,7 +101,7 @@ export const JobPostingForm: React.FC<JobPostingFormProps> = ({
       <div className="bg-card rounded-lg border border-border w-full max-w-2xl max-h-[90vh] overflow-y-auto">
         <div className="sticky top-0 bg-card border-b border-border p-4 flex items-center justify-between">
           <h2 className="text-lg font-semibold">
-            {jobPosting ? 'Modifier le poste' : 'Ajouter un poste vacant'}
+            {jobPosting ? 'Modifier la mission' : 'Ajouter une mission de bénévolat'}
           </h2>
           <Button
             onClick={onClose}

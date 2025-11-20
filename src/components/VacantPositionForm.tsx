@@ -129,7 +129,7 @@ export const VacantPositionForm: React.FC<VacantPositionFormProps> = ({
             <div className="flex items-center gap-3">
               <UserPlus className="w-6 h-6 text-primary" />
               <h2 className="text-xl font-bold">
-                {position ? 'Modifier le poste vacant' : 'Nouveau poste vacant'}
+                {position ? 'Modifier la recherche' : 'Nouvelle recherche de bénévoles'}
               </h2>
             </div>
             <Button

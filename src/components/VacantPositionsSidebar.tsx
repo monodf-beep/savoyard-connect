@@ -64,7 +64,7 @@ export const VacantPositionsSidebar: React.FC<VacantPositionsSidebarProps> = ({
             <UserPlus className="w-6 h-6 text-primary" />
             <div>
               <h2 className="text-lg font-bold">
-                Postes Vacants
+                Recherche de bénévoles
               </h2>
               <p className="text-sm text-muted-foreground">
                 {positions.length} poste{positions.length > 1 ? 's' : ''} disponible{positions.length > 1 ? 's' : ''}
@@ -86,7 +86,7 @@ export const VacantPositionsSidebar: React.FC<VacantPositionsSidebarProps> = ({
           {positions.length === 0 ? (
             <div className="text-center text-muted-foreground py-8">
               <UserPlus className="w-12 h-12 mx-auto mb-4 opacity-50" />
-              <p>Aucun poste vacant pour le moment</p>
+              <p>Aucune recherche de bénévoles pour le moment</p>
             </div>
           ) : (
             <div className="space-y-4">
