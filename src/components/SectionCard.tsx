@@ -184,7 +184,7 @@ export const SectionCard: React.FC<SectionCardProps> = ({
               )}
 
               {/* Sous-sections */}
-              {section.subsections && section.subsections.length > 0 && (
+              {showSubsections && section.subsections && section.subsections.length > 0 && (
                 <div className="space-y-3 ml-4">
                   {section.subsections.map(subsection => (
                     <SectionCard
