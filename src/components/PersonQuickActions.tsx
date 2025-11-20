@@ -159,10 +159,11 @@ export const PersonQuickActions: React.FC<PersonQuickActionsProps> = ({
           <Button
             variant="ghost"
             size="sm"
-            className="h-8 w-8 p-0"
+            className="h-8 w-8 p-0 hover:bg-accent"
             onClick={(e) => e.stopPropagation()}
+            title="Actions rapides"
           >
-            <MoreVertical className="w-4 h-4" />
+            <MoreVertical className="w-5 h-5" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-56 bg-card z-50">

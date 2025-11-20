@@ -62,10 +62,10 @@ export const DraggablePersonCard: React.FC<DraggablePersonCardProps> = ({
         <div
           {...listeners}
           {...attributes}
-          className="absolute left-0 top-1/2 -translate-y-1/2 -ml-5 cursor-grab active:cursor-grabbing p-1 hover:bg-muted rounded-md transition-all opacity-0 group-hover/drag:opacity-100 z-10"
+          className="absolute left-0 top-1/2 -translate-y-1/2 -ml-6 cursor-grab active:cursor-grabbing p-1 hover:bg-muted rounded-md transition-all opacity-0 group-hover:opacity-100 z-10"
           title="Glisser pour déplacer vers une autre section"
         >
-          <GripVertical className="w-3 h-3 text-muted-foreground" />
+          <GripVertical className="w-4 h-4 text-muted-foreground" />
         </div>
       )}
       
