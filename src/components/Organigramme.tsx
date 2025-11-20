@@ -197,10 +197,11 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
     try {
       console.log('Tentative de dépliage de toutes les sections...');
       
-      // Utiliser gt au lieu de neq pour une requête plus sûre
+      // Ajouter une condition pour sélectionner toutes les lignes
       const { data, error } = await supabase
         .from('sections')
         .update({ is_expanded: true })
+        .not('id', 'is', null)
         .select();
 
       console.log('Résultat dépliage:', { data, error });
@@ -226,6 +227,7 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
       const { data, error } = await supabase
         .from('sections')
         .update({ is_expanded: false })
+        .not('id', 'is', null)
         .select();
 
       console.log('Résultat repliage:', { data, error });
