@@ -80,21 +80,21 @@ export const AdminOnboarding: React.FC<AdminOnboardingProps> = ({ open, onOpenCh
           </div>
           <div className="space-y-3 text-sm">
             <div className="flex items-start gap-3">
-              <Badge variant="secondary" className="mt-0.5">1</Badge>
+              <Badge variant="outline" className="mt-0.5 bg-primary/10 text-primary border-primary/30 font-bold">1</Badge>
               <div>
                 <div className="font-semibold">Cliquez sur "Ajouter une personne"</div>
                 <p className="text-muted-foreground text-xs">Dans le menu Organisation en haut à gauche</p>
               </div>
             </div>
             <div className="flex items-start gap-3">
-              <Badge variant="secondary" className="mt-0.5">2</Badge>
+              <Badge variant="outline" className="mt-0.5 bg-primary/10 text-primary border-primary/30 font-bold">2</Badge>
               <div>
                 <div className="font-semibold">Remplissez les informations</div>
                 <p className="text-muted-foreground text-xs">Nom, rôle, section, compétences, LinkedIn, etc.</p>
               </div>
             </div>
             <div className="flex items-start gap-3">
-              <Badge variant="secondary" className="mt-0.5">3</Badge>
+              <Badge variant="outline" className="mt-0.5 bg-primary/10 text-primary border-primary/30 font-bold">3</Badge>
               <div>
                 <div className="font-semibold">Utilisez l'import LinkedIn</div>
                 <p className="text-muted-foreground text-xs">Remplissage automatique depuis un profil public</p>
@@ -158,21 +158,21 @@ export const AdminOnboarding: React.FC<AdminOnboardingProps> = ({ open, onOpenCh
           </div>
           <div className="space-y-3 text-sm">
             <div className="flex items-start gap-3">
-              <Badge variant="secondary" className="mt-0.5">1</Badge>
+              <Badge variant="outline" className="mt-0.5 bg-primary/10 text-primary border-primary/30 font-bold">1</Badge>
               <div>
                 <div className="font-semibold">Créez des chaînes de processus</div>
                 <p className="text-muted-foreground text-xs">Définissez les étapes de vos workflows</p>
               </div>
             </div>
             <div className="flex items-start gap-3">
-              <Badge variant="secondary" className="mt-0.5">2</Badge>
+              <Badge variant="outline" className="mt-0.5 bg-primary/10 text-primary border-primary/30 font-bold">2</Badge>
               <div>
                 <div className="font-semibold">Assignez des acteurs</div>
                 <p className="text-muted-foreground text-xs">Personnes ou sections responsables de chaque segment</p>
               </div>
             </div>
             <div className="flex items-start gap-3">
-              <Badge variant="secondary" className="mt-0.5">3</Badge>
+              <Badge variant="outline" className="mt-0.5 bg-primary/10 text-primary border-primary/30 font-bold">3</Badge>
               <div>
                 <div className="font-semibold">Visualisation graphique</div>
                 <p className="text-muted-foreground text-xs">Vue esthétique avec flèches et connexions</p>
@@ -207,21 +207,21 @@ export const AdminOnboarding: React.FC<AdminOnboardingProps> = ({ open, onOpenCh
           </div>
           <div className="space-y-3 text-sm">
             <div className="flex items-start gap-3">
-              <Badge variant="secondary" className="mt-0.5">1</Badge>
+              <Badge variant="outline" className="mt-0.5 bg-primary/10 text-primary border-primary/30 font-bold">1</Badge>
               <div>
                 <div className="font-semibold">Créez des projets par section</div>
                 <p className="text-muted-foreground text-xs">Chaque projet est rattaché à une section</p>
               </div>
             </div>
             <div className="flex items-start gap-3">
-              <Badge variant="secondary" className="mt-0.5">2</Badge>
+              <Badge variant="outline" className="mt-0.5 bg-primary/10 text-primary border-primary/30 font-bold">2</Badge>
               <div>
                 <div className="font-semibold">Suivez l'avancement</div>
                 <p className="text-muted-foreground text-xs">Statut, dates, description, roadmap et documents</p>
               </div>
             </div>
             <div className="flex items-start gap-3">
-              <Badge variant="secondary" className="mt-0.5">3</Badge>
+              <Badge variant="outline" className="mt-0.5 bg-primary/10 text-primary border-primary/30 font-bold">3</Badge>
               <div>
                 <div className="font-semibold">Vue d'ensemble</div>
                 <p className="text-muted-foreground text-xs">Visualisez tous les projets en cours</p>
@@ -247,21 +247,21 @@ export const AdminOnboarding: React.FC<AdminOnboardingProps> = ({ open, onOpenCh
           </div>
           <div className="space-y-3 text-sm">
             <div className="flex items-start gap-3">
-              <Badge variant="secondary" className="mt-0.5">1</Badge>
+              <Badge variant="outline" className="mt-0.5 bg-primary/10 text-primary border-primary/30 font-bold">1</Badge>
               <div>
                 <div className="font-semibold">Créez des postes vacants</div>
                 <p className="text-muted-foreground text-xs">Définissez les postes recherchés par section</p>
               </div>
             </div>
             <div className="flex items-start gap-3">
-              <Badge variant="secondary" className="mt-0.5">2</Badge>
+              <Badge variant="outline" className="mt-0.5 bg-primary/10 text-primary border-primary/30 font-bold">2</Badge>
               <div>
                 <div className="font-semibold">Recevez des candidatures</div>
                 <p className="text-muted-foreground text-xs">Les candidats postulent directement via l'organigramme</p>
               </div>
             </div>
             <div className="flex items-start gap-3">
-              <Badge variant="secondary" className="mt-0.5">3</Badge>
+              <Badge variant="outline" className="mt-0.5 bg-primary/10 text-primary border-primary/30 font-bold">3</Badge>
               <div>
                 <div className="font-semibold">Publiez des offres détaillées</div>
                 <p className="text-muted-foreground text-xs">Page Jobs pour offres d'emploi complètes</p>

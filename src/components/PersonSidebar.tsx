@@ -47,7 +47,7 @@ const PersonSections: React.FC<{ personId: string }> = ({ personId }) => {
       </h3>
       <div className="flex flex-wrap gap-2">
         {personSections.map((section, index) => (
-          <Badge key={index} variant="secondary" className="text-xs">
+          <Badge key={index} variant="outline" className="text-xs bg-muted/50 border-border font-medium">
             {section.title}
             {section.role !== 'Membre' && ` (${section.role})`}
           </Badge>
@@ -177,7 +177,7 @@ export const PersonSidebar: React.FC<PersonSidebarProps> = ({
             </h3>
             <div className="flex flex-wrap gap-2">
               {person.competences.map((competence, index) => (
-                <Badge key={index} variant="secondary" className="text-xs">
+                <Badge key={index} variant="outline" className="text-xs bg-muted/50 border-border font-medium">
                   {competence}
                 </Badge>
               ))}

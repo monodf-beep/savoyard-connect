@@ -308,7 +308,7 @@ export const VolunteerImportManager: React.FC<VolunteerImportManagerProps> = ({ 
                       {volunteer.firstName} {volunteer.lastName}
                     </Label>
                     {volunteer.commissions && (
-                      <Badge variant="secondary">{volunteer.commissions}</Badge>
+                      <Badge variant="outline" className="bg-muted/50 border-border font-medium">{volunteer.commissions}</Badge>
                     )}
                   </div>
                   

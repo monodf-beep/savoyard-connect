@@ -239,8 +239,8 @@ export const ValueChainForm: React.FC<ValueChainFormProps> = ({
                               return (
                                 <Badge
                                   key={actorId}
-                                  variant="secondary"
-                                  className="flex items-center gap-1 pr-1"
+                                  variant="outline"
+                                  className="flex items-center gap-1 pr-1 bg-muted/50 border-border font-medium"
                                 >
                                   <Avatar className="h-4 w-4">
                                     <AvatarImage src={actor.photo} />

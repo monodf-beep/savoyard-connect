@@ -242,7 +242,7 @@ export const LinkedInImporter = ({ onProfileExtracted, currentData }: LinkedInIm
       return value.length > 0 ? (
         <div className="flex flex-wrap gap-1">
           {value.map((item, idx) => (
-            <Badge key={idx} variant="secondary" className="text-xs">
+            <Badge key={idx} variant="outline" className="text-xs bg-muted/50 border-border font-medium">
               {item}
             </Badge>
           ))}
