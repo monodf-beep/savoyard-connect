@@ -1,6 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import { Person, Section, VacantPosition } from '../types/organigramme';
 import { SectionCard } from './SectionCard';
+import { DraggableSectionCard } from './DraggableSectionCard';
 import { PersonSidebar } from './PersonSidebar';
 import { VacantPositionsSidebar } from './VacantPositionsSidebar';
 import { SectionDetailsSidebar } from './SectionDetailsSidebar';
@@ -19,6 +20,9 @@ import { supabase } from '../integrations/supabase/client';
 import { useAuth } from '../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import { DndContext, DragOverlay, closestCenter, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { useSectionDragDrop } from '../hooks/useSectionDragDrop';
+import { findSectionById } from '../utils/sectionUtils';
 
 interface OrganigrammeProps {
   isAdminMode?: boolean;
@@ -45,6 +49,27 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
   const [isControlsMenuOpen, setIsControlsMenuOpen] = useState(false);
   const [isImportOpen, setIsImportOpen] = useState(false);
   const [isNameCorrectionOpen, setIsNameCorrectionOpen] = useState(false);
+  
+  // Drag & Drop
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    })
+  );
+  
+  const {
+    activeId,
+    overId,
+    handleDragStart,
+    handleDragOver,
+    handleDragEnd,
+    handleDragCancel
+  } = useSectionDragDrop({
+    sections: data.sections,
+    onReorganize: refetch
+  });
 
   // Listen for custom events to open vacant positions sidebar
   React.useEffect(() => {
@@ -676,19 +701,50 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
           onEdit={handleEditPerson}
         />
       ) : viewMode === 'line' ? (
-        <div className="space-y-4">
-          {visibleSections.map(section => (
-            <SectionCard
-              key={section.id}
-              section={section}
-              onToggle={toggleSection}
-              onPersonClick={handlePersonClick}
-              isAdmin={isAdmin}
-              onEditPerson={handleEditPerson}
-              onEditVacantPosition={handleEditVacantPosition}
-            />
-          ))}
-        </div>
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragStart={handleDragStart}
+          onDragOver={handleDragOver}
+          onDragEnd={handleDragEnd}
+          onDragCancel={handleDragCancel}
+        >
+          <div className="space-y-4 relative pl-8">
+            {isAdmin && (
+              <div className="text-xs text-muted-foreground mb-2 -ml-8">
+                💡 Glissez-déposez les sections pour les réorganiser
+              </div>
+            )}
+            {visibleSections.map(section => (
+              <DraggableSectionCard
+                key={section.id}
+                section={section}
+                onToggle={toggleSection}
+                onPersonClick={handlePersonClick}
+                isAdmin={isAdmin}
+                onEditPerson={handleEditPerson}
+                onEditVacantPosition={handleEditVacantPosition}
+                isDragging={activeId === section.id}
+                isOver={overId === section.id}
+              />
+            ))}
+          </div>
+          <DragOverlay>
+            {activeId && (() => {
+              const section = findSectionById(data.sections, activeId);
+              return section ? (
+                <div className="opacity-80">
+                  <SectionCard
+                    section={section}
+                    onToggle={() => {}}
+                    onPersonClick={() => {}}
+                    isAdmin={isAdmin}
+                  />
+                </div>
+              ) : null;
+            })()}
+          </DragOverlay>
+        </DndContext>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {(() => {
