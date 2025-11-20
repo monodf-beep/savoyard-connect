@@ -2,12 +2,15 @@ import React, { useEffect } from 'react';
 import { Person } from '../types/organigramme';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { Badge } from './ui/badge';
-import { X, Linkedin, MapPin, Edit, Mail, Phone, Calendar, User, BookOpen, Briefcase, Star, Globe, Users } from 'lucide-react';
+import { X, Linkedin, MapPin, Edit, Mail, Phone, Calendar, User, BookOpen, Briefcase, Star, Globe, Users, Send } from 'lucide-react';
 import { Button } from './ui/button';
 import { useOrganigramme } from '../hooks/useOrganigramme';
 import { Sheet, SheetContent } from './ui/sheet';
 import { Drawer, DrawerContent, DrawerClose } from './ui/drawer';
 import { useIsMobile } from '../hooks/use-mobile';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
+import { z } from 'zod';
 
 // Composant pour afficher les sections d'une personne
 const PersonSections: React.FC<{ personId: string }> = ({ personId }) => {
@@ -75,6 +78,25 @@ export const PersonSidebar: React.FC<PersonSidebarProps> = ({
   const isMobile = useIsMobile();
 
   if (!person) return null;
+
+  const sendInvite = async () => {
+    const email = (person.email || '').trim();
+    const emailSchema = z.string().email();
+    if (!emailSchema.safeParse(email).success) {
+      toast.error('Email invalide');
+      return;
+    }
+    try {
+      const { error } = await supabase.functions.invoke('send-invite', {
+        body: { email, baseUrl: window.location.origin },
+      });
+      if (error) throw error;
+      toast.success("Invitation envoyée à " + email);
+    } catch (e) {
+      if (import.meta.env.DEV) console.error(e);
+      toast.error("Échec de l'envoi de l'invitation");
+    }
+  };
 
   // Contenu commun pour desktop et mobile
   const content = (
@@ -164,6 +186,21 @@ export const PersonSidebar: React.FC<PersonSidebarProps> = ({
                 <Linkedin className="w-4 h-4" />
                 Voir le profil LinkedIn
               </a>
+            </Button>
+          </div>
+        )}
+
+        {/* Invitation (Admin only) */}
+        {isAdmin && person.email && (
+          <div>
+            <Button
+              onClick={sendInvite}
+              variant="default"
+              size="sm"
+              className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold"
+            >
+              <Send className="w-4 h-4 mr-2" />
+              Inviter à compléter son profil
             </Button>
           </div>
         )}
