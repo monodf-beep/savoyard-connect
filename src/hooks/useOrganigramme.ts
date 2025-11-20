@@ -250,6 +250,37 @@ export const useOrganigramme = (isAdmin: boolean = false) => {
 
       if (error) throw error;
 
+      // Si une section est sélectionnée, assigner la personne à cette section
+      if (person.sectionId) {
+        if (import.meta.env.DEV) console.log('Assignment à la section:', person.sectionId);
+        
+        // Vérifier si l'entrée existe déjà
+        const { data: existingMembership } = await supabase
+          .from('section_members')
+          .select('id')
+          .eq('person_id', person.id)
+          .eq('section_id', person.sectionId)
+          .maybeSingle();
+
+        if (!existingMembership) {
+          // Créer l'entrée dans section_members
+          const { error: memberError } = await supabase
+            .from('section_members')
+            .insert({
+              person_id: person.id,
+              section_id: person.sectionId,
+              role: person.role || null
+            });
+
+          if (memberError) {
+            console.error('Erreur lors de l\'assignment à la section:', memberError);
+            toast.error('Personne sauvegardée mais erreur lors de l\'assignment à la section');
+          } else {
+            if (import.meta.env.DEV) console.log('Personne assignée à la section avec succès');
+          }
+        }
+      }
+
       if (import.meta.env.DEV) console.log('Personne sauvegardée:', savedPerson);
       toast.success('Personne sauvegardée avec succès');
       
