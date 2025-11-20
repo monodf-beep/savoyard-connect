@@ -88,10 +88,8 @@ serve(async (req: Request) => {
       </div>
     `;
 
-    // En mode test (sans domaine vérifié), Resend n'autorise l'envoi qu'à votre propre email
-    // et l'expéditeur doit être votre adresse email vérifiée
     const { error: emailError } = await resend.emails.send({
-      from: "monodf@hotmail.com",
+      from: "contact@langue-savoyarde.com",
       to: [email],
       subject: "Invitation à compléter votre profil",
       html,
