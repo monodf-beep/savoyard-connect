@@ -21,21 +21,21 @@ export const MemberCard: React.FC<MemberCardProps> = ({ person, sectionTitle, on
       onClick={onClick}
     >
       <div className="p-4 md:p-6 flex flex-col items-center text-center space-y-3 md:space-y-4">
-        {/* Photo - Plus petite sur mobile */}
-        <Avatar className="w-16 h-16 md:w-24 md:h-24 ring-4 ring-background shadow-md">
+        {/* Photo dominante - Grande taille pour mur de profils */}
+        <Avatar className="w-32 h-32 md:w-40 md:h-40 ring-4 ring-primary/20 shadow-lg">
           <AvatarImage src={person.photo} alt={`${person.firstName} ${person.lastName}`} />
-          <AvatarFallback className="bg-gradient-to-br from-primary/20 to-accent/20 text-foreground font-bold text-lg md:text-2xl">
+          <AvatarFallback className="bg-gradient-to-br from-primary/20 to-accent/20 text-foreground font-bold text-4xl md:text-5xl">
             {person.firstName.charAt(0)}{person.lastName?.charAt(0) || ''}
           </AvatarFallback>
         </Avatar>
 
         {/* Nom et titre */}
-        <div className="space-y-0.5 md:space-y-1 w-full">
-          <h3 className="font-bold text-sm md:text-lg truncate">
+        <div className="space-y-1 w-full">
+          <h3 className="font-bold text-base md:text-xl truncate">
             {person.firstName} {person.lastName}
           </h3>
           {person.role && (
-            <p className="text-xs md:text-sm text-muted-foreground truncate">{person.role}</p>
+            <p className="text-sm md:text-base text-muted-foreground truncate">{person.role}</p>
           )}
         </div>
 
