@@ -4,9 +4,9 @@ import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Textarea } from './ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { X, Plus, Trash2, ImageIcon } from 'lucide-react';
 import { Badge } from './ui/badge';
+import { Checkbox } from './ui/checkbox';
 import { ImageEditor } from './ImageEditor';
 import { LinkedInImporter } from './admin/LinkedInImporter';
 import { useOrganigramme } from '../hooks/useOrganigramme';
@@ -54,6 +54,10 @@ export const PersonForm: React.FC<PersonFormProps> = ({
     langues: person?.langues || [],
     hobbies: person?.hobbies || ''
   });
+  
+  const [selectedSectionIds, setSelectedSectionIds] = useState<string[]>(
+    person?.sectionId ? [person.sectionId] : []
+  );
 
   const [newMission, setNewMission] = useState('');
   const [newCompetence, setNewCompetence] = useState('');
@@ -88,6 +92,7 @@ export const PersonForm: React.FC<PersonFormProps> = ({
         langues: person.langues || [],
         hobbies: person.hobbies || ''
       });
+      setSelectedSectionIds(person.sectionId ? [person.sectionId] : []);
     } else {
       // Réinitialiser le formulaire pour une nouvelle personne
       setFormData({
@@ -113,6 +118,7 @@ export const PersonForm: React.FC<PersonFormProps> = ({
         langues: [],
         hobbies: ''
       });
+      setSelectedSectionIds([]);
     }
   }, [person]);
 
@@ -166,7 +172,8 @@ export const PersonForm: React.FC<PersonFormProps> = ({
       role: formData.role,
       description: formData.description,
       photo: formData.photo,
-      sectionId: formData.sectionId,
+      sectionId: selectedSectionIds[0] || '', // Pour compatibilité, on garde le premier
+      sectionIds: selectedSectionIds, // Nouveau champ pour les sections multiples
       adresse: formData.adresse,
       competences: formData.competences || [],
       dateEntree: formData.dateEntree,
@@ -314,22 +321,39 @@ export const PersonForm: React.FC<PersonFormProps> = ({
           </div>
 
           <div>
-            <Label htmlFor="section">Section</Label>
-            <Select 
-              value={formData.sectionId} 
-              onValueChange={(value) => setFormData(prev => ({ ...prev, sectionId: value }))}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Choisir une section..." />
-              </SelectTrigger>
-              <SelectContent>
-                {getAllSections().map((section) => (
-                  <SelectItem key={section.id} value={section.id}>
-                    {"  ".repeat(section.level)}{section.title}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Label>Sections {!person && '(sélection multiple possible)'}</Label>
+            <div className="border border-border rounded-lg p-3 max-h-48 overflow-y-auto space-y-2">
+              {getAllSections().map((section) => {
+                const isChecked = selectedSectionIds.includes(section.id);
+                return (
+                  <div key={section.id} className="flex items-center gap-2">
+                    <Checkbox
+                      id={`section-${section.id}`}
+                      checked={isChecked}
+                      onCheckedChange={(checked) => {
+                        setSelectedSectionIds(prev => 
+                          checked 
+                            ? [...prev, section.id]
+                            : prev.filter(id => id !== section.id)
+                        );
+                      }}
+                    />
+                    <Label 
+                      htmlFor={`section-${section.id}`}
+                      className="cursor-pointer flex-1 text-sm"
+                      style={{ paddingLeft: `${section.level * 12}px` }}
+                    >
+                      {section.title}
+                    </Label>
+                  </div>
+                );
+              })}
+            </div>
+            {selectedSectionIds.length > 0 && (
+              <p className="text-xs text-muted-foreground mt-2">
+                {selectedSectionIds.length} section{selectedSectionIds.length > 1 ? 's' : ''} sélectionnée{selectedSectionIds.length > 1 ? 's' : ''}
+              </p>
+            )}
           </div>
           {/* 3. À propos / Mission */}
           <div>
