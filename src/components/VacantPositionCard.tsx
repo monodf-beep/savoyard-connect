@@ -34,10 +34,10 @@ export const VacantPositionCard: React.FC<VacantPositionCardProps> = ({
   };
   if (compact) {
     return (
-      <div className="relative group">
-        <div className="inline-flex items-center gap-2 px-3 py-1.5 text-sm bg-gradient-to-r from-accent/20 to-primary/10 border border-dashed border-primary/40 rounded-md transition-all duration-200 hover:border-primary hover:shadow-sm hover:scale-[1.02] cursor-pointer h-[44px]" onClick={handleClick}>
-          <UserPlus className="w-4 h-4 text-primary/70" />
-          <span className="font-medium text-foreground/80 truncate whitespace-nowrap">
+      <div className="relative group w-full">
+        <div className="inline-flex items-center gap-2 px-3 py-2 text-sm bg-accent/10 border border-dashed border-primary/50 rounded-lg transition-all duration-200 hover:border-primary hover:bg-accent/20 hover:shadow-sm cursor-pointer h-[44px] w-full" onClick={handleClick}>
+          <UserPlus className="w-4 h-4 text-primary flex-shrink-0" />
+          <span className="font-medium text-foreground truncate whitespace-nowrap">
             {position.title}
           </span>
         </div>
@@ -60,23 +60,23 @@ export const VacantPositionCard: React.FC<VacantPositionCardProps> = ({
   }
 
   return (
-    <div className="relative group border-2 border-dashed border-primary/40 rounded-lg p-4 bg-gradient-to-br from-accent/10 to-primary/5 hover:border-primary hover:shadow-lg hover:shadow-primary/10 transition-all duration-300 cursor-pointer" onClick={handleClick}>
+    <div className="relative group border-2 border-dashed border-primary/50 rounded-lg p-4 bg-accent/10 hover:border-primary hover:bg-accent/20 hover:shadow-md transition-all duration-200 cursor-pointer" onClick={handleClick}>
       <div className="flex items-start gap-3">
-        <div className="p-2 rounded-full bg-primary/10 border border-primary/20">
-          <UserPlus className="w-4 h-4 text-primary" />
+        <div className="p-2 rounded-lg bg-primary/10 border border-primary/20">
+          <UserPlus className="w-5 h-5 text-primary" />
         </div>
         <div className="flex-1">
           <div className="flex items-center gap-2">
-            <h3 className="font-semibold text-sm text-foreground">{position.title}</h3>
+            <h3 className="font-semibold text-base text-foreground">{position.title}</h3>
             {position.externalLink && (
-              <ExternalLink className="w-3 h-3 text-primary/70" />
+              <ExternalLink className="w-4 h-4 text-primary" />
             )}
           </div>
           {position.description && (
-            <p className="text-xs text-muted-foreground mt-1">{position.description}</p>
+            <p className="text-sm text-muted-foreground mt-1.5 line-clamp-2">{position.description}</p>
           )}
-          <span className="inline-flex items-center gap-1 text-xs text-primary/70 mt-2 font-medium">
-            <div className="w-1.5 h-1.5 rounded-full bg-primary/50"></div>
+          <span className="inline-flex items-center gap-1.5 text-sm text-primary font-medium mt-2 bg-primary/10 px-2 py-1 rounded-full">
+            <div className="w-1.5 h-1.5 rounded-full bg-primary"></div>
             {position.externalLink ? 'Postuler en ligne' : 'Poste vacant'}
           </span>
         </div>

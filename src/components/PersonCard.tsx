@@ -71,12 +71,12 @@ export const PersonCard: React.FC<PersonCardProps> = ({
 
   if (compact) {
     const compactClass = isBureau 
-      ? "inline-flex items-center gap-3 px-4 py-2 text-base bg-card hover:bg-accent/50 border border-border rounded-lg transition-colors h-[44px] w-full"
-      : "inline-flex items-center gap-2 px-3 py-1.5 text-sm bg-card hover:bg-accent/50 border border-border rounded-md transition-colors h-[44px] w-full";
+      ? "inline-flex items-center gap-3 px-4 py-2.5 text-base bg-card hover:bg-muted/50 border border-border rounded-lg transition-all h-[48px] w-full shadow-sm"
+      : "inline-flex items-center gap-2 px-3 py-2 text-sm bg-card hover:bg-muted/50 border border-border rounded-lg transition-all h-[44px] w-full shadow-sm";
     
-    const avatarClass = isBureau ? "w-8 h-8" : "w-6 h-6";
-    const textClass = isBureau ? "font-semibold" : "font-medium";
-    const iconClass = isBureau ? "w-4 h-4" : "w-3 h-3";
+    const avatarClass = isBureau ? "w-8 h-8" : "w-7 h-7";
+    const textClass = isBureau ? "font-semibold text-base" : "font-medium text-sm";
+    const iconClass = isBureau ? "w-4 h-4" : "w-3.5 h-3.5";
     
     return (
       <div className="relative group w-full">
@@ -92,11 +92,11 @@ export const PersonCard: React.FC<PersonCardProps> = ({
                 className="object-cover object-center w-full h-full"
                 style={{ imageRendering: 'auto' }}
               />
-              <AvatarFallback className="text-xs bg-primary/10">
+              <AvatarFallback className="text-xs bg-primary/10 text-primary font-semibold">
                 {person.firstName.charAt(0)}
               </AvatarFallback>
             </Avatar>
-            <div className="flex items-center gap-1 flex-1 min-w-0">
+            <div className="flex items-center gap-1.5 flex-1 min-w-0">
               <span className={`${textClass} truncate whitespace-nowrap`}>
                 {person.firstName} {person.lastName}
               </span>
@@ -135,16 +135,16 @@ export const PersonCard: React.FC<PersonCardProps> = ({
   }
 
   return (
-    <div className="person-card group" onClick={handleClick}>
+    <div className="person-card group bg-card border border-border rounded-lg shadow-sm" onClick={handleClick}>
       <div className="flex items-center gap-3">
-        <Avatar className="person-avatar w-10 h-10">
+        <Avatar className="person-avatar w-12 h-12">
           <AvatarImage 
-            src={person.photo} 
+            src={person.photo}
             alt={`${person.firstName} ${person.lastName}`}
             className="object-cover object-center w-full h-full"
             style={{ imageRendering: 'auto' }}
           />
-          <AvatarFallback className="bg-primary/10 text-foreground font-semibold text-sm">
+          <AvatarFallback className="bg-primary/10 text-primary font-semibold text-base">
             {person.firstName.charAt(0)}{person.lastName?.charAt(0) || ''}
           </AvatarFallback>
         </Avatar>
