@@ -781,7 +781,7 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
             )}
             {visibleSections.map(section => (
               <DraggableSectionCard
-                key={section.id}
+                key={`${section.id}-${section.leader?.id || 'no-leader'}`}
                 section={section}
                 onToggle={toggleSection}
                 onPersonClick={handlePersonClick}

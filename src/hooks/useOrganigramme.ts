@@ -14,11 +14,11 @@ export const useOrganigramme = (isAdmin: boolean = false) => {
   // Charger les données depuis Supabase
   const loadData = async () => {
     try {
-      if (import.meta.env.DEV) console.log('Début du chargement des données...');
+      console.log('🔄 Début du chargement des données...');
       setLoading(true);
       
       // Charger les sections
-      if (import.meta.env.DEV) console.log('Chargement des sections...');
+      console.log('📂 Chargement des sections...');
       const { data: sectionsData, error: sectionsError } = await supabase
         .from('sections')
         .select('*')
@@ -26,11 +26,18 @@ export const useOrganigramme = (isAdmin: boolean = false) => {
         .order('created_at', { ascending: true });
       
       if (sectionsError) {
-        if (import.meta.env.DEV) console.error('Sections load error:', sectionsError);
+        console.error('❌ Sections load error:', sectionsError);
         toast.error('Erreur lors du chargement des sections');
         setLoading(false);
         return;
       }
+
+      console.log(`✅ ${sectionsData?.length || 0} sections chargées, avec leaders:`, 
+        sectionsData?.filter(s => s.leader_id).map(s => ({ 
+          title: s.title, 
+          leader_id: s.leader_id 
+        }))
+      );
 
       // Charger les personnes - utilisez les fonctions sécurisées
       let peopleData: any[] = [];

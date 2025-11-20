@@ -138,18 +138,39 @@ export const PersonQuickActions: React.FC<PersonQuickActionsProps> = ({
 
   const handleSetAsLeader = async () => {
     try {
-      const { error } = await supabase
+      console.log(`Définition de ${person.firstName} ${person.lastName} comme responsable de la section ${currentSectionId}`);
+      
+      // D'abord, récupérer l'ancien responsable s'il existe
+      const { data: sectionData } = await supabase
+        .from('sections')
+        .select('leader_id, title')
+        .eq('id', currentSectionId)
+        .maybeSingle();
+
+      const oldLeaderId = sectionData?.leader_id;
+      console.log('Ancien leader_id:', oldLeaderId, 'Nouveau:', person.id);
+
+      // Mettre à jour le responsable
+      const { error, data: updatedData } = await supabase
         .from('sections')
         .update({ leader_id: person.id })
-        .eq('id', currentSectionId);
+        .eq('id', currentSectionId)
+        .select();
+
+      console.log('Résultat update:', { error, updatedData });
 
       if (error) throw error;
 
-      toast.success(`${person.firstName} défini(e) comme responsable de ${currentSectionTitle}`);
-      onUpdate();
-    } catch (error) {
-      console.error('Erreur:', error);
-      toast.error('Erreur lors de la définition du responsable');
+      toast.success(`${person.firstName} ${person.lastName} est maintenant responsable de ${currentSectionTitle}`);
+      
+      // Forcer un rechargement complet des données après un court délai
+      setTimeout(() => {
+        console.log('Rafraîchissement des données...');
+        onUpdate();
+      }, 300);
+    } catch (error: any) {
+      console.error('Erreur lors de la définition du responsable:', error);
+      toast.error(`Erreur: ${error.message || 'Impossible de définir le responsable'}`);
     }
   };
 
