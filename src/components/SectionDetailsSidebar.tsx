@@ -1,7 +1,7 @@
 import React from 'react';
 import { Section, Person } from '../types/organigramme';
 import { PersonCard } from './PersonCard';
-import { X, Users, FolderTree, Briefcase, ChevronRight } from 'lucide-react';
+import { X, Users, FolderTree, Briefcase, ChevronRight, Star } from 'lucide-react';
 import { Button } from './ui/button';
 import { ScrollArea } from './ui/scroll-area';
 import { supabase } from '@/integrations/supabase/client';
@@ -197,12 +197,15 @@ export const SectionDetailsSidebar: React.FC<SectionDetailsSidebarProps> = ({
         <div className="p-6 border-b border-border">
           <div className="flex items-start justify-between">
             <div className="flex-1">
-              <h2 className="text-2xl font-bold mb-1">{section.title}</h2>
-              {section.leader && (
-                <p className="text-sm text-muted-foreground">
-                  Responsable : {section.leader.firstName} {section.leader.lastName}
-                </p>
-              )}
+              <div className="flex items-center gap-2 mb-1">
+                <h2 className="text-2xl font-bold">{section.title}</h2>
+                {section.leader && (
+                  <span className="text-xs text-primary font-medium flex items-center gap-1 bg-primary/10 px-2 py-0.5 rounded-full border border-primary/20">
+                    <Star className="w-3 h-3 fill-primary" />
+                    {section.leader.firstName} {section.leader.lastName}
+                  </span>
+                )}
+              </div>
             </div>
             <Button
               variant="ghost"
@@ -268,16 +271,19 @@ export const SectionDetailsSidebar: React.FC<SectionDetailsSidebarProps> = ({
                         className="p-3 border border-border rounded-lg hover:bg-accent/20 transition-colors cursor-pointer"
                       >
                         <div className="flex items-center justify-between mb-2">
-                          <h4 className="font-medium text-sm">{subsection.title}</h4>
+                          <div className="flex items-center gap-2">
+                            <h4 className="font-medium text-sm">{subsection.title}</h4>
+                            {subsection.leader && (
+                              <span className="text-xs text-primary font-medium flex items-center gap-1 bg-primary/10 px-1.5 py-0.5 rounded-full border border-primary/20">
+                                <Star className="w-2.5 h-2.5 fill-primary" />
+                                {subsection.leader.firstName} {subsection.leader.lastName}
+                              </span>
+                            )}
+                          </div>
                           <span className="text-xs text-muted-foreground">
                             {subsectionMembers.length} membre{subsectionMembers.length > 1 ? 's' : ''}
                           </span>
                         </div>
-                        {subsection.leader && (
-                          <p className="text-xs text-muted-foreground">
-                            Responsable : {subsection.leader.firstName} {subsection.leader.lastName}
-                          </p>
-                        )}
                       </div>
                     );
                   })}
