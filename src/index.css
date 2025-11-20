@@ -2,96 +2,66 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Design system pour l'organigramme Institut de la Langue Savoyarde 
-Couleurs inspirées de l'identité savoyarde avec des touches modernes
-*/
-
 @layer base {
   :root {
     --background: 0 0% 98%;
-    --foreground: 215 25% 20%;
+    --foreground: 215 25% 25%;
 
     --card: 0 0% 100%;
-    --card-foreground: 215 25% 20%;
+    --card-foreground: 215 25% 25%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 215 25% 20%;
+    --popover-foreground: 215 25% 25%;
 
     --primary: 210 70% 50%;
-    --primary-foreground: 0 0% 98%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 210 15% 92%;
-    --secondary-foreground: 215 25% 25%;
+    --secondary: 210 20% 95%;
+    --secondary-foreground: 215 25% 30%;
 
-    --muted: 210 15% 95%;
-    --muted-foreground: 215 15% 50%;
+    --muted: 210 20% 96%;
+    --muted-foreground: 215 15% 45%;
 
-    --accent: 190 80% 55%;
-    --accent-foreground: 0 0% 98%;
+    --accent: 210 70% 50%;
+    --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 98%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 215 13% 88%;
-    --input: 215 13% 88%;
+    --border: 215 15% 90%;
+    --input: 215 15% 90%;
     --ring: 210 70% 50%;
 
-    --radius: 0.75rem;
+    --radius: 0.5rem;
 
-    /* Palette moderne et professionnelle */
+    /* Palette complémentaire */
     --ocean-blue: 210 70% 50%;
     --forest-green: 160 60% 45%;
     --slate-blue: 220 40% 60%;
     --emerald: 140 65% 50%;
-    
-    /* Gradients modernes */
-    --gradient-primary: linear-gradient(135deg, hsl(var(--ocean-blue)), hsl(var(--slate-blue)));
-    --gradient-bureau: linear-gradient(135deg, hsl(var(--ocean-blue) / 0.1), hsl(var(--ocean-blue) / 0.05));
-    --gradient-conseil: linear-gradient(135deg, hsl(var(--slate-blue) / 0.1), hsl(var(--slate-blue) / 0.05));
-    --gradient-commission: linear-gradient(135deg, hsl(var(--forest-green) / 0.1), hsl(var(--forest-green) / 0.05));
-    --gradient-groupe: linear-gradient(135deg, hsl(var(--emerald) / 0.1), hsl(var(--emerald) / 0.05));
 
-    /* Animations et transitions */
-    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    --transition-bounce: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-    
-    /* Ombres élégantes */
-    --shadow-soft: 0 2px 10px hsl(215 25% 20% / 0.08);
-    --shadow-medium: 0 4px 20px hsl(215 25% 20% / 0.12);
-    --shadow-strong: 0 8px 30px hsl(215 25% 20% / 0.16);
-    --shadow-person: 0 0 0 3px hsl(var(--primary) / 0.2);
-
-    --radius: 0.75rem;
-
-    --sidebar-background: 0 0% 98%;
-
-    --sidebar-foreground: 240 5.3% 26.1%;
-
-    --sidebar-primary: 240 5.9% 10%;
-
-    --sidebar-primary-foreground: 0 0% 98%;
-
-    --sidebar-accent: 240 4.8% 95.9%;
-
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 215 25% 25%;
+    --sidebar-primary: 210 70% 50%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 210 20% 96%;
+    --sidebar-accent-foreground: 215 25% 30%;
+    --sidebar-border: 215 15% 90%;
+    --sidebar-ring: 210 70% 50%;
   }
 
   .dark {
     --background: 222.2 84% 4.9%;
     --foreground: 210 40% 98%;
 
-    --card: 222.2 84% 4.9%;
+    --card: 222.2 47% 11%;
     --card-foreground: 210 40% 98%;
 
-    --popover: 222.2 84% 4.9%;
+    --popover: 222.2 47% 11%;
     --popover-foreground: 210 40% 98%;
 
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    --primary: 210 70% 55%;
+    --primary-foreground: 0 0% 100%;
 
     --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
@@ -108,14 +78,15 @@ Couleurs inspirées de l'identité savoyarde avec des touches modernes
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
     --ring: 212.7 26.8% 83.9%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
+    
+    --sidebar-background: 222.2 47% 11%;
+    --sidebar-foreground: 210 40% 98%;
+    --sidebar-primary: 210 70% 55%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-accent: 217.2 32.6% 17.5%;
+    --sidebar-accent-foreground: 210 40% 98%;
+    --sidebar-border: 217.2 32.6% 17.5%;
+    --sidebar-ring: 210 70% 55%;
   }
 }
 
@@ -130,58 +101,47 @@ Couleurs inspirées de l'identité savoyarde avec des touches modernes
 }
 
 @layer components {
-  /* Styles pour l'organigramme épuré */
-  .organigramme-container {
-    @apply transition-all duration-300 ease-in-out;
-  }
-
+  /* En-têtes de sections */
   .section-header {
-    @apply relative overflow-hidden rounded-lg p-4 transition-all duration-200 cursor-pointer;
-    background: var(--gradient-bureau);
-    border: 1px solid hsl(var(--border));
+    @apply px-4 py-3 rounded-lg transition-all duration-200 border bg-card;
+    border-color: hsl(var(--border));
   }
 
   .section-header:hover {
-    transform: translateY(-1px);
-    border-color: hsl(var(--primary) / 0.3);
+    @apply border-primary/30 bg-muted/50;
   }
 
   .section-header.bureau {
-    background: var(--gradient-bureau);
-    border-left: 3px solid hsl(var(--ocean-blue));
+    @apply border-l-4 border-l-primary;
   }
 
   .section-header.conseil {
-    background: var(--gradient-conseil);
-    border-left: 3px solid hsl(var(--slate-blue));
+    @apply border-l-4 border-l-slate-blue;
   }
 
   .section-header.commission {
-    background: var(--gradient-commission);
-    border-left: 3px solid hsl(var(--forest-green));
+    @apply border-l-4 border-l-forest-green;
   }
 
   .section-header.groupe {
-    background: var(--gradient-groupe);
-    border-left: 3px solid hsl(var(--emerald));
+    @apply border-l-4 border-l-emerald;
   }
 
+  /* Cartes de personnes */
   .person-card {
-    @apply relative p-2 rounded-md bg-card transition-all duration-200 cursor-pointer;
-    border: 1px solid hsl(var(--border));
+    @apply relative p-3 rounded-lg bg-card border border-border transition-all duration-200 cursor-pointer;
   }
 
   .person-card:hover {
-    border-color: hsl(var(--primary) / 0.4);
-    background: hsl(var(--accent) / 0.1);
+    @apply border-primary/40 shadow-sm bg-muted/30;
   }
 
   .person-avatar {
-    @apply w-10 h-10 rounded-full border border-primary/20 transition-all duration-200;
+    @apply w-10 h-10 rounded-full border-2 border-primary/10 transition-all duration-200;
   }
 
   .person-avatar:hover {
-    border-color: hsl(var(--primary) / 0.6);
+    @apply border-primary/30;
   }
 
   .admin-controls {
@@ -192,14 +152,14 @@ Couleurs inspirées de l'identité savoyarde avec des touches modernes
     @apply opacity-100;
   }
 
+  /* Modals */
   .modal-overlay {
     @apply fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4;
     backdrop-filter: blur(4px);
   }
 
   .modal-content {
-    @apply bg-card rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto;
-    box-shadow: 0 20px 40px hsl(220 15% 15% / 0.2);
+    @apply bg-card rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl;
     animation: modalSlideIn 0.3s ease-out;
   }
 
@@ -213,31 +173,15 @@ Couleurs inspirées de l'identité savoyarde avec des touches modernes
       transform: scale(1) translateY(0);
     }
   }
-
-  .expand-collapse-btn {
-    @apply px-3 py-1.5 rounded-md font-medium transition-all duration-200 text-sm;
-    background: var(--gradient-primary);
-    color: hsl(var(--primary-foreground));
-  }
-
-  .expand-collapse-btn:hover {
-    transform: translateY(-1px);
-  }
 }
 
 /* Flash highlight animation */
 @keyframes flash-highlight {
   0% { 
-    background-color: hsla(var(--primary), 0.2);
-  }
-  25% { 
-    background-color: hsla(var(--primary), 0.35);
+    background-color: hsl(var(--primary) / 0.15);
   }
   50% { 
-    background-color: hsla(var(--primary), 0.4);
-  }
-  75% { 
-    background-color: hsla(var(--primary), 0.25);
+    background-color: hsl(var(--primary) / 0.3);
   }
   100% { 
     background-color: transparent;
@@ -245,15 +189,6 @@ Couleurs inspirées de l'identité savoyarde avec des touches modernes
 }
 
 .flash-highlight {
-  animation: flash-highlight 2.5s ease-out;
-  border-radius: 12px;
-  position: relative;
-  z-index: 1;
-}
-
-.flash-highlight .section-header,
-.flash-highlight .person-card,
-.flash-highlight .vacant-position-card {
-  position: relative;
-  z-index: 2;
+  animation: flash-highlight 2s ease-out;
+  border-radius: 0.75rem;
 }

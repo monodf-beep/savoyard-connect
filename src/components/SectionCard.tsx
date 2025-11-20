@@ -108,28 +108,28 @@ export const SectionCard: React.FC<SectionCardProps> = ({
         
         <div className="mb-6" id={`section-${section.id}`}>
           <div 
-            className={`section-header ${section.type} ${hasContent ? 'cursor-pointer' : 'cursor-default'} group`}
+            className={`section-header ${section.type} ${hasContent ? 'cursor-pointer' : 'cursor-default'} group hover:shadow-sm`}
             onClick={hasContent ? handleToggle : undefined}
           >
             <div className="flex items-center gap-3">
               {(section.subsections && section.subsections.length > 0) ? (
-                section.isExpanded ? <ChevronDown className="w-5 h-5" /> : <ChevronRight className="w-5 h-5" />
+                section.isExpanded ? <ChevronDown className="w-5 h-5 text-muted-foreground" /> : <ChevronRight className="w-5 h-5 text-muted-foreground" />
               ) : (
-                <Users className="w-5 h-5" />
+                <Users className="w-5 h-5 text-muted-foreground" />
               )}
               <div className="flex-1">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <div>
-                      <h3 className="font-semibold text-lg">{section.title}</h3>
+                      <h3 className="font-semibold text-lg text-foreground">{section.title}</h3>
                       {section.leader && (
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-sm text-muted-foreground mt-0.5">
                           Responsable : {section.leader.firstName} {section.leader.lastName}
                         </p>
                       )}
                     </div>
                   </div>
-                  <span className="text-sm text-muted-foreground ml-4">
+                  <span className="text-sm font-medium text-muted-foreground ml-4 bg-muted/50 px-3 py-1 rounded-full">
                     {totalMemberCount} membre{totalMemberCount > 1 ? 's' : ''}
                   </span>
                 </div>
@@ -230,17 +230,17 @@ export const SectionCard: React.FC<SectionCardProps> = ({
       
       <div className="mb-3" style={{ marginLeft: `${marginLeft}px` }} id={`section-${section.id}`}>
         <div 
-          className="flex items-center justify-between p-3 border border-border rounded-lg hover:bg-accent/20 transition-colors cursor-pointer group"
+          className="flex items-center justify-between p-3 border border-border rounded-lg hover:bg-muted/30 hover:border-primary/30 transition-all cursor-pointer group shadow-sm"
           onClick={handleToggle}
         >
-          <div className="flex items-center gap-2">
-            {section.isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
-            <h4 className="font-medium text-sm">{section.title}</h4>
+          <div className="flex items-center gap-2.5">
+            {section.isExpanded ? <ChevronDown className="w-4 h-4 text-muted-foreground" /> : <ChevronRight className="w-4 h-4 text-muted-foreground" />}
+            <h4 className="font-medium text-sm text-foreground">{section.title}</h4>
             {section.leader && (
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <span className="text-xs text-primary font-medium flex items-center gap-1">
+                    <span className="text-xs text-primary font-medium flex items-center gap-1 bg-primary/10 px-2 py-0.5 rounded-full">
                       <Sparkles className="w-3 h-3" />
                       {section.leader.firstName} {section.leader.lastName}
                     </span>
@@ -252,7 +252,7 @@ export const SectionCard: React.FC<SectionCardProps> = ({
               </TooltipProvider>
             )}
           </div>
-          <span className="text-xs text-muted-foreground">
+          <span className="text-xs font-medium text-muted-foreground bg-muted/50 px-2 py-1 rounded-full">
             {totalMemberCount}
           </span>
         </div>
