@@ -14,6 +14,7 @@ import {
   PlusSquare,
   Upload,
   Settings,
+  CheckCircle2,
 } from 'lucide-react';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
@@ -35,6 +36,7 @@ interface NavbarProps {
   onAddSection?: () => void;
   onAddVacantPosition?: () => void;
   onImport?: () => void;
+  onNameCorrection?: () => void;
 }
 
 export const Navbar = ({ 
@@ -43,7 +45,8 @@ export const Navbar = ({
   onAddPerson,
   onAddSection,
   onAddVacantPosition,
-  onImport
+  onImport,
+  onNameCorrection
 }: NavbarProps) => {
   const location = useLocation();
   const { user, isAdmin, signOut } = useAuth();
@@ -153,6 +156,20 @@ export const Navbar = ({
                               </div>
                               <p className="line-clamp-2 text-sm leading-snug text-muted-foreground group-hover:text-accent-foreground/80 transition-colors">
                                 Importer en masse depuis LinkedIn ou autres sources
+                              </p>
+                            </button>
+                          </li>
+                          <li>
+                            <button
+                              onClick={onNameCorrection}
+                              className="w-full block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground text-left group"
+                            >
+                              <div className="flex items-center gap-2 text-sm font-medium leading-none">
+                                <CheckCircle2 className="h-4 w-4" />
+                                Vérifier noms
+                              </div>
+                              <p className="line-clamp-2 text-sm leading-snug text-muted-foreground group-hover:text-accent-foreground/80 transition-colors">
+                                Corriger les noms mal orthographiés dans la base de données
                               </p>
                             </button>
                           </li>
