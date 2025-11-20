@@ -87,7 +87,30 @@ export const DraggableSectionCard: React.FC<DraggableSectionCardProps> = ({
         allSections={allSections}
         onUpdate={onUpdate}
         isPersonDragOver={isPersonDragOver}
+        showSubsections={false}
       />
+      
+      {section.subsections && section.isExpanded && (
+        <div className="ml-6 space-y-2">
+          {section.subsections.map((subsection) => (
+            <DraggableSectionCard
+              key={subsection.id}
+              section={subsection}
+              onToggle={onToggle}
+              onPersonClick={onPersonClick}
+              isAdmin={isAdmin}
+              onEditPerson={onEditPerson}
+              onEditVacantPosition={onEditVacantPosition}
+              level={level + 1}
+              allSections={allSections}
+              onUpdate={onUpdate}
+              isDragging={isDragging}
+              isOver={isOver}
+              isPersonDragOver={isPersonDragOver}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 };
