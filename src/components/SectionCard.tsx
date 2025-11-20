@@ -26,6 +26,7 @@ interface SectionCardProps {
   allSections?: Section[];
   onUpdate?: () => void;
   isPersonDragOver?: boolean;
+  showSubsections?: boolean;
 }
 
 export const SectionCard: React.FC<SectionCardProps> = ({ 
@@ -38,7 +39,8 @@ export const SectionCard: React.FC<SectionCardProps> = ({
   level = 0,
   allSections = [],
   onUpdate,
-  isPersonDragOver = false
+  isPersonDragOver = false,
+  showSubsections = true
 }) => {
   const [showApplicationForm, setShowApplicationForm] = React.useState(false);
   const [showReassuranceDialog, setShowReassuranceDialog] = React.useState(false);
@@ -288,7 +290,7 @@ export const SectionCard: React.FC<SectionCardProps> = ({
               </div>
             )}
 
-            {section.subsections && section.subsections.length > 0 && (
+            {showSubsections && section.subsections && section.subsections.length > 0 && (
               <div className="space-y-2">
                 {section.subsections.map(subsection => (
                   <SectionCard
@@ -300,6 +302,9 @@ export const SectionCard: React.FC<SectionCardProps> = ({
                     onEditPerson={onEditPerson}
                     onEditVacantPosition={onEditVacantPosition}
                     level={level + 1}
+                    allSections={allSections}
+                    onUpdate={onUpdate}
+                    showSubsections={showSubsections}
                   />
                 ))}
               </div>
