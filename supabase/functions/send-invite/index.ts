@@ -98,8 +98,11 @@ serve(async (req: Request) => {
     });
 
     if (emailError) {
-      if (Deno.env.get("DENO_ENV") !== "production") console.error("Resend error:", emailError);
-      return new Response(JSON.stringify({ error: "Erreur d'envoi de l'email" }), {
+      console.error("Resend error:", emailError);
+      return new Response(JSON.stringify({ 
+        error: "Erreur d'envoi de l'email", 
+        details: emailError.message || "Vérifiez que votre domaine est configuré dans Resend"
+      }), {
         status: 500,
         headers: { "Content-Type": "application/json", ...corsHeaders },
       });
