@@ -35,7 +35,10 @@ export const VacantPositionCard: React.FC<VacantPositionCardProps> = ({
   if (compact) {
     return (
       <div className="relative group w-full">
-        <div className="inline-flex items-center gap-2 px-3 py-2 text-sm bg-accent/10 border border-dashed border-primary/50 rounded-lg transition-all duration-200 hover:border-primary hover:bg-accent/20 hover:shadow-sm cursor-pointer h-[44px] w-full" onClick={handleClick}>
+        <div 
+          className="inline-flex items-center gap-2 px-3 py-2 text-sm bg-card hover:bg-muted/50 border border-dashed border-primary/50 rounded-lg transition-all h-[44px] w-full shadow-sm cursor-pointer" 
+          onClick={handleClick}
+        >
           <UserPlus className="w-4 h-4 text-primary flex-shrink-0" />
           <span className="font-medium text-foreground truncate whitespace-nowrap">
             {position.title}
