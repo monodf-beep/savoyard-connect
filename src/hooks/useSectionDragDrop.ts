@@ -46,12 +46,35 @@ export const useSectionDragDrop = ({ sections, onReorganize }: UseSectionDragDro
     }
 
     try {
+      // Déterminer le nouveau parent:
+      // Si on drop sur une section de même niveau (sibling du parent actuel),
+      // utiliser le parent de la cible pour mettre au même niveau
+      // Sinon, la cible devient le nouveau parent (sous-section)
+      
+      const draggedParentId = draggedSection.parentId || null;
+      const targetParentId = targetSection.parentId || null;
+      
+      let newParentId: string | null;
+      let newDisplayOrder: number;
+      
+      // Si la cible a le même parent que la section déplacée, on reste au même niveau
+      if (targetParentId === draggedParentId) {
+        newParentId = targetParentId;
+        // Calculer l'ordre d'affichage au même niveau
+        const siblings = sections.filter(s => (s.parentId || null) === newParentId);
+        newDisplayOrder = siblings.length;
+      } else {
+        // Sinon, la section devient une sous-section de la cible
+        newParentId = targetSection.id;
+        newDisplayOrder = (targetSection.subsections?.length || 0);
+      }
+
       // Mettre à jour la section déplacée
       const { error } = await supabase
         .from('sections')
         .update({
-          parent_id: targetSection.id,
-          display_order: (targetSection.subsections?.length || 0)
+          parent_id: newParentId,
+          display_order: newDisplayOrder
         })
         .eq('id', draggedSectionId);
 
