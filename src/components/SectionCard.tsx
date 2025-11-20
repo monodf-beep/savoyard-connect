@@ -6,7 +6,7 @@ import { VacantPositionCard } from './VacantPositionCard';
 import { OpenPositionCard } from './OpenPositionCard';
 import { SpontaneousApplicationForm } from './SpontaneousApplicationForm';
 import { SectionReassuranceDialog } from './SectionReassuranceDialog';
-import { ChevronDown, ChevronRight, Users, Sparkles } from 'lucide-react';
+import { ChevronDown, ChevronRight, Users, Star } from 'lucide-react';
 import { useDroppable } from '@dnd-kit/core';
 import {
   Tooltip,
@@ -120,14 +120,22 @@ export const SectionCard: React.FC<SectionCardProps> = ({
               <div className="flex-1">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <div>
-                      <h3 className="font-semibold text-lg text-foreground">{section.title}</h3>
-                      {section.leader && (
-                        <p className="text-sm text-muted-foreground mt-0.5">
-                          Responsable : {section.leader.firstName} {section.leader.lastName}
-                        </p>
-                      )}
-                    </div>
+                    <h3 className="font-semibold text-lg text-foreground">{section.title}</h3>
+                    {section.leader && (
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span className="text-xs text-primary font-medium flex items-center gap-1 bg-primary/10 px-2 py-0.5 rounded-full border border-primary/20">
+                              <Star className="w-3 h-3 fill-primary" />
+                              {section.leader.firstName} {section.leader.lastName}
+                            </span>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Responsable de la section</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    )}
                   </div>
                   <span className="text-sm font-medium text-muted-foreground ml-4 bg-muted/50 px-3 py-1 rounded-full">
                     {totalMemberCount} membre{totalMemberCount > 1 ? 's' : ''}
@@ -240,8 +248,8 @@ export const SectionCard: React.FC<SectionCardProps> = ({
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <span className="text-xs text-primary font-medium flex items-center gap-1 bg-primary/10 px-2 py-0.5 rounded-full">
-                      <Sparkles className="w-3 h-3" />
+                    <span className="text-xs text-primary font-medium flex items-center gap-1 bg-primary/10 px-2 py-0.5 rounded-full border border-primary/20">
+                      <Star className="w-3 h-3 fill-primary" />
                       {section.leader.firstName} {section.leader.lastName}
                     </span>
                   </TooltipTrigger>
