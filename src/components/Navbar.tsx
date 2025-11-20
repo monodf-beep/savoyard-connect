@@ -247,7 +247,7 @@ export const Navbar = ({
                         isActive('/jobs') && 'text-primary'
                       )}
                     >
-                      Offres d'emploi
+                      Bénévolat
                     </Link>
                   </NavigationMenuLink>
                 </NavigationMenuItem>
@@ -458,7 +458,7 @@ export const Navbar = ({
                 )}
               >
                 <Briefcase className="h-4 w-4" />
-                Offres d'emploi
+                Bénévolat
               </Link>
             </div>
 
