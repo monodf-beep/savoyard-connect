@@ -228,40 +228,113 @@ export const PersonSidebar: React.FC<PersonSidebarProps> = ({
         {isAdmin && (
           <div className="space-y-2">
             {isEditingEmail ? (
-              <div className="flex gap-2">
-                <Input
-                  type="email"
-                  placeholder="email@exemple.com"
-                  value={emailInput}
-                  onChange={(e) => setEmailInput(e.target.value)}
-                  onKeyPress={(e) => {
-                    if (e.key === 'Enter' && emailInput.trim()) {
-                      sendInvite(emailInput);
+              <div className="space-y-2">
+                <div className="flex gap-2">
+                  <Input
+                    type="email"
+                    placeholder="email@exemple.com"
+                    value={emailInput}
+                    onChange={(e) => setEmailInput(e.target.value)}
+                    onKeyPress={(e) => {
+                      if (e.key === 'Enter' && emailInput.trim()) {
+                        sendInvite(emailInput);
+                      }
+                    }}
+                    className="flex-1"
+                    autoFocus
+                  />
+                  <Button
+                    onClick={() => sendInvite(emailInput)}
+                    disabled={!emailInput.trim() || isSending}
+                    size="sm"
+                    className="bg-primary hover:bg-primary/90 text-primary-foreground"
+                  >
+                    <Send className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      setIsEditingEmail(false);
+                      setEmailInput('');
+                    }}
+                    variant="ghost"
+                    size="sm"
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+                </div>
+                <Button
+                  onClick={async () => {
+                    if (!emailInput.trim()) return;
+                    
+                    try {
+                      const token = crypto.randomUUID().replace(/-/g, "");
+                      const expiresAt = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString();
+                      
+                      await supabase.from("invites").insert({
+                        email: emailInput,
+                        token,
+                        expires_at: expiresAt,
+                        status: "pending",
+                        person_id: person.id,
+                      });
+
+                      const link = `${window.location.origin}/onboarding?token=${token}`;
+                      await navigator.clipboard.writeText(link);
+                      toast.success("Lien copié dans le presse-papier");
+                    } catch (error) {
+                      toast.error("Erreur lors de la création du lien");
                     }
                   }}
-                  className="flex-1"
-                  autoFocus
-                />
-                <Button
-                  onClick={() => sendInvite(emailInput)}
-                  disabled={!emailInput.trim() || isSending}
+                  variant="outline"
                   size="sm"
-                  className="bg-primary hover:bg-primary/90 text-primary-foreground"
+                  className="w-full"
+                  disabled={!emailInput.trim()}
                 >
-                  <Send className="w-4 h-4" />
+                  Copier le lien d'invitation
                 </Button>
               </div>
             ) : (
-              <Button
-                onClick={handleInviteClick}
-                disabled={isSending}
-                variant="default"
-                size="sm"
-                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold"
-              >
-                <Send className="w-4 h-4 mr-2" />
-                Inviter à compléter son profil
-              </Button>
+              <>
+                <Button
+                  onClick={handleInviteClick}
+                  disabled={isSending}
+                  variant="default"
+                  size="sm"
+                  className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold"
+                >
+                  <Send className="w-4 h-4 mr-2" />
+                  Inviter à compléter son profil
+                </Button>
+                {person.email && (
+                  <Button
+                    onClick={async () => {
+                      try {
+                        const token = crypto.randomUUID().replace(/-/g, "");
+                        const expiresAt = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString();
+                        
+                        await supabase.from("invites").insert({
+                          email: person.email,
+                          token,
+                          expires_at: expiresAt,
+                          status: "pending",
+                          person_id: person.id,
+                        });
+
+                        const link = `${window.location.origin}/onboarding?token=${token}`;
+                        await navigator.clipboard.writeText(link);
+                        toast.success("Lien copié dans le presse-papier");
+                      } catch (error) {
+                        toast.error("Erreur lors de la création du lien");
+                      }
+                    }}
+                    variant="outline"
+                    size="sm"
+                    className="w-full"
+                  >
+                    Copier le lien d'invitation
+                  </Button>
+                )}
+              </>
             )}
             {!person.email && !isEditingEmail && (
               <p className="text-xs text-muted-foreground text-center">
