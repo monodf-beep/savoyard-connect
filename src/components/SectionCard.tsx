@@ -1,11 +1,13 @@
 import React from 'react';
 import { Section, Person, VacantPosition } from '../types/organigramme';
 import { PersonCard } from './PersonCard';
+import { DraggablePersonCard } from './DraggablePersonCard';
 import { VacantPositionCard } from './VacantPositionCard';
 import { OpenPositionCard } from './OpenPositionCard';
 import { SpontaneousApplicationForm } from './SpontaneousApplicationForm';
 import { SectionReassuranceDialog } from './SectionReassuranceDialog';
 import { ChevronDown, ChevronRight, Users, Sparkles } from 'lucide-react';
+import { useDroppable } from '@dnd-kit/core';
 import {
   Tooltip,
   TooltipContent,
@@ -21,6 +23,9 @@ interface SectionCardProps {
   onEditPerson?: (person: Person) => void;
   onEditVacantPosition?: (position: VacantPosition) => void;
   level?: number;
+  allSections?: Section[];
+  onUpdate?: () => void;
+  isPersonDragOver?: boolean;
 }
 
 export const SectionCard: React.FC<SectionCardProps> = ({ 
@@ -30,11 +35,22 @@ export const SectionCard: React.FC<SectionCardProps> = ({
   isAdmin, 
   onEditPerson,
   onEditVacantPosition,
-  level = 0 
+  level = 0,
+  allSections = [],
+  onUpdate,
+  isPersonDragOver = false
 }) => {
   const [showApplicationForm, setShowApplicationForm] = React.useState(false);
   const [showReassuranceDialog, setShowReassuranceDialog] = React.useState(false);
   const [isHovered, setIsHovered] = React.useState(false);
+  
+  const { setNodeRef } = useDroppable({
+    id: section.id,
+    data: {
+      type: 'section',
+      section
+    }
+  });
   
   const handleToggle = () => {
     onToggle(section.id);
@@ -121,22 +137,27 @@ export const SectionCard: React.FC<SectionCardProps> = ({
 
           {section.isExpanded && hasContent && (
             <div 
-              className="mt-4 space-y-4"
+              ref={setNodeRef}
+              className={`mt-4 space-y-4 transition-colors ${isPersonDragOver ? 'ring-2 ring-primary ring-offset-2 rounded-lg p-2' : ''}`}
               onMouseEnter={() => setIsHovered(true)}
               onMouseLeave={() => setIsHovered(false)}
             >
               {/* Affichage compact des membres principaux */}
               {(section.members.length > 0 || (section.vacantPositions && section.vacantPositions.length > 0)) && (
-                <div className="flex flex-wrap gap-2 items-stretch">
+                <div className="flex flex-wrap gap-2 items-stretch pl-6 relative">
                   {section.members.map(person => (
-                    <PersonCard
+                    <DraggablePersonCard
                       key={person.id}
                       person={person}
+                      sectionId={section.id}
+                      sectionTitle={section.title}
+                      allSections={allSections}
                       onClick={onPersonClick}
                       isAdmin={isAdmin}
                       onEdit={onEditPerson}
                       compact={true}
                       isBureau={section.type === 'bureau'}
+                      onUpdate={onUpdate || (() => {})}
                     />
                   ))}
                   {section.vacantPositions?.map(position => (
@@ -226,20 +247,25 @@ export const SectionCard: React.FC<SectionCardProps> = ({
 
         {section.isExpanded && hasContent && (
           <div 
-            className="mt-2 ml-6 space-y-2"
+            ref={setNodeRef}
+            className={`mt-2 ml-6 space-y-2 transition-colors ${isPersonDragOver ? 'ring-2 ring-primary ring-offset-2 rounded-lg p-2' : ''}`}
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
           >
             {(section.members.length > 0 || (section.vacantPositions && section.vacantPositions.length > 0) || !isAdmin) && (
-              <div className="flex flex-wrap gap-1 items-stretch">
+              <div className="flex flex-wrap gap-1 items-stretch pl-6 relative">
                 {section.members.map(person => (
-                  <PersonCard
+                  <DraggablePersonCard
                     key={person.id}
                     person={person}
+                    sectionId={section.id}
+                    sectionTitle={section.title}
+                    allSections={allSections}
                     onClick={onPersonClick}
                     isAdmin={isAdmin}
                     onEdit={onEditPerson}
                     compact={true}
+                    onUpdate={onUpdate || (() => {})}
                   />
                 ))}
                 {section.vacantPositions?.map(position => (

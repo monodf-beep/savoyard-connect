@@ -22,6 +22,7 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { DndContext, DragOverlay, closestCenter, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { useSectionDragDrop } from '../hooks/useSectionDragDrop';
+import { usePersonDragDrop } from '../hooks/usePersonDragDrop';
 import { findSectionById } from '../utils/sectionUtils';
 
 interface OrganigrammeProps {
@@ -70,6 +71,48 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
     sections: data.sections,
     onReorganize: refetch
   });
+
+  // Drag & Drop des personnes
+  const {
+    activePerson,
+    overSectionId,
+    handleDragStart: handlePersonDragStart,
+    handleDragOver: handlePersonDragOver,
+    handleDragEnd: handlePersonDragEnd,
+    handleDragCancel: handlePersonDragCancel
+  } = usePersonDragDrop({
+    onReorganize: refetch
+  });
+
+  // Combiner les handlers de drag & drop
+  const handleCombinedDragStart = (event: any) => {
+    if (event.active.data.current?.type === 'person') {
+      handlePersonDragStart(event);
+    } else {
+      handleDragStart(event);
+    }
+  };
+
+  const handleCombinedDragOver = (event: any) => {
+    if (event.active.data.current?.type === 'person') {
+      handlePersonDragOver(event);
+    } else {
+      handleDragOver(event);
+    }
+  };
+
+  const handleCombinedDragEnd = async (event: any) => {
+    if (event.active.data.current?.type === 'person') {
+      await handlePersonDragEnd(event);
+    } else {
+      await handleDragEnd(event);
+    }
+  };
+
+  const handleCombinedDragCancel = () => {
+    handlePersonDragCancel();
+    handleDragCancel();
+  };
 
   // Listen for custom events to open vacant positions sidebar
   React.useEffect(() => {
@@ -704,15 +747,15 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
         <DndContext
           sensors={sensors}
           collisionDetection={closestCenter}
-          onDragStart={handleDragStart}
-          onDragOver={handleDragOver}
-          onDragEnd={handleDragEnd}
-          onDragCancel={handleDragCancel}
+          onDragStart={handleCombinedDragStart}
+          onDragOver={handleCombinedDragOver}
+          onDragEnd={handleCombinedDragEnd}
+          onDragCancel={handleCombinedDragCancel}
         >
           <div className="space-y-4 relative pl-8">
             {isAdmin && (
               <div className="text-xs text-muted-foreground mb-2 -ml-8">
-                💡 Glissez-déposez les sections pour les réorganiser
+                💡 Glissez-déposez les sections et les personnes pour les réorganiser
               </div>
             )}
             {visibleSections.map(section => (
@@ -724,8 +767,11 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
                 isAdmin={isAdmin}
                 onEditPerson={handleEditPerson}
                 onEditVacantPosition={handleEditVacantPosition}
+                allSections={data.sections}
+                onUpdate={refetch}
                 isDragging={activeId === section.id}
                 isOver={overId === section.id}
+                isPersonDragOver={overSectionId === section.id}
               />
             ))}
           </div>
@@ -743,6 +789,18 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
                 </div>
               ) : null;
             })()}
+            {activePerson && (
+              <div className="opacity-80 bg-card border rounded-lg p-3 shadow-lg">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center font-semibold text-sm">
+                    {activePerson.firstName.charAt(0)}
+                  </div>
+                  <span className="font-medium">
+                    {activePerson.firstName} {activePerson.lastName}
+                  </span>
+                </div>
+              </div>
+            )}
           </DragOverlay>
         </DndContext>
       ) : (

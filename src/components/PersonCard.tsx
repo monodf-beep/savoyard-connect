@@ -1,7 +1,8 @@
 import React from 'react';
-import { Person } from '../types/organigramme';
+import { Person, Section } from '../types/organigramme';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { Edit2, Linkedin } from 'lucide-react';
+import { PersonQuickActions } from './PersonQuickActions';
 
 interface PersonCardProps {
   person: Person;
@@ -10,6 +11,10 @@ interface PersonCardProps {
   onEdit?: (person: Person) => void;
   compact?: boolean;
   isBureau?: boolean;
+  sectionId?: string;
+  sectionTitle?: string;
+  allSections?: Section[];
+  onUpdate?: () => void;
 }
 
 export const PersonCard: React.FC<PersonCardProps> = ({ 
@@ -18,7 +23,11 @@ export const PersonCard: React.FC<PersonCardProps> = ({
   isAdmin, 
   onEdit,
   compact = false,
-  isBureau = false 
+  isBureau = false,
+  sectionId,
+  sectionTitle,
+  allSections = [],
+  onUpdate
 }) => {
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -102,7 +111,17 @@ export const PersonCard: React.FC<PersonCardProps> = ({
                   <Linkedin className="w-3 h-3 text-muted-foreground hover:text-primary" />
                 </button>
               )}
-              {isAdmin && (
+              {isAdmin && sectionId && sectionTitle && onUpdate && (
+                <PersonQuickActions
+                  person={person}
+                  currentSectionId={sectionId}
+                  currentSectionTitle={sectionTitle}
+                  allSections={allSections}
+                  onEdit={() => onEdit?.(person)}
+                  onUpdate={onUpdate}
+                />
+              )}
+              {isAdmin && !sectionId && (
                 <button
                   onClick={handleEdit}
                   className="admin-controls p-1 hover:bg-accent rounded transition-colors"

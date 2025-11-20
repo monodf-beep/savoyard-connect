@@ -13,8 +13,11 @@ interface DraggableSectionCardProps {
   onEditPerson?: (person: Person) => void;
   onEditVacantPosition?: (position: VacantPosition) => void;
   level?: number;
+  allSections?: Section[];
+  onUpdate?: () => void;
   isDragging?: boolean;
   isOver?: boolean;
+  isPersonDragOver?: boolean;
 }
 
 export const DraggableSectionCard: React.FC<DraggableSectionCardProps> = ({
@@ -25,8 +28,11 @@ export const DraggableSectionCard: React.FC<DraggableSectionCardProps> = ({
   onEditPerson,
   onEditVacantPosition,
   level = 0,
+  allSections = [],
+  onUpdate,
   isDragging = false,
-  isOver = false
+  isOver = false,
+  isPersonDragOver = false
 }) => {
   const {
     attributes,
@@ -78,6 +84,9 @@ export const DraggableSectionCard: React.FC<DraggableSectionCardProps> = ({
         onEditPerson={onEditPerson}
         onEditVacantPosition={onEditVacantPosition}
         level={level}
+        allSections={allSections}
+        onUpdate={onUpdate}
+        isPersonDragOver={isPersonDragOver}
       />
     </div>
   );
