@@ -379,8 +379,14 @@ export const PersonForm: React.FC<PersonFormProps> = ({
 
           {isAdmin && (
             <div className="mt-2">
-              <Button type="button" variant="outline" onClick={sendInvite} disabled={!formData.email}>
-                Envoyer une invitation à compléter son profil
+              <Button 
+                type="button" 
+                variant="default" 
+                onClick={sendInvite} 
+                disabled={!formData.email}
+                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold"
+              >
+                📧 Envoyer une invitation à compléter son profil
               </Button>
             </div>
           )}
