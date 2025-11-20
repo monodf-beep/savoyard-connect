@@ -137,7 +137,20 @@ export const PersonQuickActions: React.FC<PersonQuickActionsProps> = ({
   };
 
   const handleSetAsLeader = async () => {
-    toast.info('Fonctionnalité "responsable" à venir');
+    try {
+      const { error } = await supabase
+        .from('sections')
+        .update({ leader_id: person.id })
+        .eq('id', currentSectionId);
+
+      if (error) throw error;
+
+      toast.success(`${person.firstName} défini(e) comme responsable de ${currentSectionTitle}`);
+      onUpdate();
+    } catch (error) {
+      console.error('Erreur:', error);
+      toast.error('Erreur lors de la définition du responsable');
+    }
   };
 
   const getAvailableSections = () => {

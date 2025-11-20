@@ -237,9 +237,19 @@ export const SectionCard: React.FC<SectionCardProps> = ({
             {section.isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
             <h4 className="font-medium text-sm">{section.title}</h4>
             {section.leader && (
-              <span className="text-xs text-muted-foreground">
-                • {section.leader.firstName} {section.leader.lastName}
-              </span>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span className="text-xs text-primary font-medium flex items-center gap-1">
+                      <Sparkles className="w-3 h-3" />
+                      {section.leader.firstName} {section.leader.lastName}
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Responsable de la section</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             )}
           </div>
           <span className="text-xs text-muted-foreground">
