@@ -83,7 +83,7 @@ export const PersonSidebar: React.FC<PersonSidebarProps> = ({
     const email = (person.email || '').trim();
     const emailSchema = z.string().email();
     if (!emailSchema.safeParse(email).success) {
-      toast.error('Email invalide');
+      toast.error('Veuillez d\'abord ajouter une adresse email valide pour cette personne');
       return;
     }
     try {
@@ -191,7 +191,7 @@ export const PersonSidebar: React.FC<PersonSidebarProps> = ({
         )}
 
         {/* Invitation (Admin only) */}
-        {isAdmin && person.email && (
+        {isAdmin && (
           <div>
             <Button
               onClick={sendInvite}
@@ -202,6 +202,11 @@ export const PersonSidebar: React.FC<PersonSidebarProps> = ({
               <Send className="w-4 h-4 mr-2" />
               Inviter à compléter son profil
             </Button>
+            {!person.email && (
+              <p className="text-xs text-muted-foreground mt-2 text-center">
+                ⚠️ Email manquant - ajoutez d'abord une adresse email
+              </p>
+            )}
           </div>
         )}
 
