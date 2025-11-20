@@ -195,7 +195,7 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
 
   const expandAll = useCallback(async () => {
     try {
-      console.log('Tentative de dépliage de toutes les sections...');
+      console.log('Dépliage de toutes les sections...');
       
       // Récupérer toutes les sections qui sont actuellement collapsed
       const { data: allSections, error: fetchError } = await supabase
@@ -210,18 +210,25 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
         return;
       }
 
-      // Mettre à jour TOUTES les sections en une seule requête
-      const { data: updateData, error: updateError } = await supabase
-        .from('sections')
-        .update({ is_expanded: true })
-        .eq('is_expanded', false)
-        .select();
+      // Mettre à jour chaque section individuellement
+      const updates = allSections.map(section => 
+        supabase
+          .from('sections')
+          .update({ is_expanded: true })
+          .eq('id', section.id)
+      );
       
-      if (updateError) throw updateError;
+      const results = await Promise.all(updates);
+      const errors = results.filter(r => r.error);
+      
+      if (errors.length > 0) {
+        console.error('Erreurs lors des updates:', errors);
+        throw new Error('Certaines sections n\'ont pas pu être dépliées');
+      }
       
       // Forcer un rechargement complet
       await refetch();
-      toast.success(`${allSections.length} sections ont été dépliées`);
+      toast.success(`${allSections.length} section${allSections.length > 1 ? 's ont' : ' a'} été dépliée${allSections.length > 1 ? 's' : ''}`);
     } catch (error: any) {
       console.error('Erreur lors de l\'expansion:', error);
       toast.error(`Erreur: ${error.message || 'Impossible de déplier les sections'}`);
@@ -250,28 +257,30 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
         return;
       }
 
-      // Mettre à jour TOUTES les sections en une seule requête
-      console.log(`Repliage de toutes les sections...`);
+      // Mettre à jour chaque section individuellement pour éviter l'erreur WHERE clause
+      console.log(`Repliage de ${allSections.length} sections individuellement...`);
       
-      const { data: updateData, error: updateError } = await supabase
-        .from('sections')
-        .update({ is_expanded: false })
-        .eq('is_expanded', true)
-        .select();
+      const updates = allSections.map(section => 
+        supabase
+          .from('sections')
+          .update({ is_expanded: false })
+          .eq('id', section.id)
+      );
       
-      console.log('Résultat update:', { updateData, updateError });
+      const results = await Promise.all(updates);
+      const errors = results.filter(r => r.error);
       
-      if (updateError) {
-        console.error('Erreur lors de la mise à jour:', updateError);
-        throw updateError;
+      if (errors.length > 0) {
+        console.error('Erreurs lors des updates:', errors);
+        throw new Error('Certaines sections n\'ont pas pu être repliées');
       }
       
-      // Forcer un rechargement complet en invalidant le cache
+      // Forcer un rechargement complet
       console.log('Rechargement forcé des données...');
       await refetch();
-      toast.success(`${allSections.length} sections ont été repliées`);
+      toast.success(`${allSections.length} section${allSections.length > 1 ? 's ont' : ' a'} été repliée${allSections.length > 1 ? 's' : ''}`);
     } catch (error: any) {
-      console.error('Erreur lors de la fermeture:', error);
+      console.error('Erreur lors du repliage:', error);
       toast.error(`Erreur: ${error.message || 'Impossible de replier les sections'}`);
     }
   }, [refetch]);
