@@ -269,7 +269,7 @@ export const Navbar = ({
               {user ? (
                 <>
                   {isAdmin && (
-                    <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded">
+                    <span className="text-xs bg-primary text-primary-foreground font-semibold px-2 py-1 rounded shadow-sm">
                       Admin
                     </span>
                   )}
@@ -450,7 +450,7 @@ export const Navbar = ({
                 <>
                   {isAdmin && (
                     <div className="px-3 py-2">
-                      <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded">
+                      <span className="text-xs bg-primary text-primary-foreground font-semibold px-2 py-1 rounded shadow-sm">
                         Admin
                       </span>
                     </div>

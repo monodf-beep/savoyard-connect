@@ -196,30 +196,38 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
   const expandAll = useCallback(async () => {
     try {
       // Mettre à jour toutes les sections en base de données en une fois
-      await supabase
+      const { error } = await supabase
         .from('sections')
         .update({ is_expanded: true })
         .neq('id', ''); // Condition pour sélectionner toutes les lignes
 
+      if (error) throw error;
+
       // Recharger les données une seule fois
       await refetch();
+      toast.success('Toutes les sections ont été dépliées');
     } catch (error) {
       console.error('Erreur lors de l\'expansion:', error);
+      toast.error('Erreur lors du dépliage des sections');
     }
   }, [refetch]);
 
   const collapseAll = useCallback(async () => {
     try {
       // Mettre à jour toutes les sections en base de données en une fois
-      await supabase
+      const { error } = await supabase
         .from('sections')
         .update({ is_expanded: false })
         .neq('id', ''); // Condition pour sélectionner toutes les lignes
 
+      if (error) throw error;
+
       // Recharger les données une seule fois
       await refetch();
+      toast.success('Toutes les sections ont été repliées');
     } catch (error) {
       console.error('Erreur lors de la fermeture:', error);
+      toast.error('Erreur lors du repliage des sections');
     }
   }, [refetch]);
 
@@ -726,11 +734,11 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
       </div>
 
       {isAdmin && (
-        <div className="mb-4 p-3 bg-primary/5 border border-primary/20 rounded-lg">
+        <div className="mb-4 p-3 bg-primary/10 border border-primary/30 rounded-lg">
           <div className="flex items-center gap-2 text-sm">
             <Settings className="w-4 h-4 text-primary" />
-            <span className="font-medium text-primary">Mode Administrateur</span>
-            <span className="text-xs text-muted-foreground">• Cliquez sur les icônes d'édition</span>
+            <span className="font-semibold text-primary">Mode Administrateur</span>
+            <span className="text-xs text-foreground/70">• Cliquez sur les icônes d'édition</span>
           </div>
         </div>
       )}
