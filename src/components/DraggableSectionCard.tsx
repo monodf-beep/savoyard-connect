@@ -79,23 +79,6 @@ export const DraggableSectionCard: React.FC<DraggableSectionCardProps> = ({
         onEditVacantPosition={onEditVacantPosition}
         level={level}
       />
-      
-      {section.subsections && section.isExpanded && (
-        <div className="ml-6">
-          {section.subsections.map((subsection) => (
-            <DraggableSectionCard
-              key={subsection.id}
-              section={subsection}
-              onToggle={onToggle}
-              onPersonClick={onPersonClick}
-              isAdmin={isAdmin}
-              onEditPerson={onEditPerson}
-              onEditVacantPosition={onEditVacantPosition}
-              level={level + 1}
-            />
-          ))}
-        </div>
-      )}
     </div>
   );
 };
