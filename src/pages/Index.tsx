@@ -30,6 +30,11 @@ const Index = () => {
     window.dispatchEvent(event);
   };
 
+  const handleNameCorrection = () => {
+    const event = new CustomEvent('openNameCorrection');
+    window.dispatchEvent(event);
+  };
+
   const handleVacantPositionsClick = () => {
     const event = new CustomEvent('openVacantPositions');
     window.dispatchEvent(event);
@@ -54,6 +59,7 @@ const Index = () => {
         onAddSection={handleAddSection}
         onAddVacantPosition={handleAddVacantPosition}
         onImport={handleImport}
+        onNameCorrection={handleNameCorrection}
       />
       
       <div className="container mx-auto px-4 py-6">

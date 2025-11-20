@@ -14,7 +14,7 @@ import { NameCorrectionTool } from './admin/NameCorrectionTool';
 import { Button } from './ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from './ui/sheet';
 import { Dialog, DialogContent } from './ui/dialog';
-import { Settings, Eye, EyeOff, ExpandIcon as Expand, ShrinkIcon as Shrink, UserPlus, FolderPlus, LogIn, LogOut, LayoutGrid, List, Network, Menu, X, Upload, Plus, CheckCircle2 } from 'lucide-react';
+import { Settings, Eye, EyeOff, ExpandIcon as Expand, ShrinkIcon as Shrink, UserPlus, FolderPlus, LogIn, LogOut, LayoutGrid, List, Network, Menu, X, Upload, Plus } from 'lucide-react';
 import { useOrganigramme } from '../hooks/useOrganigramme';
 import { supabase } from '../integrations/supabase/client';
 import { useAuth } from '../hooks/useAuth';
@@ -160,16 +160,24 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
       }
     };
 
+    const handleOpenNameCorrection = () => {
+      if (isAdmin) {
+        setIsNameCorrectionOpen(true);
+      }
+    };
+
     window.addEventListener('openPersonForm', handleOpenPersonForm);
     window.addEventListener('openSectionForm', handleOpenSectionForm);
     window.addEventListener('openVacantPositionForm', handleOpenVacantPositionForm);
     window.addEventListener('openImportDialog', handleOpenImportDialog);
+    window.addEventListener('openNameCorrection', handleOpenNameCorrection);
 
     return () => {
       window.removeEventListener('openPersonForm', handleOpenPersonForm);
       window.removeEventListener('openSectionForm', handleOpenSectionForm);
       window.removeEventListener('openVacantPositionForm', handleOpenVacantPositionForm);
       window.removeEventListener('openImportDialog', handleOpenImportDialog);
+      window.removeEventListener('openNameCorrection', handleOpenNameCorrection);
     };
   }, [isAdmin]);
 
@@ -693,15 +701,6 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
                         <Upload className="w-4 h-4 mr-2" />
                         Importer bénévoles
                       </Button>
-                      <Button
-                        onClick={() => { setIsNameCorrectionOpen(true); setIsControlsMenuOpen(false); }}
-                        variant="outline"
-                        size="sm"
-                        className="w-full justify-start"
-                      >
-                        <CheckCircle2 className="w-4 h-4 mr-2" />
-                        Vérifier les noms
-                      </Button>
                     </div>
                   </div>
                 )}
@@ -771,18 +770,6 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
             <Shrink className="w-3.5 h-3.5 mr-1" />
             <span className="text-xs">Tout replier</span>
           </Button>
-
-          {isAdmin && (
-            <Button
-              onClick={() => setIsNameCorrectionOpen(true)}
-              variant="outline"
-              size="sm"
-              className="h-8 px-3"
-            >
-              <CheckCircle2 className="w-3.5 h-3.5 mr-1" />
-              <span className="text-xs">Vérifier noms</span>
-            </Button>
-          )}
         </div>
         </div>
       </div>
