@@ -6,6 +6,8 @@ export const useAuth = () => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isSectionLeader, setIsSectionLeader] = useState(false);
+  const [ledSections, setLedSections] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -18,10 +20,12 @@ export const useAuth = () => {
         // Check admin role when session changes
         if (session?.user) {
           setTimeout(() => {
-            checkAdminRole(session.user.id);
+            checkUserRoles(session.user.id);
           }, 0);
         } else {
           setIsAdmin(false);
+          setIsSectionLeader(false);
+          setLedSections([]);
           setLoading(false);
         }
       }
@@ -33,7 +37,7 @@ export const useAuth = () => {
       setUser(session?.user ?? null);
       
       if (session?.user) {
-        checkAdminRole(session.user.id);
+        checkUserRoles(session.user.id);
       } else {
         setLoading(false);
       }
@@ -42,23 +46,40 @@ export const useAuth = () => {
     return () => subscription.unsubscribe();
   }, []);
 
-  const checkAdminRole = async (userId: string) => {
+  const checkUserRoles = async (userId: string) => {
     try {
-      const { data, error } = await supabase
+      // Check admin role
+      const { data: adminData, error: adminError } = await supabase
         .from('user_roles')
         .select('role')
         .eq('user_id', userId)
         .eq('role', 'admin')
         .single();
 
-      if (error && error.code !== 'PGRST116') {
-        if (import.meta.env.DEV) console.error('Error checking admin role:', error);
+      if (adminError && adminError.code !== 'PGRST116') {
+        if (import.meta.env.DEV) console.error('Error checking admin role:', adminError);
       }
 
-      setIsAdmin(!!data);
+      setIsAdmin(!!adminData);
+
+      // Check section leader status
+      const { data: sectionsData, error: sectionsError } = await supabase
+        .rpc('get_user_led_sections', { _user_id: userId });
+
+      if (sectionsError) {
+        if (import.meta.env.DEV) console.error('Error checking section leader:', sectionsError);
+        setIsSectionLeader(false);
+        setLedSections([]);
+      } else {
+        const sectionIds = sectionsData?.map((s: any) => s.section_id) || [];
+        setIsSectionLeader(sectionIds.length > 0);
+        setLedSections(sectionIds);
+      }
     } catch (error) {
-      if (import.meta.env.DEV) console.error('Error checking admin role:', error);
+      if (import.meta.env.DEV) console.error('Error checking roles:', error);
       setIsAdmin(false);
+      setIsSectionLeader(false);
+      setLedSections([]);
     } finally {
       setLoading(false);
     }
@@ -78,6 +99,8 @@ export const useAuth = () => {
       setSession(null);
       setUser(null);
       setIsAdmin(false);
+      setIsSectionLeader(false);
+      setLedSections([]);
       
       // Redirect to auth page
       window.location.href = '/auth';
@@ -87,6 +110,8 @@ export const useAuth = () => {
       setSession(null);
       setUser(null);
       setIsAdmin(false);
+      setIsSectionLeader(false);
+      setLedSections([]);
       window.location.href = '/auth';
     }
   };
@@ -95,6 +120,8 @@ export const useAuth = () => {
     user,
     session,
     isAdmin,
+    isSectionLeader,
+    ledSections,
     loading,
     signOut
   };

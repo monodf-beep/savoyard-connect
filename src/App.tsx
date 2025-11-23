@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AIAssistant } from "@/components/AIAssistant";
 import { AdminOnboarding } from "@/components/AdminOnboarding";
+import { SectionLeaderOnboarding } from "@/components/SectionLeaderOnboarding";
 import { useAuth } from "@/hooks/useAuth";
 import { useOrganizationSettings } from "@/hooks/useOrganizationSettings";
 import { useState, useEffect } from "react";
@@ -20,9 +21,10 @@ import Settings from "./pages/Settings";
 const queryClient = new QueryClient();
 
 const AppContent = () => {
-  const { isAdmin, user } = useAuth();
+  const { isAdmin, isSectionLeader, user } = useAuth();
   const { settings } = useOrganizationSettings();
-  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [showAdminOnboarding, setShowAdminOnboarding] = useState(false);
+  const [showLeaderOnboarding, setShowLeaderOnboarding] = useState(false);
 
   // Apply custom colors to design system
   useEffect(() => {
@@ -45,15 +47,24 @@ const AppContent = () => {
       const hasSeenOnboarding = localStorage.getItem('admin-onboarding-completed');
       if (!hasSeenOnboarding) {
         // Delay to ensure smooth load
-        setTimeout(() => setShowOnboarding(true), 500);
+        setTimeout(() => setShowAdminOnboarding(true), 500);
+      }
+    } else if (isSectionLeader && user && !isAdmin) {
+      const hasSeenLeaderOnboarding = localStorage.getItem('section-leader-onboarding-completed');
+      if (!hasSeenLeaderOnboarding) {
+        // Delay to ensure smooth load
+        setTimeout(() => setShowLeaderOnboarding(true), 500);
       }
     }
-  }, [isAdmin, user]);
+  }, [isAdmin, isSectionLeader, user]);
 
   // Expose function to restart onboarding
   useEffect(() => {
     (window as any).restartAdminOnboarding = () => {
-      setShowOnboarding(true);
+      setShowAdminOnboarding(true);
+    };
+    (window as any).restartLeaderOnboarding = () => {
+      setShowLeaderOnboarding(true);
     };
   }, []);
   
@@ -73,8 +84,11 @@ const AppContent = () => {
       {isAdmin && (
         <>
           <AIAssistant />
-          <AdminOnboarding open={showOnboarding} onOpenChange={setShowOnboarding} />
+          <AdminOnboarding open={showAdminOnboarding} onOpenChange={setShowAdminOnboarding} />
         </>
+      )}
+      {isSectionLeader && !isAdmin && (
+        <SectionLeaderOnboarding open={showLeaderOnboarding} onOpenChange={setShowLeaderOnboarding} />
       )}
     </>
   );
