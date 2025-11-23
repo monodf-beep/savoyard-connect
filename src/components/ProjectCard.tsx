@@ -3,6 +3,8 @@ import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { Calendar, FileText, Pencil, Trash2, ExternalLink } from 'lucide-react';
 import { Project } from '@/pages/Projects';
+import { ApprovalBadge } from './ApprovalBadge';
+import { ApprovalActions } from './ApprovalActions';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
@@ -11,6 +13,8 @@ interface ProjectCardProps {
   isAdmin: boolean;
   onEdit: () => void;
   onDelete: () => void;
+  onApprove?: () => void;
+  onReject?: () => void;
 }
 
 const statusLabels = {
@@ -25,16 +29,23 @@ const statusColors = {
   completed: 'bg-muted/70 text-foreground border border-border font-medium',
 };
 
-export const ProjectCard = ({ project, isAdmin, onEdit, onDelete }: ProjectCardProps) => {
+export const ProjectCard = ({ project, isAdmin, onEdit, onDelete, onApprove, onReject }: ProjectCardProps) => {
+  const isPending = project.approval_status === 'pending';
+  
   return (
-    <Card>
+    <Card className={isPending ? 'border-orange-500/30' : ''}>
       <CardHeader>
         <div className="flex items-start justify-between">
           <div className="flex-1">
             <CardTitle className="text-xl mb-2">{project.title}</CardTitle>
-            <Badge className={statusColors[project.status]}>
-              {statusLabels[project.status]}
-            </Badge>
+            <div className="flex flex-wrap gap-2">
+              <Badge className={statusColors[project.status]}>
+                {statusLabels[project.status]}
+              </Badge>
+              {project.approval_status && (
+                <ApprovalBadge status={project.approval_status} />
+              )}
+            </div>
           </div>
           {isAdmin && (
             <div className="flex gap-2">
@@ -95,6 +106,17 @@ export const ProjectCard = ({ project, isAdmin, onEdit, onDelete }: ProjectCardP
                 </a>
               ))}
             </div>
+          </div>
+        )}
+
+        {/* Approval actions for pending projects */}
+        {isPending && isAdmin && onApprove && onReject && (
+          <div className="mt-4 pt-4 border-t">
+            <ApprovalActions 
+              onApprove={onApprove}
+              onReject={onReject}
+              itemType="projet"
+            />
           </div>
         )}
       </CardContent>

@@ -118,6 +118,7 @@ export const useValueChains = () => {
         return {
           ...chain,
           segments: chainSegments,
+          approval_status: (chain.approval_status as 'pending' | 'approved' | 'rejected' | undefined) || 'pending',
         };
       });
 

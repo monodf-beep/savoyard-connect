@@ -7,6 +7,9 @@ export interface ValueChain {
   created_at?: string;
   updated_at?: string;
   segments?: ValueChainSegment[];
+  approval_status?: 'pending' | 'approved' | 'rejected';
+  created_by?: string;
+  approved_by?: string;
 }
 
 export interface ValueChainSegment {

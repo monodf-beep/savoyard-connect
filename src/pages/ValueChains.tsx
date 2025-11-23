@@ -2,9 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { Navbar } from '@/components/Navbar';
 import { useValueChains } from '@/hooks/useValueChains';
 import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 import { MinimalChainDisplay } from '@/components/valueChain/MinimalChainDisplay';
 import { ValueChainForm } from '@/components/valueChain/ValueChainForm';
 import { TutorialDialog } from '@/components/TutorialDialog';
+import { ApprovalBadge } from '@/components/ApprovalBadge';
+import { ApprovalActions } from '@/components/ApprovalActions';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import {
@@ -46,7 +49,7 @@ import { ValueChain } from '@/types/valueChain';
 import { toast } from 'sonner';
 
 export default function ValueChains() {
-  const { user, isAdmin } = useAuth();
+  const { user, isAdmin, isSectionLeader } = useAuth();
   const {
     chains,
     people,
@@ -171,6 +174,50 @@ export default function ValueChains() {
     setSelectedChain(null);
   };
 
+  const handleApproveChain = async (chainId: string) => {
+    try {
+      const { error } = await supabase
+        .from('value_chains')
+        .update({ 
+          approval_status: 'approved',
+          approved_by: user?.id 
+        })
+        .eq('id', chainId);
+
+      if (error) throw error;
+
+      await refetch();
+      toast.success('Chaîne de valeur approuvée');
+    } catch (error: any) {
+      console.error('Error approving chain:', error);
+      toast.error("Impossible d'approuver la chaîne de valeur");
+    }
+  };
+
+  const handleRejectChain = async (chainId: string) => {
+    try {
+      const { error } = await supabase
+        .from('value_chains')
+        .update({ 
+          approval_status: 'rejected',
+          approved_by: user?.id 
+        })
+        .eq('id', chainId);
+
+      if (error) throw error;
+
+      await refetch();
+      toast.success('Chaîne de valeur rejetée');
+    } catch (error: any) {
+      console.error('Error rejecting chain:', error);
+      toast.error('Impossible de rejeter la chaîne de valeur');
+    }
+  };
+
+  // Separate pending chains for admin approval
+  const pendingChains = chains.filter(c => c.approval_status === 'pending');
+  const approvedChains = chains.filter(c => c.approval_status !== 'pending');
+
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col">
@@ -247,7 +294,7 @@ export default function ValueChains() {
                 <Button
                   variant="outline"
                   onClick={() => setMergeDialogOpen(true)}
-                  disabled={chains.length < 2}
+                  disabled={approvedChains.length < 2}
                 >
                   <Combine className="h-4 w-4 mr-2" />
                   Fusionner
@@ -255,7 +302,7 @@ export default function ValueChains() {
                 <Button
                   variant="outline"
                   onClick={() => setSplitDialogOpen(true)}
-                  disabled={chains.length === 0}
+                  disabled={approvedChains.length === 0}
                 >
                   <Split className="h-4 w-4 mr-2" />
                   Scinder
@@ -277,7 +324,7 @@ export default function ValueChains() {
         {chains.length === 0 ? (
           <Card className="p-12 text-center">
             <p className="text-muted-foreground mb-4">Aucune chaîne de valeur créée</p>
-            {isAdmin && (
+            {(isAdmin || isSectionLeader) && (
               <Button onClick={() => setFormOpen(true)}>
                 <Plus className="h-4 w-4 mr-2" />
                 Créer la première chaîne
@@ -286,64 +333,131 @@ export default function ValueChains() {
           </Card>
         ) : (
           <div className="space-y-6">
-            {/* Chain selector */}
-            <div className="flex flex-wrap gap-2">
-              {chains.map((chain) => (
-                <Button
-                  key={chain.id}
-                  variant={selectedChain?.id === chain.id ? 'default' : 'outline'}
-                  onClick={() => setSelectedChain(chain)}
-                >
-                  {chain.title}
-                </Button>
-              ))}
-            </div>
+            {/* Pending approvals section (Admin only) */}
+            {isAdmin && pendingChains.length > 0 && (
+              <div>
+                <h2 className="text-2xl font-semibold mb-4 text-orange-700 dark:text-orange-300">
+                  Chaînes en attente d'approbation ({pendingChains.length})
+                </h2>
+                <div className="grid gap-4">
+                  {pendingChains.map((chain) => (
+                    <Card key={chain.id} className="p-6 border-orange-500/30">
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="flex-1">
+                          <h3 className="text-xl font-semibold text-foreground mb-2">
+                            {chain.title}
+                          </h3>
+                          <div className="flex items-center gap-2">
+                            <ApprovalBadge status="pending" />
+                          </div>
+                          {chain.description && (
+                            <p className="text-sm text-muted-foreground mt-2">
+                              {chain.description}
+                            </p>
+                          )}
+                        </div>
+                        <div className="flex gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleEdit(chain)}
+                          >
+                            <Edit className="h-4 w-4 mr-1" />
+                            Modifier
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleDelete(chain.id)}
+                          >
+                            <Trash2 className="h-4 w-4 mr-1" />
+                            Supprimer
+                          </Button>
+                        </div>
+                      </div>
+                      <div className="mt-4 pt-4 border-t">
+                        <ApprovalActions 
+                          onApprove={() => handleApproveChain(chain.id)}
+                          onReject={() => handleRejectChain(chain.id)}
+                          itemType="chaîne de valeur"
+                        />
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+            )}
 
-            {/* Selected chain diagram */}
-            {selectedChain && (
-              <Card className="p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <div>
-                    <h2 className="text-xl font-semibold text-foreground">
-                      {selectedChain.title}
-                    </h2>
-                    {selectedChain.description && (
-                      <p className="text-sm text-muted-foreground mt-1">
-                        {selectedChain.description}
-                      </p>
-                    )}
-                  </div>
-                  {isAdmin && (
-                    <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleEdit(selectedChain)}
-                      >
-                        <Edit className="h-4 w-4 mr-1" />
-                        Modifier
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleDelete(selectedChain.id)}
-                      >
-                        <Trash2 className="h-4 w-4 mr-1" />
-                        Supprimer
-                      </Button>
-                    </div>
-                  )}
+            {/* Approved chains selector */}
+            {approvedChains.length > 0 && (
+              <>
+                <div className="flex flex-wrap gap-2">
+                  {approvedChains.map((chain) => (
+                    <Button
+                      key={chain.id}
+                      variant={selectedChain?.id === chain.id ? 'default' : 'outline'}
+                      onClick={() => setSelectedChain(chain)}
+                    >
+                      {chain.title}
+                      {chain.approval_status === 'approved' && isAdmin && (
+                        <span className="ml-2 text-xs">✓</span>
+                      )}
+                    </Button>
+                  ))}
                 </div>
 
-                <MinimalChainDisplay chain={selectedChain} />
-              </Card>
+                {/* Selected chain diagram */}
+                {selectedChain && approvedChains.find(c => c.id === selectedChain.id) && (
+                  <Card className="p-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <div>
+                        <h2 className="text-xl font-semibold text-foreground">
+                          {selectedChain.title}
+                        </h2>
+                        {selectedChain.description && (
+                          <p className="text-sm text-muted-foreground mt-1">
+                            {selectedChain.description}
+                          </p>
+                        )}
+                        {selectedChain.approval_status && (
+                          <div className="mt-2">
+                            <ApprovalBadge status={selectedChain.approval_status} />
+                          </div>
+                        )}
+                      </div>
+                      {isAdmin && (
+                        <div className="flex gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleEdit(selectedChain)}
+                          >
+                            <Edit className="h-4 w-4 mr-1" />
+                            Modifier
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleDelete(selectedChain.id)}
+                          >
+                            <Trash2 className="h-4 w-4 mr-1" />
+                            Supprimer
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+
+                    <MinimalChainDisplay chain={selectedChain} />
+                  </Card>
+                )}
+              </>
             )}
           </div>
         )}
       </main>
 
       {/* Create/Edit Form */}
-      {isAdmin && (
+      {(isAdmin || isSectionLeader) && (
         <ValueChainForm
           open={formOpen}
           onOpenChange={(open) => {
@@ -390,7 +504,7 @@ export default function ValueChains() {
                   <SelectValue placeholder="Sélectionner..." />
                 </SelectTrigger>
                 <SelectContent>
-                  {chains.map((chain) => (
+                  {approvedChains.map((chain) => (
                     <SelectItem key={chain.id} value={chain.id}>
                       {chain.title}
                     </SelectItem>
@@ -405,7 +519,7 @@ export default function ValueChains() {
                   <SelectValue placeholder="Sélectionner..." />
                 </SelectTrigger>
                 <SelectContent>
-                  {chains
+                  {approvedChains
                     .filter((c) => c.id !== mergeChainA)
                     .map((chain) => (
                       <SelectItem key={chain.id} value={chain.id}>
@@ -450,7 +564,7 @@ export default function ValueChains() {
                   <SelectValue placeholder="Sélectionner..." />
                 </SelectTrigger>
                 <SelectContent>
-                  {chains.map((chain) => (
+                  {approvedChains.map((chain) => (
                     <SelectItem key={chain.id} value={chain.id}>
                       {chain.title}
                     </SelectItem>
@@ -465,7 +579,7 @@ export default function ValueChains() {
                   <Input
                     type="number"
                     min="1"
-                    max={(chains.find((c) => c.id === splitChainId)?.segments?.length || 1) - 1}
+                    max={(approvedChains.find((c) => c.id === splitChainId)?.segments?.length || 1) - 1}
                     value={splitIndex}
                     onChange={(e) => setSplitIndex(parseInt(e.target.value) || 1)}
                   />
