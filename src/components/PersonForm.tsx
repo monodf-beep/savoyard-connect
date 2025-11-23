@@ -182,7 +182,8 @@ export const PersonForm: React.FC<PersonFormProps> = ({
       dateEntree: formData.dateEntree,
       email: formData.email,
       phone: formData.phone,
-      linkedin: formData.linkedin
+      linkedin: formData.linkedin,
+      embeds: formData.embeds || []
     };
 
     onSave(personData);
@@ -305,21 +306,23 @@ export const PersonForm: React.FC<PersonFormProps> = ({
               />
             </div>
             <div>
-              <Label htmlFor="lastName">Nom</Label>
+              <Label htmlFor="lastName">Nom *</Label>
               <Input
                 id="lastName"
                 value={formData.lastName}
                 onChange={(e) => setFormData(prev => ({ ...prev, lastName: e.target.value }))}
+                required
               />
             </div>
           </div>
 
           <div>
-            <Label htmlFor="role">Rôle/Fonction</Label>
+            <Label htmlFor="role">Rôle/Fonction *</Label>
             <Input
               id="role"
               value={formData.role}
               onChange={(e) => setFormData(prev => ({ ...prev, role: e.target.value }))}
+              required
             />
           </div>
 
@@ -372,25 +375,27 @@ export const PersonForm: React.FC<PersonFormProps> = ({
 
           {/* 1. Lieu */}
           <div>
-            <Label htmlFor="adresse">Lieu</Label>
+            <Label htmlFor="adresse">Ville *</Label>
             <Input
               id="adresse"
               value={formData.adresse}
               onChange={(e) => setFormData(prev => ({ ...prev, adresse: e.target.value }))}
-              placeholder="Ville, département..."
+              placeholder="Ex: Annecy, Lyon, Chambéry..."
+              required
             />
           </div>
  
            {/* Contact */}
            <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">Email *</Label>
               <Input
                 id="email"
                 type="email"
                 value={formData.email}
                 onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
                 placeholder="email@exemple.com"
+                required
               />
             </div>
             <div>
@@ -402,7 +407,7 @@ export const PersonForm: React.FC<PersonFormProps> = ({
                 placeholder="+33 1 23 45 67 89"
               />
             </div>
-          </div>
+           </div>
 
           {isAdmin && (
             <div className="mt-2">
@@ -532,9 +537,9 @@ export const PersonForm: React.FC<PersonFormProps> = ({
             </div>
           </div>
 
-          {/* Photo (optionnel) */}
+          {/* Photo */}
           <div>
-            <Label htmlFor="photo">Photo (optionnel)</Label>
+            <Label htmlFor="photo">Photo *</Label>
             <div className="space-y-2">
               <Input
                 id="photo"

@@ -9,15 +9,14 @@ export const personSchema = z.object({
   
   lastName: z.string()
     .trim()
-    .max(100, { message: "Le nom ne peut pas dépasser 100 caractères" })
-    .optional(),
+    .min(1, { message: "Le nom est requis" })
+    .max(100, { message: "Le nom ne peut pas dépasser 100 caractères" }),
   
   email: z.string()
     .trim()
     .email({ message: "Email invalide" })
-    .max(255, { message: "L'email ne peut pas dépasser 255 caractères" })
-    .optional()
-    .or(z.literal('')),
+    .min(1, { message: "L'email est requis" })
+    .max(255, { message: "L'email ne peut pas dépasser 255 caractères" }),
   
   phone: z.string()
     .trim()
@@ -27,8 +26,8 @@ export const personSchema = z.object({
   
   role: z.string()
     .trim()
-    .max(200, { message: "Le rôle ne peut pas dépasser 200 caractères" })
-    .optional(),
+    .min(1, { message: "Le rôle est requis" })
+    .max(200, { message: "Le rôle ne peut pas dépasser 200 caractères" }),
   
   description: z.string()
     .trim()
@@ -43,13 +42,12 @@ export const personSchema = z.object({
   
   adresse: z.string()
     .trim()
-    .max(500, { message: "L'adresse ne peut pas dépasser 500 caractères" })
-    .optional(),
+    .min(1, { message: "La ville est requise" })
+    .max(500, { message: "L'adresse ne peut pas dépasser 500 caractères" }),
   
   photo: z.string()
     .trim()
-    .optional()
-    .or(z.literal(''))
+    .min(1, { message: "La photo est requise" })
     .refine(
       (v) => !v || v.length <= 2000 || /^data:image\/(png|jpe?g|webp);base64,/i.test(v),
       { message: "La photo doit être une URL courte ou une image en base64 (acceptée)." }
