@@ -14,7 +14,8 @@ import { NameCorrectionTool } from './admin/NameCorrectionTool';
 import { Button } from './ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from './ui/sheet';
 import { Dialog, DialogContent } from './ui/dialog';
-import { Settings, Eye, EyeOff, ExpandIcon as Expand, ShrinkIcon as Shrink, UserPlus, FolderPlus, LogIn, LogOut, LayoutGrid, List, Network, Menu, X, Upload, Plus } from 'lucide-react';
+import { Input } from './ui/input';
+import { Settings, Eye, EyeOff, ExpandIcon as Expand, ShrinkIcon as Shrink, UserPlus, FolderPlus, LogIn, LogOut, LayoutGrid, List, Network, Menu, X, Upload, Plus, Search } from 'lucide-react';
 import { useOrganigramme } from '../hooks/useOrganigramme';
 import { supabase } from '../integrations/supabase/client';
 import { useAuth } from '../hooks/useAuth';
@@ -50,6 +51,7 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
   const [isControlsMenuOpen, setIsControlsMenuOpen] = useState(false);
   const [isImportOpen, setIsImportOpen] = useState(false);
   const [isNameCorrectionOpen, setIsNameCorrectionOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   
   // Drag & Drop
   const sensors = useSensors(
@@ -331,7 +333,48 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
     return result;
   }, [isAdmin]);
 
+  // Fonction pour filtrer les sections en fonction de la recherche
+  const filterSectionsBySearch = useCallback((sections: Section[], query: string): Section[] => {
+    if (!query.trim()) return sections;
+    
+    const searchLower = query.toLowerCase();
+    
+    const filterSection = (section: Section): Section | null => {
+      // Vérifier si le nom de la section correspond
+      const sectionMatches = section.title.toLowerCase().includes(searchLower);
+      
+      // Vérifier si des membres correspondent
+      const matchingMembers = section.members.filter(member => 
+        member.firstName.toLowerCase().includes(searchLower) ||
+        member.lastName.toLowerCase().includes(searchLower) ||
+        member.role?.toLowerCase().includes(searchLower)
+      );
+      
+      // Filtrer récursivement les sous-sections
+      const matchingSubsections = section.subsections 
+        ? section.subsections.map(filterSection).filter((s): s is Section => s !== null)
+        : [];
+      
+      // Garder la section si elle correspond, ou si elle contient des membres/sous-sections correspondants
+      if (sectionMatches || matchingMembers.length > 0 || matchingSubsections.length > 0) {
+        return {
+          ...section,
+          members: matchingMembers.length > 0 || sectionMatches ? matchingMembers : section.members,
+          subsections: matchingSubsections.length > 0 ? matchingSubsections : section.subsections,
+          isExpanded: true // Auto-expand sections contenant des résultats
+        };
+      }
+      
+      return null;
+    };
+    
+    return sections.map(filterSection).filter((s): s is Section => s !== null);
+  }, []);
+
   const visibleSections = filterVisibleSections(data.sections);
+  
+  // Appliquer ensuite le filtre de recherche sur les sections visibles
+  const searchFilteredSections = filterSectionsBySearch(visibleSections, searchQuery);
 
   const handlePersonClick = useCallback((person: Person) => {
     // Fermer le panneau des postes vacants s'il est ouvert
@@ -556,6 +599,15 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
   };
   
   const totalMembers = getAllMembers(data.sections).length;
+  
+  // Filtrer les membres pour la vue membres
+  const filteredPeople = searchQuery.trim() 
+    ? data.people.filter(person => 
+        person.firstName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        person.lastName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        person.role?.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : data.people;
 
   // Émettre un événement personnalisé avec les stats pour le header
   React.useEffect(() => {
@@ -599,6 +651,21 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
               </SheetHeader>
               
               <div className="py-4 space-y-4">
+                {/* Recherche */}
+                <div>
+                  <h3 className="text-sm font-medium mb-2">Rechercher</h3>
+                  <div className="relative">
+                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      type="text"
+                      placeholder="Rechercher un membre..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="pl-9"
+                    />
+                  </div>
+                </div>
+
                 {/* Modes de vue */}
                 <div>
                   <h3 className="text-sm font-medium mb-2">Mode d'affichage</h3>
@@ -714,6 +781,18 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
         <div className="hidden md:block">
         {/* Controls - Desktop */}
         <div className="flex items-center gap-2 overflow-x-auto pb-1">
+          {/* Recherche */}
+          <div className="relative w-64">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+              type="text"
+              placeholder="Rechercher un membre..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="h-8 pl-9 text-xs"
+            />
+          </div>
+
           {/* View Mode Toggle */}
           <div className="flex gap-1 border border-border rounded-md p-0.5">
             <Button
@@ -788,7 +867,7 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
       {viewMode === 'members' ? (
         <MembersGrid
           sections={data.sections}
-          people={data.people}
+          people={filteredPeople}
           isAdmin={isAdmin}
           onEdit={handleEditPerson}
         />
@@ -807,22 +886,28 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
                 💡 Glissez-déposez les sections et les personnes pour les réorganiser
               </div>
             )}
-            {visibleSections.map(section => (
-              <DraggableSectionCard
-                key={`${section.id}-${section.leader?.id || 'no-leader'}`}
-                section={section}
-                onToggle={toggleSection}
-                onPersonClick={handlePersonClick}
-                isAdmin={isAdmin}
-                onEditPerson={handleEditPerson}
-                onEditVacantPosition={handleEditVacantPosition}
-                allSections={data.sections}
-                onUpdate={refetch}
-                isDragging={activeId === section.id}
-                isOver={overId === section.id}
-                isPersonDragOver={overSectionId === section.id}
-              />
-            ))}
+            {searchFilteredSections.length > 0 ? (
+              searchFilteredSections.map(section => (
+                <DraggableSectionCard
+                  key={`${section.id}-${section.leader?.id || 'no-leader'}`}
+                  section={section}
+                  onToggle={toggleSection}
+                  onPersonClick={handlePersonClick}
+                  isAdmin={isAdmin}
+                  onEditPerson={handleEditPerson}
+                  onEditVacantPosition={handleEditVacantPosition}
+                  allSections={data.sections}
+                  onUpdate={refetch}
+                  isDragging={activeId === section.id}
+                  isOver={overId === section.id}
+                  isPersonDragOver={overSectionId === section.id}
+                />
+              ))
+            ) : (
+              <div className="text-center py-8 text-muted-foreground">
+                Aucun résultat trouvé pour "{searchQuery}"
+              </div>
+            )}
           </div>
           <DragOverlay>
             {activeId && (() => {
@@ -947,7 +1032,13 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
               });
             };
             
-            return renderSectionCards(visibleSections);
+            return searchFilteredSections.length > 0 
+              ? renderSectionCards(searchFilteredSections)
+              : (
+                <div className="col-span-full text-center py-8 text-muted-foreground">
+                  Aucun résultat trouvé pour "{searchQuery}"
+                </div>
+              );
           })()}
         </div>
       )}
