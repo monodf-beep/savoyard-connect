@@ -189,7 +189,10 @@ export type Database = {
       }
       projects: {
         Row: {
+          approval_status: string | null
+          approved_by: string | null
           created_at: string
+          created_by: string | null
           description: string | null
           documents: Json | null
           end_date: string | null
@@ -202,7 +205,10 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          approval_status?: string | null
+          approved_by?: string | null
           created_at?: string
+          created_by?: string | null
           description?: string | null
           documents?: Json | null
           end_date?: string | null
@@ -215,7 +221,10 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          approval_status?: string | null
+          approved_by?: string | null
           created_at?: string
+          created_by?: string | null
           description?: string | null
           documents?: Json | null
           end_date?: string | null
@@ -599,21 +608,30 @@ export type Database = {
       }
       value_chains: {
         Row: {
+          approval_status: string | null
+          approved_by: string | null
           created_at: string | null
+          created_by: string | null
           description: string | null
           id: string
           title: string
           updated_at: string | null
         }
         Insert: {
+          approval_status?: string | null
+          approved_by?: string | null
           created_at?: string | null
+          created_by?: string | null
           description?: string | null
           id?: string
           title: string
           updated_at?: string | null
         }
         Update: {
+          approval_status?: string | null
+          approved_by?: string | null
           created_at?: string | null
+          created_by?: string | null
           description?: string | null
           id?: string
           title?: string
@@ -675,11 +693,21 @@ export type Database = {
           updated_at: string
         }[]
       }
+      get_user_led_sections: {
+        Args: { _user_id: string }
+        Returns: {
+          section_id: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
+        Returns: boolean
+      }
+      is_section_leader: {
+        Args: { _section_id: string; _user_id: string }
         Returns: boolean
       }
       people_public_fn: {
@@ -698,7 +726,7 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "admin" | "user"
+      app_role: "admin" | "user" | "section_leader"
       project_status: "planned" | "in_progress" | "completed"
     }
     CompositeTypes: {
@@ -827,7 +855,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "user"],
+      app_role: ["admin", "user", "section_leader"],
       project_status: ["planned", "in_progress", "completed"],
     },
   },
