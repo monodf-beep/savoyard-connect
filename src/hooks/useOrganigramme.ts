@@ -43,9 +43,11 @@ export const useOrganigramme = (isAdmin: boolean = false) => {
       let peopleData: any[] = [];
       try {
         if (isAdmin) {
-          const result = await supabase.rpc('get_people_with_details');
-          if (result.error) throw result.error;
-          peopleData = result.data || [];
+          const { data: peopleRows, error: peopleError } = await supabase
+            .from('people')
+            .select('id, first_name, last_name, avatar_url, title, bio, email, phone, linkedin, adresse, competences, date_entree, embeds');
+          if (peopleError) throw peopleError;
+          peopleData = peopleRows || [];
         } else {
           const result = await supabase.rpc('people_public_fn');
           if (result.error) throw result.error;
