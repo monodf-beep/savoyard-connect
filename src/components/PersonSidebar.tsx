@@ -92,6 +92,11 @@ export const PersonSidebar: React.FC<PersonSidebarProps> = ({
       return;
     }
 
+    if (!person.firstName || person.firstName.trim() === '') {
+      toast.error('Le prénom doit être renseigné avant d\'envoyer l\'invitation');
+      return;
+    }
+
     setIsSending(true);
     
     try {
@@ -107,7 +112,11 @@ export const PersonSidebar: React.FC<PersonSidebarProps> = ({
 
       // Ensuite on envoie l'invitation
       const { data, error } = await supabase.functions.invoke('send-invite', {
-        body: { email, baseUrl: window.location.origin },
+        body: { 
+          email, 
+          firstName: person.firstName,
+          baseUrl: window.location.origin 
+        },
       });
       
       if (error) {
