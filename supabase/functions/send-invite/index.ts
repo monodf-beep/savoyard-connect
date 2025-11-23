@@ -49,7 +49,7 @@ serve(async (req: Request) => {
       });
     }
 
-    const { email, baseUrl }: { email?: string; baseUrl?: string } = await req.json();
+    const { email, firstName, baseUrl }: { email?: string; firstName?: string; baseUrl?: string } = await req.json();
 
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       return new Response(JSON.stringify({ error: "Email invalide" }), {
@@ -57,6 +57,19 @@ serve(async (req: Request) => {
         headers: { "Content-Type": "application/json", ...corsHeaders },
       });
     }
+
+    if (!firstName || firstName.trim() === "") {
+      return new Response(JSON.stringify({ error: "Le prénom est obligatoire" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
+
+    // Get organization settings for logo
+    const { data: orgSettings } = await supabase
+      .from("organization_settings")
+      .select("logo_url, name")
+      .single();
 
     const origin = baseUrl || req.headers.get("origin") || "";
     const token = crypto.randomUUID().replace(/-/g, "");
@@ -78,20 +91,31 @@ serve(async (req: Request) => {
 
     const link = `${origin}/onboarding?token=${token}`;
 
+    const logoHtml = orgSettings?.logo_url 
+      ? `<div style="text-align: center; margin: 40px 0;"><img src="${orgSettings.logo_url}" alt="Logo Institut de la Langue Savoyarde" style="max-width: 200px; height: auto;" /></div>`
+      : '';
+
     const html = `
-      <div>
-        <h1>Complétez votre profil</h1>
-        <p>Bonjour,</p>
-        <p>Un administrateur vous invite à compléter votre fiche. Cliquez sur le lien ci-dessous :</p>
-        <p><a href="${link}" target="_blank" rel="noopener">Compléter mon profil</a></p>
-        <p>Ce lien expirera dans 14 jours.</p>
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
+        ${logoHtml}
+        <p>Bonjour ${firstName},</p>
+        <p>Nous mettons à jour l'organigramme de l'Institut de la Langue Savoyarde. Pour que ton rôle apparaisse correctement dans la structure, ta fiche doit être complétée.</p>
+        <p>Utilise le lien ci-dessous pour renseigner tes informations.</p>
+        <div style="text-align: center; margin: 30px 0;">
+          <a href="${link}" target="_blank" rel="noopener" style="background-color: #0066cc; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; display: inline-block;">Compléter votre profil</a>
+        </div>
+        <p style="color: #666; font-size: 14px;">Le lien restera actif 14 jours.</p>
+        <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #ddd;">
+          <p style="margin: 0;"><strong>Sylvie Rollin</strong></p>
+          <p style="margin: 5px 0; color: #666;">Conseil d'Administration. Responsable Ressources Humaines.</p>
+        </div>
       </div>
     `;
 
     const { error: emailError } = await resend.emails.send({
       from: "contact@langue-savoyarde.com",
       to: [email],
-      subject: "Invitation à compléter votre profil",
+      subject: "Mise à jour de votre fiche - organigramme interne Institut Langue Savoyarde",
       html,
     });
 
