@@ -124,7 +124,8 @@ export const useOrganigramme = (isAdmin: boolean = false) => {
                 adresse: person.adresse || '',
                 specialite: '',
                 langues: [],
-                hobbies: ''
+                hobbies: '',
+                embeds: person.embeds || []
               } : null;
             }).filter(Boolean) as Person[];
 
@@ -151,7 +152,8 @@ export const useOrganigramme = (isAdmin: boolean = false) => {
               adresse: leaderPerson.adresse || '',
               specialite: '',
               langues: [],
-              hobbies: ''
+              hobbies: '',
+              embeds: leaderPerson.embeds || []
             } : undefined;
 
             return {
@@ -194,7 +196,8 @@ export const useOrganigramme = (isAdmin: boolean = false) => {
         adresse: person.adresse || '',
         specialite: '',
         langues: [],
-        hobbies: ''
+        hobbies: '',
+        embeds: person.embeds || []
       })) || [];
       const formattedJobs = jobsData?.map(job => ({
         id: job.id,
@@ -243,7 +246,8 @@ export const useOrganigramme = (isAdmin: boolean = false) => {
           linkedin: person.linkedin || null,
           adresse: person.adresse || null,
           competences: person.competences && person.competences.length > 0 ? person.competences : null,
-          date_entree: person.dateEntree && person.dateEntree !== '' ? person.dateEntree : null
+          date_entree: person.dateEntree && person.dateEntree !== '' ? person.dateEntree : null,
+          embeds: person.embeds && person.embeds.length > 0 ? person.embeds : null
         })
         .select()
         .maybeSingle();

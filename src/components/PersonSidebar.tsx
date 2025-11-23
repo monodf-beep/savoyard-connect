@@ -12,6 +12,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { z } from 'zod';
 import { Input } from './ui/input';
+import { EmbedDisplay } from './EmbedDisplay';
 
 // Composant pour afficher les sections d'une personne
 const PersonSections: React.FC<{ personId: string }> = ({ personId }) => {
@@ -407,6 +408,11 @@ export const PersonSidebar: React.FC<PersonSidebarProps> = ({
               })}
             </p>
           </div>
+        )}
+
+        {/* 6. Contenus intégrés */}
+        {person.embeds && person.embeds.length > 0 && (
+          <EmbedDisplay embeds={person.embeds} />
         )}
       </div>
     </>

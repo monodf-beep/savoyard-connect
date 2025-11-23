@@ -52,7 +52,8 @@ export const PersonForm: React.FC<PersonFormProps> = ({
     adresse: person?.adresse || '',
     specialite: person?.specialite || '',
     langues: person?.langues || [],
-    hobbies: person?.hobbies || ''
+    hobbies: person?.hobbies || '',
+    embeds: person?.embeds || []
   });
   
   const [selectedSectionIds, setSelectedSectionIds] = useState<string[]>(
@@ -62,6 +63,7 @@ export const PersonForm: React.FC<PersonFormProps> = ({
   const [newMission, setNewMission] = useState('');
   const [newCompetence, setNewCompetence] = useState('');
   const [newLangue, setNewLangue] = useState('');
+  const [newEmbed, setNewEmbed] = useState('');
   const [isImageEditorOpen, setIsImageEditorOpen] = useState(false);
   const { isAdmin } = useAuth();
   const { data } = useOrganigramme(isAdmin);
@@ -90,7 +92,8 @@ export const PersonForm: React.FC<PersonFormProps> = ({
         adresse: person.adresse || '',
         specialite: person.specialite || '',
         langues: person.langues || [],
-        hobbies: person.hobbies || ''
+        hobbies: person.hobbies || '',
+        embeds: person.embeds || []
       });
       setSelectedSectionIds(person.sectionId ? [person.sectionId] : []);
     } else {
@@ -466,6 +469,67 @@ export const PersonForm: React.FC<PersonFormProps> = ({
               value={formData.dateEntree}
               onChange={(e) => setFormData(prev => ({ ...prev, dateEntree: e.target.value }))}
             />
+          </div>
+
+          {/* 6. Contenus intégrés (Instagram, YouTube, etc.) */}
+          <div>
+            <Label>Contenus intégrés (Instagram, YouTube, etc.)</Label>
+            <div className="space-y-2">
+              <div className="flex gap-2">
+                <Input
+                  value={newEmbed}
+                  onChange={(e) => setNewEmbed(e.target.value)}
+                  placeholder="https://www.instagram.com/p/..."
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      if (newEmbed.trim()) {
+                        setFormData(prev => ({
+                          ...prev,
+                          embeds: [...(prev.embeds || []), newEmbed.trim()]
+                        }));
+                        setNewEmbed('');
+                      }
+                    }
+                  }}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  onClick={() => {
+                    if (newEmbed.trim()) {
+                      setFormData(prev => ({
+                        ...prev,
+                        embeds: [...(prev.embeds || []), newEmbed.trim()]
+                      }));
+                      setNewEmbed('');
+                    }
+                  }}
+                >
+                  <Plus className="w-4 h-4" />
+                </Button>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {(formData.embeds || []).map((embed, index) => (
+                  <Badge key={index} variant="secondary" className="gap-1 pr-1">
+                    {new URL(embed).hostname.replace('www.', '')}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setFormData(prev => ({
+                          ...prev,
+                          embeds: (prev.embeds || []).filter((_, i) => i !== index)
+                        }));
+                      }}
+                      className="ml-1 hover:bg-destructive/20 rounded-full p-1"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </Badge>
+                ))}
+              </div>
+            </div>
           </div>
 
           {/* Photo (optionnel) */}
