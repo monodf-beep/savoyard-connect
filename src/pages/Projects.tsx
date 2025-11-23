@@ -22,10 +22,13 @@ export interface Project {
   roadmap?: string;
   created_at: string;
   updated_at: string;
+  approval_status?: 'pending' | 'approved' | 'rejected';
+  created_by?: string;
+  approved_by?: string;
 }
 
 const Projects = () => {
-  const { isAdmin, loading: authLoading } = useAuth();
+  const { isAdmin, isSectionLeader, user, loading: authLoading } = useAuth();
   const { data } = useOrganigramme();
   const { toast } = useToast();
   const [projects, setProjects] = useState<Project[]>([]);
@@ -52,6 +55,7 @@ const Projects = () => {
         setProjects((data || []).map(p => ({
           ...p,
           documents: (p.documents as any) || [],
+          approval_status: (p.approval_status as 'pending' | 'approved' | 'rejected' | undefined) || 'pending',
         })));
       }
       setIsLoading(false);
@@ -72,6 +76,7 @@ const Projects = () => {
         setProjects(data.map(p => ({
           ...p,
           documents: (p.documents as any) || [],
+          approval_status: (p.approval_status as 'pending' | 'approved' | 'rejected' | undefined) || 'pending',
         })));
       }
     };
@@ -140,6 +145,7 @@ const Projects = () => {
           {
             ...newData,
             documents: (newData.documents as any) || [],
+            approval_status: (newData.approval_status as 'pending' | 'approved' | 'rejected' | undefined) || 'pending',
           },
           ...projects,
         ]);
@@ -191,6 +197,70 @@ const Projects = () => {
     setShowForm(true);
   };
 
+  const handleApproveProject = async (projectId: string) => {
+    try {
+      const { error } = await supabase
+        .from('projects')
+        .update({ 
+          approval_status: 'approved',
+          approved_by: user?.id 
+        })
+        .eq('id', projectId);
+
+      if (error) throw error;
+
+      setProjects(projects.map(p => 
+        p.id === projectId 
+          ? { ...p, approval_status: 'approved' as const, approved_by: user?.id }
+          : p
+      ));
+
+      toast({
+        title: 'Succès',
+        description: 'Projet approuvé',
+      });
+    } catch (error: any) {
+      console.error('Error approving project:', error);
+      toast({
+        title: 'Erreur',
+        description: "Impossible d'approuver le projet",
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleRejectProject = async (projectId: string) => {
+    try {
+      const { error } = await supabase
+        .from('projects')
+        .update({ 
+          approval_status: 'rejected',
+          approved_by: user?.id 
+        })
+        .eq('id', projectId);
+
+      if (error) throw error;
+
+      setProjects(projects.map(p => 
+        p.id === projectId 
+          ? { ...p, approval_status: 'rejected' as const, approved_by: user?.id }
+          : p
+      ));
+
+      toast({
+        title: 'Succès',
+        description: 'Projet rejeté',
+      });
+    } catch (error: any) {
+      console.error('Error rejecting project:', error);
+      toast({
+        title: 'Erreur',
+        description: 'Impossible de rejeter le projet',
+        variant: 'destructive',
+      });
+    }
+  };
+
   if (authLoading || isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -199,8 +269,12 @@ const Projects = () => {
     );
   }
 
-  // Group projects by section
-  const projectsBySection = projects.reduce((acc, project) => {
+  // Separate pending projects for admin approval
+  const pendingProjects = projects.filter(p => p.approval_status === 'pending');
+  const approvedProjects = projects.filter(p => p.approval_status !== 'pending');
+
+  // Group approved projects by section
+  const projectsBySection = approvedProjects.reduce((acc, project) => {
     const sectionId = project.section_id;
     if (!acc[sectionId]) {
       acc[sectionId] = [];
@@ -256,7 +330,7 @@ const Projects = () => {
               ]}
             />
           </div>
-          {isAdmin && (
+          {(isAdmin || isSectionLeader) && (
             <Button onClick={handleAddProject}>
               <Plus className="h-4 w-4 mr-2" />
               Nouveau projet
@@ -264,12 +338,34 @@ const Projects = () => {
           )}
         </div>
 
+        {/* Pending approvals section (Admin only) */}
+        {isAdmin && pendingProjects.length > 0 && (
+          <div className="mb-8">
+            <h2 className="text-2xl font-semibold mb-4 text-orange-700 dark:text-orange-300">
+              Projets en attente d'approbation ({pendingProjects.length})
+            </h2>
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {pendingProjects.map(project => (
+                <ProjectCard
+                  key={project.id}
+                  project={project}
+                  isAdmin={isAdmin}
+                  onEdit={() => handleEditProject(project)}
+                  onDelete={() => handleDeleteProject(project.id)}
+                  onApprove={() => handleApproveProject(project.id)}
+                  onReject={() => handleRejectProject(project.id)}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Projects list */}
-        {projects.length === 0 ? (
+        {approvedProjects.length === 0 && pendingProjects.length === 0 ? (
           <div className="text-center py-12">
             <p className="text-muted-foreground">Aucun projet pour le moment</p>
           </div>
-        ) : (
+        ) : approvedProjects.length > 0 ? (
         <div className="space-y-8">
             {Object.entries(projectsBySection).map(([sectionId, sectionProjects]) => {
               const section = data.sections.find(s => s.id === sectionId);
@@ -294,7 +390,7 @@ const Projects = () => {
               );
             })}
           </div>
-        )}
+        ) : null}
 
         {/* Project Form Dialog */}
         {showForm && (

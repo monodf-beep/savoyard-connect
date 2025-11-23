@@ -42,6 +42,7 @@ export const SectionDetailsSidebar: React.FC<SectionDetailsSidebarProps> = ({
             setProjects(data.map(p => ({
               ...p,
               documents: (p.documents as any) || [],
+              approval_status: (p.approval_status as 'pending' | 'approved' | 'rejected' | undefined) || 'pending',
             })));
           }
           setLoading(false);
