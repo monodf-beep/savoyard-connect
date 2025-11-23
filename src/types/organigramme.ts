@@ -22,6 +22,7 @@ export interface Person {
   specialite?: string;
   langues?: string[];
   hobbies?: string;
+  embeds?: string[]; // URLs for embedded content (Instagram, YouTube, etc.)
 }
 
 export interface JobPosting {

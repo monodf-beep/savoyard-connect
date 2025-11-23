@@ -130,6 +130,7 @@ export type Database = {
           created_at: string | null
           date_entree: string | null
           email: string | null
+          embeds: Json | null
           experience: string | null
           first_name: string
           formation: string | null
@@ -151,6 +152,7 @@ export type Database = {
           created_at?: string | null
           date_entree?: string | null
           email?: string | null
+          embeds?: Json | null
           experience?: string | null
           first_name: string
           formation?: string | null
@@ -172,6 +174,7 @@ export type Database = {
           created_at?: string | null
           date_entree?: string | null
           email?: string | null
+          embeds?: Json | null
           experience?: string | null
           first_name?: string
           formation?: string | null
@@ -654,6 +657,7 @@ export type Database = {
           created_at: string | null
           date_entree: string | null
           email: string | null
+          embeds: Json | null
           experience: string | null
           first_name: string
           formation: string | null
