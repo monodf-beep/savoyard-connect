@@ -226,20 +226,38 @@ export const PersonForm: React.FC<PersonFormProps> = ({
 
   const sendInvite = async () => {
     const email = (formData.email || '').trim();
+    const firstName = (formData.firstName || '').trim();
+    
     const emailSchema = z.string().email();
     if (!emailSchema.safeParse(email).success) {
       toast.error('Email invalide');
       return;
     }
+    
+    if (!firstName) {
+      toast.error('Le prénom est obligatoire pour envoyer une invitation');
+      return;
+    }
+    
     try {
-      const { error } = await supabase.functions.invoke('send-invite', {
-        body: { email, baseUrl: window.location.origin },
+      const { data, error } = await supabase.functions.invoke('send-invite', {
+        body: { email, firstName, baseUrl: window.location.origin },
       });
+      
       if (error) throw error;
-      toast.success("Invitation envoyée");
-    } catch (e) {
+      
+      // Check for error in response body
+      if (data?.error) {
+        const details = data?.details ? `: ${data.details}` : '';
+        toast.error(`${data.error}${details}`);
+        return;
+      }
+      
+      toast.success("Invitation envoyée à " + email);
+    } catch (e: any) {
       if (import.meta.env.DEV) console.error(e);
-      toast.error("Échec de l'envoi de l'invitation");
+      const errorMessage = e?.message || "Erreur inconnue";
+      toast.error(`Échec de l'envoi de l'invitation: ${errorMessage}`);
     }
   };
 
@@ -539,7 +557,7 @@ export const PersonForm: React.FC<PersonFormProps> = ({
 
           {/* Photo */}
           <div>
-            <Label htmlFor="photo">Photo *</Label>
+            <Label htmlFor="photo">Photo {!isAdmin && '*'}</Label>
             <div className="space-y-2">
               <Input
                 id="photo"
