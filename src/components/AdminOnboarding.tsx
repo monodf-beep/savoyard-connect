@@ -9,6 +9,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import adminOnboardingHero from '@/assets/admin-onboarding-hero.jpg';
 
 interface OnboardingSlide {
   title: string;
@@ -30,31 +31,33 @@ export const AdminOnboarding: React.FC<AdminOnboardingProps> = ({ open, onOpenCh
       title: "Bienvenue dans l'interface d'administration",
       description: "Découvrez les principales fonctionnalités pour gérer votre organisation",
       content: (
-        <div className="space-y-4">
-          <div className="aspect-video bg-gradient-to-br from-primary/20 to-accent/20 rounded-lg flex items-center justify-center">
-            <div className="text-center p-8">
-              <h3 className="text-2xl font-bold mb-4">Tableau de bord admin</h3>
-              <p className="text-muted-foreground">
-                Accédez à tous les outils de gestion en un seul endroit
-              </p>
+        <div className="space-y-3">
+          <div className="h-32 rounded-lg overflow-hidden relative">
+            <img 
+              src={adminOnboardingHero} 
+              alt="Tableau de bord admin" 
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent flex items-end justify-center pb-3">
+              <h3 className="text-lg font-bold text-foreground">Tableau de bord admin</h3>
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-4 text-sm">
-            <div className="p-3 border rounded-lg">
-              <div className="font-semibold mb-1">👥 Gestion des membres</div>
-              <p className="text-muted-foreground text-xs">Ajoutez, modifiez et organisez vos bénévoles</p>
+          <div className="grid grid-cols-2 gap-2 text-sm">
+            <div className="p-2 border rounded-lg">
+              <div className="font-semibold text-xs">👥 Gestion des membres</div>
+              <p className="text-muted-foreground text-xs">Ajoutez et organisez vos bénévoles</p>
             </div>
-            <div className="p-3 border rounded-lg">
-              <div className="font-semibold mb-1">📊 Chaînes de valeur</div>
-              <p className="text-muted-foreground text-xs">Visualisez et gérez les processus</p>
+            <div className="p-2 border rounded-lg">
+              <div className="font-semibold text-xs">📊 Chaînes de valeur</div>
+              <p className="text-muted-foreground text-xs">Visualisez les processus</p>
             </div>
-            <div className="p-3 border rounded-lg">
-              <div className="font-semibold mb-1">🎯 Projets</div>
-              <p className="text-muted-foreground text-xs">Suivez l'avancement des initiatives</p>
+            <div className="p-2 border rounded-lg">
+              <div className="font-semibold text-xs">🎯 Projets</div>
+              <p className="text-muted-foreground text-xs">Suivez l'avancement</p>
             </div>
-            <div className="p-3 border rounded-lg">
-              <div className="font-semibold mb-1">💼 Recrutement</div>
-              <p className="text-muted-foreground text-xs">Gérez les offres et candidatures</p>
+            <div className="p-2 border rounded-lg">
+              <div className="font-semibold text-xs">💼 Bénévolat</div>
+              <p className="text-muted-foreground text-xs">Gérez les offres</p>
             </div>
           </div>
         </div>
@@ -64,40 +67,38 @@ export const AdminOnboarding: React.FC<AdminOnboardingProps> = ({ open, onOpenCh
       title: "Gérer l'organigramme",
       description: "Ajoutez et organisez les membres de votre organisation",
       content: (
-        <div className="space-y-4">
-          <div className="aspect-video bg-muted rounded-lg flex items-center justify-center relative overflow-hidden">
+        <div className="space-y-3">
+          <div className="h-28 bg-muted rounded-lg flex items-center justify-center relative overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent" />
-            <div className="relative z-10 text-center p-8">
-              <div className="inline-block mb-4 p-4 bg-background rounded-lg shadow-lg">
-                <div className="text-sm font-mono text-left space-y-2">
-                  <div>📁 Bureau</div>
-                  <div className="pl-4">├─ 👤 Président</div>
-                  <div className="pl-4">├─ 👤 Secrétaire</div>
-                  <div className="pl-4">└─ 👤 Trésorier</div>
-                </div>
+            <div className="relative z-10 p-3 bg-background rounded-lg shadow-lg">
+              <div className="text-xs font-mono text-left space-y-1">
+                <div>📁 Bureau</div>
+                <div className="pl-3">├─ 👤 Président</div>
+                <div className="pl-3">├─ 👤 Secrétaire</div>
+                <div className="pl-3">└─ 👤 Trésorier</div>
               </div>
             </div>
           </div>
-          <div className="space-y-3 text-sm">
-            <div className="flex items-start gap-3">
-              <Badge variant="outline" className="mt-0.5 bg-primary/10 text-primary border-primary/30 font-bold">1</Badge>
+          <div className="space-y-2 text-sm">
+            <div className="flex items-start gap-2">
+              <Badge variant="outline" className="mt-0.5 bg-primary/10 text-primary border-primary/30 font-bold text-xs">1</Badge>
               <div>
-                <div className="font-semibold">Cliquez sur "Ajouter une personne"</div>
-                <p className="text-muted-foreground text-xs">Dans le menu Organisation en haut à gauche</p>
+                <div className="font-semibold text-sm">Cliquez sur "Ajouter une personne"</div>
+                <p className="text-muted-foreground text-xs">Dans le menu Organisation</p>
               </div>
             </div>
-            <div className="flex items-start gap-3">
-              <Badge variant="outline" className="mt-0.5 bg-primary/10 text-primary border-primary/30 font-bold">2</Badge>
+            <div className="flex items-start gap-2">
+              <Badge variant="outline" className="mt-0.5 bg-primary/10 text-primary border-primary/30 font-bold text-xs">2</Badge>
               <div>
-                <div className="font-semibold">Remplissez les informations</div>
-                <p className="text-muted-foreground text-xs">Nom, rôle, section, compétences, LinkedIn, etc.</p>
+                <div className="font-semibold text-sm">Remplissez les informations</div>
+                <p className="text-muted-foreground text-xs">Nom, rôle, section, compétences</p>
               </div>
             </div>
-            <div className="flex items-start gap-3">
-              <Badge variant="outline" className="mt-0.5 bg-primary/10 text-primary border-primary/30 font-bold">3</Badge>
+            <div className="flex items-start gap-2">
+              <Badge variant="outline" className="mt-0.5 bg-primary/10 text-primary border-primary/30 font-bold text-xs">3</Badge>
               <div>
-                <div className="font-semibold">Utilisez l'import LinkedIn</div>
-                <p className="text-muted-foreground text-xs">Remplissage automatique depuis un profil public</p>
+                <div className="font-semibold text-sm">Utilisez l'import LinkedIn</div>
+                <p className="text-muted-foreground text-xs">Remplissage automatique</p>
               </div>
             </div>
           </div>
@@ -108,35 +109,35 @@ export const AdminOnboarding: React.FC<AdminOnboardingProps> = ({ open, onOpenCh
       title: "Assistant IA intégré",
       description: "Gagnez du temps avec l'assistant intelligent",
       content: (
-        <div className="space-y-4">
-          <div className="aspect-video bg-gradient-to-br from-primary/10 to-primary/5 rounded-lg flex items-center justify-center">
-            <div className="text-center p-8">
-              <div className="inline-flex items-center gap-2 bg-background px-4 py-2 rounded-full shadow-lg mb-4 border border-primary/20">
+        <div className="space-y-3">
+          <div className="h-28 bg-gradient-to-br from-primary/10 to-primary/5 rounded-lg flex items-center justify-center">
+            <div className="text-center p-4">
+              <div className="inline-flex items-center gap-2 bg-background px-3 py-1.5 rounded-full shadow-lg mb-3 border border-primary/20">
                 <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
-                <span className="text-sm font-medium text-primary">Assistant IA actif</span>
+                <span className="text-xs font-medium text-primary">Assistant IA actif</span>
               </div>
-              <div className="space-y-2 text-left max-w-md mx-auto">
-                <div className="bg-primary/10 p-3 rounded-lg">
-                  <p className="text-sm">💬 "Ajoute Rodolphe Simon comme secrétaire"</p>
+              <div className="space-y-1.5 text-left max-w-xs mx-auto">
+                <div className="bg-primary/10 p-2 rounded-lg">
+                  <p className="text-xs">💬 "Ajoute Rodolphe Simon comme secrétaire"</p>
                 </div>
-                <div className="bg-muted p-3 rounded-lg">
-                  <p className="text-sm">✅ Modification proposée et confirmée</p>
+                <div className="bg-muted p-2 rounded-lg">
+                  <p className="text-xs">✅ Modification proposée et confirmée</p>
                 </div>
               </div>
             </div>
           </div>
-          <div className="space-y-3 text-sm">
-            <div className="p-3 bg-primary/10 border border-primary/20 rounded-lg">
-              <div className="font-semibold mb-1">💡 Commandes vocales</div>
-              <p className="text-muted-foreground text-xs">Dictez vos modifications à haute voix</p>
+          <div className="grid grid-cols-3 gap-2 text-sm">
+            <div className="p-2 bg-primary/10 border border-primary/20 rounded-lg text-center">
+              <div className="text-lg mb-1">💡</div>
+              <div className="font-semibold text-xs">Vocales</div>
             </div>
-            <div className="p-3 bg-primary/10 border border-primary/20 rounded-lg">
-              <div className="font-semibold mb-1">🖼️ Analyse d'images</div>
-              <p className="text-muted-foreground text-xs">Uploadez des photos de trombinoscope</p>
+            <div className="p-2 bg-primary/10 border border-primary/20 rounded-lg text-center">
+              <div className="text-lg mb-1">🖼️</div>
+              <div className="font-semibold text-xs">Images</div>
             </div>
-            <div className="p-3 bg-primary/10 border border-primary/20 rounded-lg">
-              <div className="font-semibold mb-1">✨ Suggestions intelligentes</div>
-              <p className="text-muted-foreground text-xs">L'IA propose des améliorations contextuelles</p>
+            <div className="p-2 bg-primary/10 border border-primary/20 rounded-lg text-center">
+              <div className="text-lg mb-1">✨</div>
+              <div className="font-semibold text-xs">Suggestions</div>
             </div>
           </div>
         </div>
@@ -146,36 +147,36 @@ export const AdminOnboarding: React.FC<AdminOnboardingProps> = ({ open, onOpenCh
       title: "Chaînes de valeur",
       description: "Visualisez et gérez les processus de votre organisation",
       content: (
-        <div className="space-y-4">
-          <div className="aspect-video bg-muted rounded-lg flex items-center justify-center">
-            <div className="flex items-center gap-2 p-6">
-              <div className="px-4 py-2 bg-primary/20 rounded-lg border-2 border-primary font-medium">Édition</div>
-              <div className="text-2xl text-muted-foreground">→</div>
-              <div className="px-4 py-2 bg-primary/15 rounded-lg border-2 border-primary/60 font-medium">Relecture</div>
-              <div className="text-2xl text-muted-foreground">→</div>
-              <div className="px-4 py-2 bg-primary/10 rounded-lg border-2 border-primary/40 font-medium">Publication</div>
+        <div className="space-y-3">
+          <div className="h-24 bg-muted rounded-lg flex items-center justify-center">
+            <div className="flex items-center gap-1.5 px-4">
+              <div className="px-3 py-1.5 bg-primary/20 rounded-lg border border-primary text-sm font-medium">Édition</div>
+              <div className="text-lg text-muted-foreground">→</div>
+              <div className="px-3 py-1.5 bg-primary/15 rounded-lg border border-primary/60 text-sm font-medium">Relecture</div>
+              <div className="text-lg text-muted-foreground">→</div>
+              <div className="px-3 py-1.5 bg-primary/10 rounded-lg border border-primary/40 text-sm font-medium">Publication</div>
             </div>
           </div>
-          <div className="space-y-3 text-sm">
-            <div className="flex items-start gap-3">
-              <Badge variant="outline" className="mt-0.5 bg-primary/10 text-primary border-primary/30 font-bold">1</Badge>
+          <div className="space-y-2 text-sm">
+            <div className="flex items-start gap-2">
+              <Badge variant="outline" className="mt-0.5 bg-primary/10 text-primary border-primary/30 font-bold text-xs">1</Badge>
               <div>
-                <div className="font-semibold">Créez des chaînes de processus</div>
+                <div className="font-semibold text-sm">Créez des chaînes de processus</div>
                 <p className="text-muted-foreground text-xs">Définissez les étapes de vos workflows</p>
               </div>
             </div>
-            <div className="flex items-start gap-3">
-              <Badge variant="outline" className="mt-0.5 bg-primary/10 text-primary border-primary/30 font-bold">2</Badge>
+            <div className="flex items-start gap-2">
+              <Badge variant="outline" className="mt-0.5 bg-primary/10 text-primary border-primary/30 font-bold text-xs">2</Badge>
               <div>
-                <div className="font-semibold">Assignez des acteurs</div>
-                <p className="text-muted-foreground text-xs">Personnes ou sections responsables de chaque segment</p>
+                <div className="font-semibold text-sm">Assignez des acteurs</div>
+                <p className="text-muted-foreground text-xs">Personnes ou sections responsables</p>
               </div>
             </div>
-            <div className="flex items-start gap-3">
-              <Badge variant="outline" className="mt-0.5 bg-primary/10 text-primary border-primary/30 font-bold">3</Badge>
+            <div className="flex items-start gap-2">
+              <Badge variant="outline" className="mt-0.5 bg-primary/10 text-primary border-primary/30 font-bold text-xs">3</Badge>
               <div>
-                <div className="font-semibold">Visualisation graphique</div>
-                <p className="text-muted-foreground text-xs">Vue esthétique avec flèches et connexions</p>
+                <div className="font-semibold text-sm">Visualisation graphique</div>
+                <p className="text-muted-foreground text-xs">Vue avec flèches et connexions</p>
               </div>
             </div>
           </div>
@@ -186,45 +187,43 @@ export const AdminOnboarding: React.FC<AdminOnboardingProps> = ({ open, onOpenCh
       title: "Gestion des projets",
       description: "Suivez et organisez les projets de votre organisation",
       content: (
-        <div className="space-y-4">
-          <div className="aspect-video bg-gradient-to-br from-green-500/20 to-teal-500/20 rounded-lg flex items-center justify-center">
-            <div className="text-center p-8">
-              <div className="grid grid-cols-3 gap-3 mb-4">
-                <div className="bg-background p-3 rounded-lg shadow-lg">
-                  <div className="text-xs font-semibold mb-1">Planifié</div>
-                  <div className="text-2xl">📋</div>
-                </div>
-                <div className="bg-background p-3 rounded-lg shadow-lg">
-                  <div className="text-xs font-semibold mb-1">En cours</div>
-                  <div className="text-2xl">⚡</div>
-                </div>
-                <div className="bg-background p-3 rounded-lg shadow-lg">
-                  <div className="text-xs font-semibold mb-1">Terminé</div>
-                  <div className="text-2xl">✅</div>
-                </div>
+        <div className="space-y-3">
+          <div className="h-24 bg-gradient-to-br from-green-500/20 to-teal-500/20 rounded-lg flex items-center justify-center">
+            <div className="grid grid-cols-3 gap-2">
+              <div className="bg-background p-2 rounded-lg shadow text-center">
+                <div className="text-lg">📋</div>
+                <div className="text-xs font-semibold">Planifié</div>
+              </div>
+              <div className="bg-background p-2 rounded-lg shadow text-center">
+                <div className="text-lg">⚡</div>
+                <div className="text-xs font-semibold">En cours</div>
+              </div>
+              <div className="bg-background p-2 rounded-lg shadow text-center">
+                <div className="text-lg">✅</div>
+                <div className="text-xs font-semibold">Terminé</div>
               </div>
             </div>
           </div>
-          <div className="space-y-3 text-sm">
-            <div className="flex items-start gap-3">
-              <Badge variant="outline" className="mt-0.5 bg-primary/10 text-primary border-primary/30 font-bold">1</Badge>
+          <div className="space-y-2 text-sm">
+            <div className="flex items-start gap-2">
+              <Badge variant="outline" className="mt-0.5 bg-primary/10 text-primary border-primary/30 font-bold text-xs">1</Badge>
               <div>
-                <div className="font-semibold">Créez des projets par section</div>
+                <div className="font-semibold text-sm">Créez des projets par section</div>
                 <p className="text-muted-foreground text-xs">Chaque projet est rattaché à une section</p>
               </div>
             </div>
-            <div className="flex items-start gap-3">
-              <Badge variant="outline" className="mt-0.5 bg-primary/10 text-primary border-primary/30 font-bold">2</Badge>
+            <div className="flex items-start gap-2">
+              <Badge variant="outline" className="mt-0.5 bg-primary/10 text-primary border-primary/30 font-bold text-xs">2</Badge>
               <div>
-                <div className="font-semibold">Suivez l'avancement</div>
-                <p className="text-muted-foreground text-xs">Statut, dates, description, roadmap et documents</p>
+                <div className="font-semibold text-sm">Suivez l'avancement</div>
+                <p className="text-muted-foreground text-xs">Statut, dates, description, roadmap</p>
               </div>
             </div>
-            <div className="flex items-start gap-3">
-              <Badge variant="outline" className="mt-0.5 bg-primary/10 text-primary border-primary/30 font-bold">3</Badge>
+            <div className="flex items-start gap-2">
+              <Badge variant="outline" className="mt-0.5 bg-primary/10 text-primary border-primary/30 font-bold text-xs">3</Badge>
               <div>
-                <div className="font-semibold">Vue d'ensemble</div>
-                <p className="text-muted-foreground text-xs">Visualisez tous les projets en cours</p>
+                <div className="font-semibold text-sm">Vue d'ensemble</div>
+                <p className="text-muted-foreground text-xs">Visualisez tous les projets</p>
               </div>
             </div>
           </div>
@@ -232,39 +231,36 @@ export const AdminOnboarding: React.FC<AdminOnboardingProps> = ({ open, onOpenCh
       ),
     },
     {
-      title: "Recrutement et offres",
-      description: "Gérez les postes vacants et les candidatures",
+      title: "Bénévolat et offres",
+      description: "Gérez les recherches de bénévoles et candidatures",
       content: (
-        <div className="space-y-4">
-          <div className="aspect-video bg-gradient-to-br from-orange-500/20 to-red-500/20 rounded-lg flex items-center justify-center">
-            <div className="text-center p-8">
-              <div className="inline-block bg-background p-6 rounded-lg shadow-lg">
-                <div className="text-4xl mb-2">💼</div>
-                <div className="text-sm font-semibold mb-1">Postes vacants</div>
-                <div className="text-xs text-muted-foreground">Publiez et gérez vos offres</div>
-              </div>
+        <div className="space-y-3">
+          <div className="h-24 bg-gradient-to-br from-orange-500/20 to-red-500/20 rounded-lg flex items-center justify-center">
+            <div className="bg-background p-4 rounded-lg shadow-lg text-center">
+              <div className="text-3xl mb-1">💼</div>
+              <div className="text-sm font-semibold">Recherche bénévoles</div>
             </div>
           </div>
-          <div className="space-y-3 text-sm">
-            <div className="flex items-start gap-3">
-              <Badge variant="outline" className="mt-0.5 bg-primary/10 text-primary border-primary/30 font-bold">1</Badge>
+          <div className="space-y-2 text-sm">
+            <div className="flex items-start gap-2">
+              <Badge variant="outline" className="mt-0.5 bg-primary/10 text-primary border-primary/30 font-bold text-xs">1</Badge>
               <div>
-                <div className="font-semibold">Créez des postes vacants</div>
-                <p className="text-muted-foreground text-xs">Définissez les postes recherchés par section</p>
+                <div className="font-semibold text-sm">Créez des postes vacants</div>
+                <p className="text-muted-foreground text-xs">Postes recherchés par section</p>
               </div>
             </div>
-            <div className="flex items-start gap-3">
-              <Badge variant="outline" className="mt-0.5 bg-primary/10 text-primary border-primary/30 font-bold">2</Badge>
+            <div className="flex items-start gap-2">
+              <Badge variant="outline" className="mt-0.5 bg-primary/10 text-primary border-primary/30 font-bold text-xs">2</Badge>
               <div>
-                <div className="font-semibold">Recevez des candidatures</div>
-                <p className="text-muted-foreground text-xs">Les candidats postulent directement via l'organigramme</p>
+                <div className="font-semibold text-sm">Recevez des candidatures</div>
+                <p className="text-muted-foreground text-xs">Via l'organigramme ou page dédiée</p>
               </div>
             </div>
-            <div className="flex items-start gap-3">
-              <Badge variant="outline" className="mt-0.5 bg-primary/10 text-primary border-primary/30 font-bold">3</Badge>
+            <div className="flex items-start gap-2">
+              <Badge variant="outline" className="mt-0.5 bg-primary/10 text-primary border-primary/30 font-bold text-xs">3</Badge>
               <div>
-                <div className="font-semibold">Publiez des offres détaillées</div>
-                <p className="text-muted-foreground text-xs">Page Jobs pour offres d'emploi complètes</p>
+                <div className="font-semibold text-sm">Publiez des offres détaillées</div>
+                <p className="text-muted-foreground text-xs">Page Bénévolat complète</p>
               </div>
             </div>
           </div>
@@ -273,28 +269,25 @@ export const AdminOnboarding: React.FC<AdminOnboardingProps> = ({ open, onOpenCh
     },
     {
       title: "Vous êtes prêt !",
-      description: "Commencez à gérer votre organisation efficacement",
+      description: "Commencez à gérer votre organisation",
       content: (
-        <div className="space-y-6">
-          <div className="aspect-video bg-gradient-to-br from-green-500/20 to-blue-500/20 rounded-lg flex items-center justify-center">
-            <div className="text-center p-8">
-              <div className="text-6xl mb-4">🎉</div>
-              <h3 className="text-2xl font-bold mb-2">Tout est prêt !</h3>
-              <p className="text-muted-foreground">
-                Explorez l'interface et n'hésitez pas à utiliser l'assistant IA
-              </p>
+        <div className="space-y-3">
+          <div className="h-28 bg-gradient-to-br from-green-500/20 to-blue-500/20 rounded-lg flex items-center justify-center">
+            <div className="text-center p-4">
+              <div className="text-5xl mb-2">🎉</div>
+              <h3 className="text-xl font-bold">Tout est prêt !</h3>
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-3 text-sm">
-            <div className="p-3 border rounded-lg text-center">
-              <div className="text-2xl mb-2">❓</div>
-              <div className="font-semibold mb-1">Besoin d'aide ?</div>
-              <p className="text-muted-foreground text-xs">Cliquez sur les boutons (i) pour les tutoriels</p>
+          <div className="grid grid-cols-2 gap-2 text-sm">
+            <div className="p-2 border rounded-lg text-center">
+              <div className="text-xl mb-1">❓</div>
+              <div className="font-semibold text-xs">Besoin d'aide ?</div>
+              <p className="text-muted-foreground text-xs">Boutons (i) pour tutoriels</p>
             </div>
-            <div className="p-3 border rounded-lg text-center">
-              <div className="text-2xl mb-2">🔄</div>
-              <div className="font-semibold mb-1">Revoir ce guide</div>
-              <p className="text-muted-foreground text-xs">Accessible depuis le menu Organisation</p>
+            <div className="p-2 border rounded-lg text-center">
+              <div className="text-xl mb-1">🔄</div>
+              <div className="font-semibold text-xs">Revoir ce guide</div>
+              <p className="text-muted-foreground text-xs">Menu Organisation</p>
             </div>
           </div>
         </div>
@@ -337,7 +330,7 @@ export const AdminOnboarding: React.FC<AdminOnboardingProps> = ({ open, onOpenCh
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
+      <DialogContent className="max-w-2xl max-h-[85vh] overflow-hidden flex flex-col">
         <button
           onClick={handleSkip}
           className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground"
@@ -345,12 +338,12 @@ export const AdminOnboarding: React.FC<AdminOnboardingProps> = ({ open, onOpenCh
           <X className="h-4 w-4" />
           <span className="sr-only">Close</span>
         </button>
-        <DialogHeader>
-          <DialogTitle>{slides[currentSlide].title}</DialogTitle>
+        <DialogHeader className="pb-2">
+          <DialogTitle className="text-lg">{slides[currentSlide].title}</DialogTitle>
           <p className="text-sm text-muted-foreground">{slides[currentSlide].description}</p>
         </DialogHeader>
 
-        <div className="flex-1 overflow-y-auto py-6 px-1">
+        <div className="flex-1 py-2 px-1">
           {slides[currentSlide].content}
         </div>
 
