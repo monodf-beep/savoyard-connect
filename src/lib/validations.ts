@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
-// Person validation schema
-export const personSchema = z.object({
+// Base person fields (shared)
+const personBaseFields = {
   firstName: z.string()
     .trim()
     .min(1, { message: "Le prénom est requis" })
@@ -44,12 +44,26 @@ export const personSchema = z.object({
     .trim()
     .min(1, { message: "La ville est requise" })
     .max(500, { message: "L'adresse ne peut pas dépasser 500 caractères" }),
-  
+};
+
+// Person validation schema for ADMIN (photo optional)
+export const personSchema = z.object({
+  ...personBaseFields,
+  photo: z.string()
+    .trim()
+    .max(50000, { message: "La photo est trop grande" })
+    .optional()
+    .or(z.literal('')),
+});
+
+// Person validation schema for SELF-ONBOARDING (photo required)
+export const personSelfSchema = z.object({
+  ...personBaseFields,
   photo: z.string()
     .trim()
     .min(1, { message: "La photo est requise" })
     .refine(
-      (v) => !v || v.length <= 2000 || /^data:image\/(png|jpe?g|webp);base64,/i.test(v),
+      (v) => !v || v.length <= 50000 || /^data:image\/(png|jpe?g|webp);base64,/i.test(v),
       { message: "La photo doit être une URL courte ou une image en base64 (acceptée)." }
     ),
 });
