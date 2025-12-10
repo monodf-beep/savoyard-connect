@@ -70,12 +70,9 @@ const Onboarding = () => {
       ) : errorMessage ? (
         <p className="text-destructive">{errorMessage}</p>
       ) : isValid ? (
-        <>
-          <p className="text-muted-foreground mb-4">
-            Merci d'avoir accepté l'invitation. Ce formulaire sera bientôt disponible pour compléter vos informations.
-          </p>
-          <p className="text-sm">Token validé: <code className="px-2 py-1 bg-muted rounded">{token}</code></p>
-        </>
+        <p className="text-muted-foreground mb-4">
+          Merci d'avoir accepté l'invitation. Ce formulaire sera bientôt disponible pour compléter vos informations.
+        </p>
       ) : null}
     </main>
   );
