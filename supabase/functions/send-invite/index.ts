@@ -49,7 +49,12 @@ serve(async (req: Request) => {
       });
     }
 
-    const { email, firstName, baseUrl }: { email?: string; firstName?: string; baseUrl?: string } = await req.json();
+    const { email, firstName, baseUrl, personId }: { 
+      email?: string; 
+      firstName?: string; 
+      baseUrl?: string;
+      personId?: string;
+    } = await req.json();
 
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       return new Response(JSON.stringify({ error: "Email invalide" }), {
@@ -75,14 +80,32 @@ serve(async (req: Request) => {
     const token = crypto.randomUUID().replace(/-/g, "");
     const expiresAt = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString();
 
-    // Insert invite
+    // Insert invite with person_id if provided
+    const insertData: { 
+      email: string; 
+      token: string; 
+      expires_at: string; 
+      status: string;
+      person_id?: string;
+    } = { 
+      email, 
+      token, 
+      expires_at: expiresAt, 
+      status: "pending" 
+    };
+    
+    if (personId) {
+      insertData.person_id = personId;
+    }
+
     const { data: invite, error: insertError } = await supabase
       .from("invites")
-      .insert({ email, token, expires_at: expiresAt, status: "pending" })
+      .insert(insertData)
       .select()
       .maybeSingle();
 
     if (insertError) {
+      console.error("Insert error:", insertError);
       return new Response(JSON.stringify({ error: "Erreur lors de la création de l'invitation" }), {
         status: 500,
         headers: { "Content-Type": "application/json", ...corsHeaders },
@@ -92,14 +115,16 @@ serve(async (req: Request) => {
     const link = `${origin}/onboarding?token=${token}`;
 
     const logoHtml = orgSettings?.logo_url 
-      ? `<div style="text-align: center; margin: 40px 0;"><img src="${orgSettings.logo_url}" alt="Logo Institut de la Langue Savoyarde" style="max-width: 200px; height: auto;" /></div>`
+      ? `<div style="text-align: center; margin: 40px 0;"><img src="${orgSettings.logo_url}" alt="Logo ${orgSettings?.name || 'Organisation'}" style="max-width: 200px; height: auto;" /></div>`
       : '';
+
+    const orgName = orgSettings?.name || "l'organisation";
 
     const html = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
         ${logoHtml}
         <p>Bonjour ${firstName},</p>
-        <p>Nous mettons à jour l'organigramme de l'Institut de la Langue Savoyarde. Pour que ton rôle apparaisse correctement dans la structure, ta fiche doit être complétée.</p>
+        <p>Nous mettons à jour l'organigramme de ${orgName}. Pour que ton rôle apparaisse correctement dans la structure, ta fiche doit être complétée.</p>
         <p>Utilise le lien ci-dessous pour renseigner tes informations.</p>
         <div style="text-align: center; margin: 30px 0;">
           <a href="${link}" target="_blank" rel="noopener" style="background-color: #0066cc; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; display: inline-block;">Compléter votre profil</a>
@@ -112,30 +137,38 @@ serve(async (req: Request) => {
       </div>
     `;
 
+    console.log("Sending email to:", email);
+
     const { error: emailError } = await resend.emails.send({
       from: "contact@langue-savoyarde.com",
       to: [email],
-      subject: "Mise à jour de votre fiche - organigramme interne Institut Langue Savoyarde",
+      subject: `Mise à jour de votre fiche - organigramme interne ${orgName}`,
       html,
     });
 
     if (emailError) {
       console.error("Resend error:", emailError);
+      // Still return the link even if email fails
       return new Response(JSON.stringify({ 
+        ok: false,
         error: "Erreur d'envoi de l'email", 
-        details: emailError.message || "Vérifiez que votre domaine est configuré dans Resend"
+        details: emailError.message || "Vérifiez que votre domaine est configuré dans Resend",
+        link, // Return the link so user can copy it manually
+        inviteId: invite?.id
       }), {
-        status: 500,
+        status: 200, // Return 200 so we can show the link
         headers: { "Content-Type": "application/json", ...corsHeaders },
       });
     }
+
+    console.log("Email sent successfully to:", email);
 
     return new Response(JSON.stringify({ ok: true, inviteId: invite?.id, link }), {
       status: 200,
       headers: { "Content-Type": "application/json", ...corsHeaders },
     });
   } catch (error) {
-    if (Deno.env.get("DENO_ENV") !== "production") console.error("send-invite error:", error);
+    console.error("send-invite error:", error);
     return new Response(JSON.stringify({ error: "Erreur serveur" }), {
       status: 500,
       headers: { "Content-Type": "application/json", ...corsHeaders },

@@ -1,14 +1,33 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { Organigramme } from '../components/Organigramme';
 import { Navbar } from '../components/Navbar';
 import { TutorialDialog } from '../components/TutorialDialog';
 import { useAuth } from '@/hooks/useAuth';
 import { Info, UserPlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
 
 const Index = () => {
   const { isAdmin } = useAuth();
+  const location = useLocation();
   const [orgStats, setOrgStats] = React.useState({ totalMembers: 0, vacantPositionsCount: 0 });
+
+  // Handle redirect from onboarding with person highlight
+  useEffect(() => {
+    const state = location.state as { highlightPersonId?: string } | null;
+    if (state?.highlightPersonId) {
+      // Clear the state after using it
+      window.history.replaceState({}, document.title);
+      // Show welcome toast
+      toast.success('Bienvenue ! Votre profil est maintenant visible dans l\'organigramme.');
+      // Dispatch event to highlight person
+      setTimeout(() => {
+        const event = new CustomEvent('highlightPerson', { detail: { personId: state.highlightPersonId } });
+        window.dispatchEvent(event);
+      }, 500);
+    }
+  }, [location.state]);
   
   const handleAddPerson = () => {
     const event = new CustomEvent('openPersonForm');
