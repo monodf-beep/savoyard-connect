@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { AIAssistant } from "@/components/AIAssistant";
 import { AdminOnboarding } from "@/components/AdminOnboarding";
 import { SectionLeaderOnboarding } from "@/components/SectionLeaderOnboarding";
@@ -25,6 +25,10 @@ const AppContent = () => {
   const { settings } = useOrganizationSettings();
   const [showAdminOnboarding, setShowAdminOnboarding] = useState(false);
   const [showLeaderOnboarding, setShowLeaderOnboarding] = useState(false);
+  const location = useLocation();
+
+  // Check if we're on the onboarding page
+  const isOnboardingPage = location.pathname === '/onboarding';
 
   // Apply custom colors to design system
   useEffect(() => {
@@ -81,13 +85,14 @@ const AppContent = () => {
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />
       </Routes>
-      {isAdmin && (
+      {/* Hide AI Assistant on onboarding page */}
+      {isAdmin && !isOnboardingPage && (
         <>
           <AIAssistant />
           <AdminOnboarding open={showAdminOnboarding} onOpenChange={setShowAdminOnboarding} />
         </>
       )}
-      {isSectionLeader && !isAdmin && (
+      {isSectionLeader && !isAdmin && !isOnboardingPage && (
         <SectionLeaderOnboarding open={showLeaderOnboarding} onOpenChange={setShowLeaderOnboarding} />
       )}
     </>

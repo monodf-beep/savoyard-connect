@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Person } from '../types/organigramme';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { Badge } from './ui/badge';
-import { X, Linkedin, MapPin, Edit, Mail, Phone, Calendar, User, BookOpen, Briefcase, Star, Globe, Users, Send } from 'lucide-react';
+import { X, Linkedin, MapPin, Edit, Mail, Phone, Calendar, User, BookOpen, Briefcase, Star, Globe, Users, Send, Copy, CheckCircle } from 'lucide-react';
 import { Button } from './ui/button';
 import { useOrganigramme } from '../hooks/useOrganigramme';
 import { Sheet, SheetContent } from './ui/sheet';
@@ -81,6 +81,14 @@ export const PersonSidebar: React.FC<PersonSidebarProps> = ({
   const [isEditingEmail, setIsEditingEmail] = useState(false);
   const [emailInput, setEmailInput] = useState('');
   const [isSending, setIsSending] = useState(false);
+  const [inviteLink, setInviteLink] = useState<string | null>(null);
+
+  // Reset state when person changes
+  useEffect(() => {
+    setInviteLink(null);
+    setIsEditingEmail(false);
+    setEmailInput('');
+  }, [person?.id]);
 
   if (!person) return null;
 
@@ -116,7 +124,8 @@ export const PersonSidebar: React.FC<PersonSidebarProps> = ({
         body: { 
           email, 
           firstName: person.firstName,
-          baseUrl: window.location.origin 
+          baseUrl: window.location.origin,
+          personId: person.id
         },
       });
       
@@ -127,14 +136,24 @@ export const PersonSidebar: React.FC<PersonSidebarProps> = ({
         return;
       }
 
-      if (data?.error) {
+      // Even if email failed, show link if available
+      if (data?.link) {
+        setInviteLink(data.link);
+      }
+
+      if (data?.error && !data?.link) {
         console.error('Invite data error:', data);
         toast.error(data.details || data.error);
         setIsSending(false);
         return;
       }
       
-      toast.success("Invitation envoyée à " + email);
+      if (data?.ok) {
+        toast.success("Invitation envoyée à " + email);
+      } else if (data?.link) {
+        toast.warning("Email non envoyé, mais le lien est disponible ci-dessous");
+      }
+      
       setIsEditingEmail(false);
       setEmailInput('');
     } catch (e: any) {
@@ -249,7 +268,42 @@ export const PersonSidebar: React.FC<PersonSidebarProps> = ({
         {/* Invitation (Admin only) */}
         {isAdmin && (
           <div className="space-y-2">
-            {isEditingEmail ? (
+            {/* Show invite link after successful send */}
+            {inviteLink && (
+              <div className="p-3 bg-green-50 border border-green-200 rounded-lg space-y-2">
+                <div className="flex items-center gap-2 text-green-700">
+                  <CheckCircle className="w-4 h-4" />
+                  <span className="text-sm font-medium">Invitation envoyée !</span>
+                </div>
+                <div className="flex gap-2">
+                  <Input
+                    value={inviteLink}
+                    readOnly
+                    className="flex-1 text-xs bg-white"
+                  />
+                  <Button
+                    onClick={async () => {
+                      await navigator.clipboard.writeText(inviteLink);
+                      toast.success("Lien copié !");
+                    }}
+                    size="sm"
+                    variant="outline"
+                  >
+                    <Copy className="w-4 h-4" />
+                  </Button>
+                </div>
+                <Button
+                  onClick={() => setInviteLink(null)}
+                  variant="ghost"
+                  size="sm"
+                  className="w-full text-xs"
+                >
+                  Fermer
+                </Button>
+              </div>
+            )}
+
+            {!inviteLink && isEditingEmail && (
               <div className="space-y-2">
                 <div className="flex gap-2">
                   <Input
@@ -311,8 +365,10 @@ export const PersonSidebar: React.FC<PersonSidebarProps> = ({
                       });
 
                       const link = `${window.location.origin}/onboarding?token=${token}`;
+                      setInviteLink(link);
                       await navigator.clipboard.writeText(link);
                       toast.success("Lien copié dans le presse-papier");
+                      setIsEditingEmail(false);
                     } catch (error) {
                       toast.error("Erreur lors de la création du lien");
                     }
@@ -325,7 +381,9 @@ export const PersonSidebar: React.FC<PersonSidebarProps> = ({
                   Copier le lien d'invitation
                 </Button>
               </div>
-            ) : (
+            )}
+
+            {!inviteLink && !isEditingEmail && (
               <>
                 <Button
                   onClick={handleInviteClick}
@@ -335,7 +393,7 @@ export const PersonSidebar: React.FC<PersonSidebarProps> = ({
                   className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold"
                 >
                   <Send className="w-4 h-4 mr-2" />
-                  Inviter à compléter son profil
+                  {isSending ? 'Envoi...' : 'Inviter à compléter son profil'}
                 </Button>
                 {person.email && (
                   <Button
@@ -353,6 +411,7 @@ export const PersonSidebar: React.FC<PersonSidebarProps> = ({
                         });
 
                         const link = `${window.location.origin}/onboarding?token=${token}`;
+                        setInviteLink(link);
                         await navigator.clipboard.writeText(link);
                         toast.success("Lien copié dans le presse-papier");
                       } catch (error) {
@@ -363,12 +422,13 @@ export const PersonSidebar: React.FC<PersonSidebarProps> = ({
                     size="sm"
                     className="w-full"
                   >
+                    <Copy className="w-4 h-4 mr-2" />
                     Copier le lien d'invitation
                   </Button>
                 )}
               </>
             )}
-            {!person.email && !isEditingEmail && (
+            {!person.email && !isEditingEmail && !inviteLink && (
               <p className="text-xs text-muted-foreground text-center">
                 ⚠️ Email manquant - cliquez pour ajouter
               </p>
