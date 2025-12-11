@@ -12,6 +12,58 @@ import { z } from 'zod';
 import { ImageEditor } from '@/components/ImageEditor';
 import confetti from 'canvas-confetti';
 
+// Animated loading steps component
+const LoadingSteps = () => {
+  const [currentStep, setCurrentStep] = useState(0);
+  const steps = [
+    { text: 'Connexion au serveur...', done: false },
+    { text: 'Vérification de votre invitation...', done: false },
+    { text: 'Constitution des équipes...', done: false },
+    { text: 'Création des groupes...', done: false },
+    { text: 'Préparation du formulaire...', done: false },
+  ];
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentStep(prev => {
+        if (prev < steps.length - 1) return prev + 1;
+        return prev;
+      });
+    }, 600);
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div className="bg-card rounded-lg border border-border p-6 shadow-sm">
+      <div className="space-y-3">
+        {steps.map((step, index) => {
+          const isDone = index < currentStep;
+          const isCurrent = index === currentStep;
+          return (
+            <div 
+              key={index}
+              className={`flex items-center gap-3 transition-all duration-300 ${
+                index > currentStep ? 'opacity-40' : 'opacity-100'
+              }`}
+            >
+              {isDone ? (
+                <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0" />
+              ) : isCurrent ? (
+                <Loader2 className="h-5 w-5 text-primary animate-spin flex-shrink-0" />
+              ) : (
+                <div className="h-5 w-5 rounded-full border-2 border-muted-foreground/30 flex-shrink-0" />
+              )}
+              <span className={`text-sm ${isDone ? 'text-green-600' : isCurrent ? 'text-foreground font-medium' : 'text-muted-foreground'}`}>
+                {step.text}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
 interface InviteData {
   id: string;
   email: string;
@@ -355,10 +407,7 @@ const Onboarding = () => {
       <main className="min-h-screen bg-background flex items-center justify-center p-6">
         <div className="max-w-2xl w-full">
           <Header />
-          <div className="flex items-center justify-center gap-2 text-muted-foreground">
-            <Loader2 className="h-4 w-4 animate-spin" />
-            <p>Vérification du lien...</p>
-          </div>
+          <LoadingSteps />
         </div>
       </main>
     );
