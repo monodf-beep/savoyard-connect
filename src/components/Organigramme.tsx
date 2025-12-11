@@ -390,6 +390,9 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
   }, []);
 
   const handleEditPerson = useCallback((person: Person) => {
+    // Fermer le sidebar avant d'ouvrir le formulaire
+    setIsSidebarOpen(false);
+    setSelectedPerson(null);
     setEditingPerson(person);
     setIsPersonFormOpen(true);
     setIsSidebarOpen(false);
