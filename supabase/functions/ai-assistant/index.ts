@@ -9,174 +9,147 @@ const corsHeaders = {
 
 const tools = [
   {
-    type: "function",
-    function: {
-      name: "search_person",
-      description: "Rechercher une personne par nom. TOUJOURS utiliser AVANT edit_person. Retourne l'UUID exact.",
-      parameters: {
-        type: "object",
-        properties: {
-          name: { type: "string", description: "Prénom, nom ou les deux" },
-        },
-        required: ["name"],
+    name: "search_person",
+    description: "Rechercher une personne par nom. TOUJOURS utiliser AVANT edit_person. Retourne l'UUID exact.",
+    input_schema: {
+      type: "object",
+      properties: {
+        name: { type: "string", description: "Prénom, nom ou les deux" },
       },
+      required: ["name"],
     },
   },
   {
-    type: "function",
-    function: {
-      name: "add_person",
-      description: "Ajouter une nouvelle personne à l'organigramme",
-      parameters: {
-        type: "object",
-        properties: {
-          first_name: { type: "string", description: "Prénom" },
-          last_name: { type: "string", description: "Nom de famille" },
-          title: { type: "string", description: "Titre/poste" },
-          email: { type: "string", description: "Email (optionnel)" },
-          phone: { type: "string", description: "Téléphone (optionnel)" },
-          bio: { type: "string", description: "Bio (optionnel)" },
-          linkedin: { type: "string", description: "LinkedIn (optionnel)" },
-          competences: { type: "array", items: { type: "string" }, description: "Compétences (optionnel)" },
-        },
-        required: ["first_name", "last_name"],
+    name: "add_person",
+    description: "Ajouter une nouvelle personne à l'organigramme",
+    input_schema: {
+      type: "object",
+      properties: {
+        first_name: { type: "string", description: "Prénom" },
+        last_name: { type: "string", description: "Nom de famille" },
+        title: { type: "string", description: "Titre/poste" },
+        email: { type: "string", description: "Email (optionnel)" },
+        phone: { type: "string", description: "Téléphone (optionnel)" },
+        bio: { type: "string", description: "Bio (optionnel)" },
+        linkedin: { type: "string", description: "LinkedIn (optionnel)" },
+        competences: { type: "array", items: { type: "string" }, description: "Compétences (optionnel)" },
       },
+      required: ["first_name", "last_name"],
     },
   },
   {
-    type: "function",
-    function: {
-      name: "edit_person",
-      description: "Modifier une personne. UUID doit venir de search_person.",
-      parameters: {
-        type: "object",
-        properties: {
-          person_id: { type: "string", description: "UUID de search_person (format: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx)" },
-          first_name: { type: "string", description: "Prénom" },
-          last_name: { type: "string", description: "Nom" },
-          title: { type: "string", description: "Titre" },
-          email: { type: "string", description: "Email" },
-          phone: { type: "string", description: "Téléphone" },
-          bio: { type: "string", description: "Bio" },
-          linkedin: { type: "string", description: "LinkedIn" },
-          competences: { type: "array", items: { type: "string" }, description: "Compétences" },
-        },
-        required: ["person_id"],
+    name: "edit_person",
+    description: "Modifier une personne. UUID doit venir de search_person.",
+    input_schema: {
+      type: "object",
+      properties: {
+        person_id: { type: "string", description: "UUID de search_person (format: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx)" },
+        first_name: { type: "string", description: "Prénom" },
+        last_name: { type: "string", description: "Nom" },
+        title: { type: "string", description: "Titre" },
+        email: { type: "string", description: "Email" },
+        phone: { type: "string", description: "Téléphone" },
+        bio: { type: "string", description: "Bio" },
+        linkedin: { type: "string", description: "LinkedIn" },
+        competences: { type: "array", items: { type: "string" }, description: "Compétences" },
       },
+      required: ["person_id"],
     },
   },
   {
-    type: "function",
-    function: {
-      name: "add_section",
-      description: "Ajouter une section",
-      parameters: {
-        type: "object",
-        properties: {
-          title: { type: "string", description: "Nom" },
-          parent_id: { type: "string", description: "UUID parent (optionnel)" },
-        },
-        required: ["title"],
+    name: "add_section",
+    description: "Ajouter une section",
+    input_schema: {
+      type: "object",
+      properties: {
+        title: { type: "string", description: "Nom" },
+        parent_id: { type: "string", description: "UUID parent (optionnel)" },
       },
+      required: ["title"],
     },
   },
   {
-    type: "function",
-    function: {
-      name: "rename_person_by_name",
-      description: "Renommer une personne en se basant sur son prénom+nom actuels (évite les problèmes d'UUID).",
-      parameters: {
-        type: "object",
-        properties: {
-          original_first_name: { type: "string", description: "Prénom actuel (ex: Rodolphe)" },
-          original_last_name: { type: "string", description: "Nom actuel (ex: Simon)" },
-          new_first_name: { type: "string", description: "Nouveau prénom" },
-          new_last_name: { type: "string", description: "Nouveau nom" },
-        },
-        required: ["original_first_name", "original_last_name", "new_last_name"],
+    name: "rename_person_by_name",
+    description: "Renommer une personne en se basant sur son prénom+nom actuels (évite les problèmes d'UUID).",
+    input_schema: {
+      type: "object",
+      properties: {
+        original_first_name: { type: "string", description: "Prénom actuel (ex: Rodolphe)" },
+        original_last_name: { type: "string", description: "Nom actuel (ex: Simon)" },
+        new_first_name: { type: "string", description: "Nouveau prénom" },
+        new_last_name: { type: "string", description: "Nouveau nom" },
       },
+      required: ["original_first_name", "original_last_name", "new_last_name"],
     },
   },
   {
-    type: "function",
-    function: {
-      name: "create_value_chain",
-      description: "Créer une nouvelle chaîne de valeur",
-      parameters: {
-        type: "object",
-        properties: {
-          title: { type: "string", description: "Titre de la chaîne" },
-          description: { type: "string", description: "Description (optionnel)" },
-          segments: { 
-            type: "array", 
-            items: { 
-              type: "object",
-              properties: {
-                function_name: { type: "string", description: "Nom de la fonction/segment" },
-                actors: { 
-                  type: "array", 
-                  items: { type: "string" },
-                  description: "Prénoms et/ou noms des acteurs pour ce segment"
-                }
-              },
-              required: ["function_name"]
+    name: "create_value_chain",
+    description: "Créer une nouvelle chaîne de valeur",
+    input_schema: {
+      type: "object",
+      properties: {
+        title: { type: "string", description: "Titre de la chaîne" },
+        description: { type: "string", description: "Description (optionnel)" },
+        segments: { 
+          type: "array", 
+          items: { 
+            type: "object",
+            properties: {
+              function_name: { type: "string", description: "Nom de la fonction/segment" },
+              actors: { 
+                type: "array", 
+                items: { type: "string" },
+                description: "Prénoms et/ou noms des acteurs pour ce segment"
+              }
             },
-            description: "Liste des segments avec leurs acteurs"
+            required: ["function_name"]
           },
+          description: "Liste des segments avec leurs acteurs"
         },
-        required: ["title", "segments"],
       },
+      required: ["title", "segments"],
     },
   },
   {
-    type: "function",
-    function: {
-      name: "search_value_chain",
-      description: "Rechercher une chaîne de valeur par titre",
-      parameters: {
-        type: "object",
-        properties: {
-          title: { type: "string", description: "Titre de la chaîne" },
-        },
-        required: ["title"],
+    name: "search_value_chain",
+    description: "Rechercher une chaîne de valeur par titre",
+    input_schema: {
+      type: "object",
+      properties: {
+        title: { type: "string", description: "Titre de la chaîne" },
       },
+      required: ["title"],
     },
   },
   {
-    type: "function",
-    function: {
-      name: "assign_person_to_sections",
-      description: "Assigner une personne à une ou plusieurs sections",
-      parameters: {
-        type: "object",
-        properties: {
-          person_id: { type: "string", description: "UUID de la personne (obtenu via search_person)" },
-          section_titles: { 
-            type: "array", 
-            items: { type: "string" },
-            description: "Liste des noms des sections où assigner la personne" 
-          },
+    name: "assign_person_to_sections",
+    description: "Assigner une personne à une ou plusieurs sections",
+    input_schema: {
+      type: "object",
+      properties: {
+        person_id: { type: "string", description: "UUID de la personne (obtenu via search_person)" },
+        section_titles: { 
+          type: "array", 
+          items: { type: "string" },
+          description: "Liste des noms des sections où assigner la personne" 
         },
-        required: ["person_id", "section_titles"],
       },
+      required: ["person_id", "section_titles"],
     },
   },
   {
-    type: "function",
-    function: {
-      name: "search_sections",
-      description: "Rechercher des sections par titre",
-      parameters: {
-        type: "object",
-        properties: {
-          titles: { 
-            type: "array",
-            items: { type: "string" },
-            description: "Liste des titres de sections à rechercher" 
-          },
+    name: "search_sections",
+    description: "Rechercher des sections par titre",
+    input_schema: {
+      type: "object",
+      properties: {
+        titles: { 
+          type: "array",
+          items: { type: "string" },
+          description: "Liste des titres de sections à rechercher" 
         },
-        required: ["titles"],
       },
+      required: ["titles"],
     },
   },
 ];
@@ -189,14 +162,12 @@ async function executeToolCall(toolName: string, args: any, supabaseClient: any)
       case "search_person": {
         const query = (args.name || '').toString().trim().toLowerCase();
         
-        // Récupérer toutes les personnes
         const { data: allPeople, error } = await supabaseClient
           .from('people')
           .select('id, first_name, last_name, title, bio');
 
         if (error) throw error;
 
-        // Fonction de normalisation (enlève accents, minuscules, trim)
         const normalize = (str: string) => 
           str.toLowerCase()
             .normalize("NFD")
@@ -205,7 +176,6 @@ async function executeToolCall(toolName: string, args: any, supabaseClient: any)
 
         const normalizedQuery = normalize(query);
 
-        // Scoring de pertinence pour chaque personne
         const scored = (allPeople || []).map((person: any) => {
           const firstName = normalize(person.first_name);
           const lastName = normalize(person.last_name);
@@ -213,21 +183,15 @@ async function executeToolCall(toolName: string, args: any, supabaseClient: any)
           
           let score = 0;
 
-          // Correspondance exacte = score maximal
           if (firstName === normalizedQuery || lastName === normalizedQuery) score += 100;
           if (fullName === normalizedQuery) score += 150;
-
-          // Commence par la requête
           if (firstName.startsWith(normalizedQuery)) score += 50;
           if (lastName.startsWith(normalizedQuery)) score += 50;
           if (fullName.startsWith(normalizedQuery)) score += 75;
-
-          // Contient la requête
           if (firstName.includes(normalizedQuery)) score += 25;
           if (lastName.includes(normalizedQuery)) score += 25;
           if (fullName.includes(normalizedQuery)) score += 35;
 
-          // Recherche par mots individuels
           const queryWords = normalizedQuery.split(/\s+/);
           queryWords.forEach(word => {
             if (word.length > 2) {
@@ -239,7 +203,6 @@ async function executeToolCall(toolName: string, args: any, supabaseClient: any)
           return { ...person, score };
         });
 
-        // Filtrer (score > 0) et trier par score décroissant
         const matches = scored
           .filter((p: any) => p.score > 0)
           .sort((a: any, b: any) => b.score - a.score)
@@ -270,7 +233,6 @@ async function executeToolCall(toolName: string, args: any, supabaseClient: any)
       }
 
       case "edit_person": {
-        // Validate UUID
         const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
         if (!uuidRegex.test(args.person_id)) {
           return { success: false, error: "UUID invalide. Utilisez search_person d'abord." };
@@ -349,7 +311,6 @@ async function executeToolCall(toolName: string, args: any, supabaseClient: any)
       }
 
       case "create_value_chain": {
-        // Créer la chaîne de valeur
         const { data: chain, error: chainError } = await supabaseClient
           .from('value_chains')
           .insert([{
@@ -361,7 +322,6 @@ async function executeToolCall(toolName: string, args: any, supabaseClient: any)
 
         if (chainError) throw chainError;
 
-        // Récupérer toutes les personnes pour le matching
         const { data: allPeople, error: peopleError } = await supabaseClient
           .from('people')
           .select('id, first_name, last_name');
@@ -370,7 +330,6 @@ async function executeToolCall(toolName: string, args: any, supabaseClient: any)
 
         const createdSegments = [];
         
-        // Créer chaque segment
         for (let i = 0; i < args.segments.length; i++) {
           const segment = args.segments[i];
           
@@ -386,7 +345,6 @@ async function executeToolCall(toolName: string, args: any, supabaseClient: any)
 
           if (segmentError) throw segmentError;
 
-          // Assigner les acteurs si spécifiés
           if (segment.actors && segment.actors.length > 0) {
             for (const actorName of segment.actors) {
               const query = actorName.toString().trim().toLowerCase();
@@ -437,7 +395,6 @@ async function executeToolCall(toolName: string, args: any, supabaseClient: any)
       }
 
       case "assign_person_to_sections": {
-        // Récupérer toutes les sections
         const { data: allSections, error: sectionsError } = await supabaseClient
           .from('sections')
           .select('id, title');
@@ -454,7 +411,6 @@ async function executeToolCall(toolName: string, args: any, supabaseClient: any)
           );
 
           if (section) {
-            // Vérifier si l'assignation existe déjà
             const { data: existing } = await supabaseClient
               .from('section_members')
               .select('id')
@@ -521,10 +477,10 @@ serve(async (req) => {
 
   try {
     const { messages } = await req.json();
-    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
+    const ANTHROPIC_API_KEY = Deno.env.get('ANTHROPIC_API_KEY');
     
-    if (!LOVABLE_API_KEY) {
-      throw new Error('LOVABLE_API_KEY not configured');
+    if (!ANTHROPIC_API_KEY) {
+      throw new Error('ANTHROPIC_API_KEY not configured');
     }
 
     const authHeader = req.headers.get('Authorization')!;
@@ -608,36 +564,41 @@ IMPORTANT :
 
 RÉPONSE : Claire, structurée, attendant confirmation explicite.`;
 
-    let currentMessages = [
-      { role: 'system', content: systemPrompt },
-      ...messages,
-    ];
+    // Convert messages to Anthropic format
+    const anthropicMessages = messages.map((m: any) => ({
+      role: m.role === 'assistant' ? 'assistant' : 'user',
+      content: m.content
+    }));
 
     let continueLoop = true;
     let allContent = '';
     let maxIterations = 4;
     let iteration = 0;
+    let currentMessages = [...anthropicMessages];
 
     while (continueLoop && iteration < maxIterations) {
       iteration++;
+      console.log(`Iteration ${iteration}, messages:`, currentMessages.length);
       
-      const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+          'x-api-key': ANTHROPIC_API_KEY,
+          'anthropic-version': '2023-06-01',
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model: 'google/gemini-2.5-flash',
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 1024,
+          system: systemPrompt,
           messages: currentMessages,
           tools: tools,
-          stream: false,
         }),
       });
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('AI Gateway error:', response.status, errorText);
+        console.error('Anthropic API error:', response.status, errorText);
         
         if (response.status === 429) {
           return new Response(
@@ -646,38 +607,52 @@ RÉPONSE : Claire, structurée, attendant confirmation explicite.`;
           );
         }
         
-        throw new Error(`AI Gateway error: ${response.status}`);
+        throw new Error(`Anthropic API error: ${response.status}`);
       }
 
       const data = await response.json();
-      const choice = data.choices[0];
+      console.log('Anthropic response:', JSON.stringify(data.stop_reason), data.content?.length);
 
-      if (choice.finish_reason === 'tool_calls' && choice.message.tool_calls) {
+      // Check if there are tool uses
+      const toolUseBlocks = data.content?.filter((block: any) => block.type === 'tool_use') || [];
+      const textBlocks = data.content?.filter((block: any) => block.type === 'text') || [];
+      
+      // Collect text content
+      if (textBlocks.length > 0) {
+        allContent = textBlocks.map((b: any) => b.text).join('\n');
+      }
+
+      if (toolUseBlocks.length > 0) {
         // Execute tool calls
         const toolResults = [];
         
-        for (const toolCall of choice.message.tool_calls) {
-          const toolName = toolCall.function.name;
-          const toolArgs = JSON.parse(toolCall.function.arguments);
+        for (const toolUse of toolUseBlocks) {
+          const toolName = toolUse.name;
+          const toolArgs = toolUse.input;
           const result = await executeToolCall(toolName, toolArgs, supabaseClient);
           
           toolResults.push({
-            role: 'tool',
-            tool_call_id: toolCall.id,
+            type: 'tool_result',
+            tool_use_id: toolUse.id,
             content: JSON.stringify(result),
           });
         }
 
         // Add assistant message and tool results to conversation
-        currentMessages.push(choice.message);
-        currentMessages.push(...toolResults);
+        currentMessages.push({
+          role: 'assistant',
+          content: data.content
+        });
+        currentMessages.push({
+          role: 'user',
+          content: toolResults
+        });
         
         // Continue loop to get final response
         continue;
       }
 
-      // Final response
-      allContent = choice.message.content || '';
+      // No tool calls, we have the final response
       continueLoop = false;
     }
 

@@ -233,14 +233,14 @@ export default function ValueChains() {
     <div className="min-h-screen flex flex-col bg-background">
       <Navbar />
 
-      <main className="flex-1 container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-3">
+      <main className="flex-1 container mx-auto px-3 md:px-4 py-4 md:py-8">
+        <div className="mb-4 md:mb-8">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4">
+            <div className="flex items-center gap-2 md:gap-3">
               <div>
-                <h1 className="text-3xl font-bold text-foreground">Chaînes de valeur</h1>
-                <p className="text-muted-foreground mt-1">
-                  Gestion des processus et flux opérationnels
+                <h1 className="text-xl md:text-3xl font-bold text-foreground">Chaînes de valeur</h1>
+                <p className="text-xs md:text-base text-muted-foreground mt-0.5 md:mt-1">
+                  Gestion des processus et flux
                 </p>
               </div>
               <TutorialDialog
@@ -290,31 +290,37 @@ export default function ValueChains() {
               />
             </div>
             {isAdmin && (
-              <div className="flex gap-2">
+              <div className="flex gap-1.5 md:gap-2 flex-wrap">
                 <Button
                   variant="outline"
+                  size="sm"
                   onClick={() => setMergeDialogOpen(true)}
                   disabled={approvedChains.length < 2}
+                  className="text-xs md:text-sm"
                 >
-                  <Combine className="h-4 w-4 mr-2" />
-                  Fusionner
+                  <Combine className="h-3.5 w-3.5 md:h-4 md:w-4 mr-1 md:mr-2" />
+                  <span className="hidden sm:inline">Fusionner</span>
                 </Button>
                 <Button
                   variant="outline"
+                  size="sm"
                   onClick={() => setSplitDialogOpen(true)}
                   disabled={approvedChains.length === 0}
+                  className="text-xs md:text-sm"
                 >
-                  <Split className="h-4 w-4 mr-2" />
-                  Scinder
+                  <Split className="h-3.5 w-3.5 md:h-4 md:w-4 mr-1 md:mr-2" />
+                  <span className="hidden sm:inline">Scinder</span>
                 </Button>
                 <Button
+                  size="sm"
                   onClick={() => {
                     setEditingChain(undefined);
                     setFormOpen(true);
                   }}
+                  className="text-xs md:text-sm"
                 >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Créer une chaîne
+                  <Plus className="h-3.5 w-3.5 md:h-4 md:w-4 mr-1 md:mr-2" />
+                  <span className="hidden xs:inline">Créer</span>
                 </Button>
               </div>
             )}
@@ -322,8 +328,8 @@ export default function ValueChains() {
         </div>
 
         {chains.length === 0 ? (
-          <Card className="p-12 text-center">
-            <p className="text-muted-foreground mb-4">Aucune chaîne de valeur créée</p>
+          <Card className="p-6 md:p-12 text-center">
+            <p className="text-sm md:text-base text-muted-foreground mb-4">Aucune chaîne de valeur créée</p>
             {(isAdmin || isSectionLeader) && (
               <Button onClick={() => setFormOpen(true)}>
                 <Plus className="h-4 w-4 mr-2" />
