@@ -7,6 +7,7 @@ import { OpenPositionCard } from './OpenPositionCard';
 import { SpontaneousApplicationForm } from './SpontaneousApplicationForm';
 import { SectionReassuranceDialog } from './SectionReassuranceDialog';
 import { ChevronDown, ChevronRight, Users, Star, MoreVertical } from 'lucide-react';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { useDroppable } from '@dnd-kit/core';
 import {
   Tooltip,
@@ -55,6 +56,7 @@ export const SectionCard: React.FC<SectionCardProps> = ({
   const [showApplicationForm, setShowApplicationForm] = React.useState(false);
   const [showReassuranceDialog, setShowReassuranceDialog] = React.useState(false);
   const [isHovered, setIsHovered] = React.useState(false);
+  const isMobile = useIsMobile();
   
   const { setNodeRef } = useDroppable({
     id: section.id,
@@ -92,7 +94,7 @@ export const SectionCard: React.FC<SectionCardProps> = ({
 
   const hasContent = section.members.length > 0 || (section.subsections && section.subsections.length > 0) || (section.vacantPositions && section.vacantPositions.length > 0);
   const isMainSection = level === 0;
-  const marginLeft = level * 20;
+  const marginLeft = isMobile ? level * 8 : level * 20;
 
   const handleMoveToSection = async (newParentId: string | null) => {
     try {
@@ -259,7 +261,7 @@ export const SectionCard: React.FC<SectionCardProps> = ({
             >
               {/* Affichage compact des membres principaux */}
               {(section.members.length > 0 || (section.vacantPositions && section.vacantPositions.length > 0)) && (
-                <div className="flex flex-wrap gap-2 items-stretch pl-6 relative">
+                <div className="flex flex-wrap gap-2 items-stretch pl-2 md:pl-6 relative">
                   {section.members.map(person => (
                     <DraggablePersonCard
                       key={person.id}
@@ -298,7 +300,7 @@ export const SectionCard: React.FC<SectionCardProps> = ({
 
               {/* Sous-sections */}
               {showSubsections && section.subsections && section.subsections.length > 0 && (
-                <div className="space-y-3 ml-4">
+                <div className="space-y-3 ml-1 md:ml-4">
                   {section.subsections.map(subsection => (
                     <SectionCard
                       key={subsection.id}
@@ -438,12 +440,12 @@ export const SectionCard: React.FC<SectionCardProps> = ({
         {section.isExpanded && hasContent && (
           <div 
             ref={setNodeRef}
-            className={`mt-2 ml-6 space-y-2 transition-colors ${isPersonDragOver ? 'ring-2 ring-primary ring-offset-2 rounded-lg p-2' : ''}`}
+            className={`mt-2 ml-2 md:ml-6 space-y-2 transition-colors ${isPersonDragOver ? 'ring-2 ring-primary ring-offset-2 rounded-lg p-2' : ''}`}
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
           >
             {(section.members.length > 0 || (section.vacantPositions && section.vacantPositions.length > 0) || !isAdmin) && (
-              <div className="flex flex-wrap gap-1 items-stretch pl-6 relative">
+              <div className="flex flex-wrap gap-1 items-stretch pl-1 md:pl-6 relative">
                 {section.members.map(person => (
                   <DraggablePersonCard
                     key={person.id}

@@ -81,8 +81,8 @@ const Index = () => {
         onNameCorrection={handleNameCorrection}
       />
       
-      <div className="container mx-auto px-4 py-6">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+      <div className="container mx-auto px-2 md:px-4 py-4 md:py-6">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
           <div>
             <div className="flex items-center gap-3 mb-2">
               <h1 className="text-3xl font-bold">Organigramme</h1>
