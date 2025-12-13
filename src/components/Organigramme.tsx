@@ -636,7 +636,7 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
 
   return (
     <div className="flex min-h-screen w-full relative">
-      <div className={`organigramme-container transition-all duration-300 ${(isSidebarOpen || isVacantPositionsSidebarOpen) ? 'pr-80' : ''} flex-1 max-w-full px-4 py-4`}>
+      <div className={`organigramme-container transition-all duration-300 ${(isSidebarOpen || isVacantPositionsSidebarOpen) ? 'pr-80' : ''} flex-1 max-w-full px-2 md:px-4 py-2 md:py-4`}>
       {/* Header épuré */}
       <div className="mb-3 md:mb-6">
         {/* Version mobile : menu bouton */}
@@ -883,9 +883,9 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
           onDragEnd={handleCombinedDragEnd}
           onDragCancel={handleCombinedDragCancel}
         >
-          <div className="space-y-4 relative pl-8">
+          <div className="space-y-4 relative pl-1 md:pl-8">
             {isAdmin && (
-              <div className="text-xs text-muted-foreground mb-2 -ml-8">
+              <div className="text-xs text-muted-foreground mb-2 md:-ml-8">
                 💡 Glissez-déposez les sections et les personnes pour les réorganiser
               </div>
             )}
