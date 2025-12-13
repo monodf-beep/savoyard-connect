@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Person } from '../types/organigramme';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { Badge } from './ui/badge';
-import { X, Linkedin, MapPin, Edit, Mail, Phone, Calendar, User, BookOpen, Briefcase, Star, Globe, Users, Send, Copy, CheckCircle } from 'lucide-react';
+import { X, Linkedin, MapPin, Edit, Mail, Phone, Calendar, User, BookOpen, Briefcase, Star, Globe, Users, Send, Copy, CheckCircle, Loader2 } from 'lucide-react';
 import { Button } from './ui/button';
 import { useOrganigramme } from '../hooks/useOrganigramme';
 import { Sheet, SheetContent } from './ui/sheet';
@@ -13,6 +13,7 @@ import { toast } from 'sonner';
 import { z } from 'zod';
 import { Input } from './ui/input';
 import { EmbedDisplay } from './EmbedDisplay';
+import { Skeleton } from './ui/skeleton';
 
 // Composant pour afficher les sections d'une personne
 const PersonSections: React.FC<{ personId: string }> = ({ personId }) => {
@@ -62,6 +63,37 @@ const PersonSections: React.FC<{ personId: string }> = ({ personId }) => {
   );
 };
 
+// Skeleton pour les informations en cours de chargement
+const PersonInfoSkeleton: React.FC = () => (
+  <div className="space-y-6 animate-pulse">
+    <div>
+      <div className="flex items-center gap-2 mb-3">
+        <Skeleton className="w-4 h-4 rounded" />
+        <Skeleton className="h-5 w-24" />
+      </div>
+      <Skeleton className="h-4 w-48" />
+    </div>
+    <div>
+      <div className="flex items-center gap-2 mb-3">
+        <Skeleton className="w-4 h-4 rounded" />
+        <Skeleton className="h-5 w-28" />
+      </div>
+      <div className="flex flex-wrap gap-2">
+        <Skeleton className="h-6 w-20 rounded-full" />
+        <Skeleton className="h-6 w-24 rounded-full" />
+        <Skeleton className="h-6 w-16 rounded-full" />
+      </div>
+    </div>
+    <div>
+      <div className="flex items-center gap-2 mb-3">
+        <Skeleton className="w-4 h-4 rounded" />
+        <Skeleton className="h-5 w-32" />
+      </div>
+      <Skeleton className="h-4 w-40" />
+    </div>
+  </div>
+);
+
 interface PersonSidebarProps {
   person: Person | null;
   isOpen: boolean;
@@ -82,13 +114,53 @@ export const PersonSidebar: React.FC<PersonSidebarProps> = ({
   const [emailInput, setEmailInput] = useState('');
   const [isSending, setIsSending] = useState(false);
   const [inviteLink, setInviteLink] = useState<string | null>(null);
+  const [isLoadingDetails, setIsLoadingDetails] = useState(false);
+  const [personDetails, setPersonDetails] = useState<Partial<Person> | null>(null);
 
-  // Reset state when person changes
+  // Reset state when person changes and fetch additional details
   useEffect(() => {
     setInviteLink(null);
     setIsEditingEmail(false);
     setEmailInput('');
-  }, [person?.id]);
+    setPersonDetails(null);
+
+    if (person?.id && isOpen) {
+      setIsLoadingDetails(true);
+      
+      // Fetch additional person details
+      const fetchDetails = async () => {
+        try {
+          const { data, error } = await supabase
+            .from('people')
+            .select('competences, date_entree, experience, formation, hobbies, langues, specialite, embeds, adresse, phone, email')
+            .eq('id', person.id)
+            .maybeSingle();
+
+          if (!error && data) {
+            setPersonDetails({
+              competences: data.competences,
+              dateEntree: data.date_entree,
+              experience: data.experience,
+              formation: data.formation,
+              hobbies: data.hobbies,
+              langues: data.langues,
+              specialite: data.specialite,
+              embeds: data.embeds as string[] | undefined,
+              adresse: data.adresse,
+              phone: data.phone,
+              email: data.email,
+            });
+          }
+        } catch (e) {
+          console.error('Error fetching person details:', e);
+        } finally {
+          setIsLoadingDetails(false);
+        }
+      };
+
+      fetchDetails();
+    }
+  }, [person?.id, isOpen]);
 
   if (!person) return null;
 
@@ -218,14 +290,22 @@ export const PersonSidebar: React.FC<PersonSidebarProps> = ({
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto p-4 space-y-6">
-        {/* 1. Lieu */}
-        {person.adresse && (
+        {/* 1. Lieu - from loaded details */}
+        {isLoadingDetails ? (
+          <div>
+            <div className="flex items-center gap-2 mb-3">
+              <Skeleton className="w-4 h-4 rounded" />
+              <Skeleton className="h-5 w-16" />
+            </div>
+            <Skeleton className="h-4 w-32" />
+          </div>
+        ) : (personDetails?.adresse || person.adresse) && (
           <div>
             <h3 className="font-semibold text-base mb-3 flex items-center gap-2">
               <MapPin className="w-4 h-4 text-primary" />
               Lieu
             </h3>
-            <p className="text-muted-foreground text-sm">{person.adresse}</p>
+            <p className="text-muted-foreground text-sm">{personDetails?.adresse || person.adresse}</p>
           </div>
         )}
 
@@ -395,7 +475,7 @@ export const PersonSidebar: React.FC<PersonSidebarProps> = ({
                   <Send className="w-4 h-4 mr-2" />
                   {isSending ? 'Envoi...' : 'Inviter à compléter son profil'}
                 </Button>
-                {person.email && (
+                {(personDetails?.email || person.email) && (
                   <Button
                     onClick={async () => {
                       try {
@@ -403,7 +483,7 @@ export const PersonSidebar: React.FC<PersonSidebarProps> = ({
                         const expiresAt = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString();
                         
                         await supabase.from("invites").insert({
-                          email: person.email,
+                          email: personDetails?.email || person.email,
                           token,
                           expires_at: expiresAt,
                           status: "pending",
@@ -428,7 +508,7 @@ export const PersonSidebar: React.FC<PersonSidebarProps> = ({
                 )}
               </>
             )}
-            {!person.email && !isEditingEmail && !inviteLink && (
+            {!(personDetails?.email || person.email) && !isEditingEmail && !inviteLink && (
               <p className="text-xs text-muted-foreground text-center">
                 ⚠️ Email manquant - cliquez pour ajouter
               </p>
@@ -436,15 +516,27 @@ export const PersonSidebar: React.FC<PersonSidebarProps> = ({
           </div>
         )}
 
-        {/* 4. Compétences */}
-        {person.competences && person.competences.length > 0 && (
+        {/* 4. Compétences - from loaded details */}
+        {isLoadingDetails ? (
+          <div>
+            <div className="flex items-center gap-2 mb-3">
+              <Skeleton className="w-4 h-4 rounded" />
+              <Skeleton className="h-5 w-28" />
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Skeleton className="h-6 w-20 rounded-full" />
+              <Skeleton className="h-6 w-24 rounded-full" />
+              <Skeleton className="h-6 w-16 rounded-full" />
+            </div>
+          </div>
+        ) : (personDetails?.competences && personDetails.competences.length > 0) && (
           <div>
             <h3 className="font-semibold text-base mb-3 flex items-center gap-2">
               <Star className="w-4 h-4 text-primary" />
               Compétences
             </h3>
             <div className="flex flex-wrap gap-2">
-              {person.competences.map((competence, index) => (
+              {personDetails.competences.map((competence, index) => (
                 <Badge key={index} variant="outline" className="text-xs bg-muted/50 border-border font-medium">
                   {competence}
                 </Badge>
@@ -453,15 +545,23 @@ export const PersonSidebar: React.FC<PersonSidebarProps> = ({
           </div>
         )}
 
-        {/* 5. Membre depuis */}
-        {person.dateEntree && (
+        {/* 5. Membre depuis - from loaded details */}
+        {isLoadingDetails ? (
+          <div>
+            <div className="flex items-center gap-2 mb-3">
+              <Skeleton className="w-4 h-4 rounded" />
+              <Skeleton className="h-5 w-32" />
+            </div>
+            <Skeleton className="h-4 w-40" />
+          </div>
+        ) : personDetails?.dateEntree && (
           <div>
             <h3 className="font-semibold text-base mb-3 flex items-center gap-2">
               <Calendar className="w-4 h-4 text-primary" />
               Membre depuis
             </h3>
             <p className="text-muted-foreground text-sm">
-              {new Date(person.dateEntree).toLocaleDateString('fr-FR', {
+              {new Date(personDetails.dateEntree).toLocaleDateString('fr-FR', {
                 year: 'numeric',
                 month: 'long',
                 day: 'numeric'
@@ -470,9 +570,25 @@ export const PersonSidebar: React.FC<PersonSidebarProps> = ({
           </div>
         )}
 
-        {/* 6. Contenus intégrés */}
-        {person.embeds && person.embeds.length > 0 && (
-          <EmbedDisplay embeds={person.embeds} />
+        {/* 6. Contenus intégrés - from loaded details */}
+        {isLoadingDetails ? (
+          <div>
+            <div className="flex items-center gap-2 mb-3">
+              <Skeleton className="w-4 h-4 rounded" />
+              <Skeleton className="h-5 w-36" />
+            </div>
+            <Skeleton className="h-24 w-full rounded-lg" />
+          </div>
+        ) : personDetails?.embeds && personDetails.embeds.length > 0 && (
+          <EmbedDisplay embeds={personDetails.embeds} />
+        )}
+
+        {/* Loading indicator at the bottom */}
+        {isLoadingDetails && (
+          <div className="flex items-center justify-center gap-2 text-muted-foreground text-sm py-4">
+            <Loader2 className="w-4 h-4 animate-spin" />
+            <span>Chargement des détails...</span>
+          </div>
         )}
       </div>
     </>
