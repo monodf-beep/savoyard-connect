@@ -1,9 +1,10 @@
 import React from 'react';
 import { Section, Person } from '../types/organigramme';
 import { PersonCard } from './PersonCard';
-import { X, Users, FolderTree, Briefcase, ChevronRight, Star } from 'lucide-react';
+import { X, Users, FolderTree, Briefcase, ChevronRight, Star, Loader2 } from 'lucide-react';
 import { Button } from './ui/button';
 import { ScrollArea } from './ui/scroll-area';
+import { Skeleton } from './ui/skeleton';
 import { supabase } from '@/integrations/supabase/client';
 import type { Project } from '@/pages/Projects';
 
@@ -16,6 +17,36 @@ interface SectionDetailsSidebarProps {
   onEditPerson?: (person: Person) => void;
 }
 
+interface PersonDetails {
+  competences: string[] | null;
+  email: string | null;
+  phone: string | null;
+  adresse: string | null;
+  date_entree: string | null;
+  embeds: any[] | null;
+  experience: string | null;
+  formation: string | null;
+  langues: string[] | null;
+  hobbies: string | null;
+  specialite: string | null;
+}
+
+const PersonInfoSkeleton = () => (
+  <div className="space-y-4">
+    <div>
+      <Skeleton className="h-4 w-20 mb-2" />
+      <Skeleton className="h-4 w-32" />
+    </div>
+    <div>
+      <Skeleton className="h-4 w-24 mb-2" />
+      <div className="flex gap-2">
+        <Skeleton className="h-6 w-16" />
+        <Skeleton className="h-6 w-20" />
+      </div>
+    </div>
+  </div>
+);
+
 export const SectionDetailsSidebar: React.FC<SectionDetailsSidebarProps> = ({
   section,
   isOpen,
@@ -27,11 +58,14 @@ export const SectionDetailsSidebar: React.FC<SectionDetailsSidebarProps> = ({
   const [projects, setProjects] = React.useState<Project[]>([]);
   const [loading, setLoading] = React.useState(false);
   const [selectedMember, setSelectedMember] = React.useState<Person | null>(null);
+  const [personDetails, setPersonDetails] = React.useState<PersonDetails | null>(null);
+  const [isLoadingDetails, setIsLoadingDetails] = React.useState(false);
 
   React.useEffect(() => {
     if (section && isOpen) {
       setLoading(true);
-      setSelectedMember(null); // Reset member selection when section changes
+      setSelectedMember(null);
+      setPersonDetails(null);
       supabase
         .from('projects')
         .select('*')
@@ -50,12 +84,44 @@ export const SectionDetailsSidebar: React.FC<SectionDetailsSidebarProps> = ({
     }
   }, [section, isOpen]);
 
+  // Charger les détails complets du membre sélectionné
+  React.useEffect(() => {
+    if (selectedMember && isOpen) {
+      setIsLoadingDetails(true);
+      supabase.rpc('get_people_detailed')
+        .then(({ data, error }) => {
+          if (!error && data) {
+            const fullPerson = data.find((p: any) => p.id === selectedMember.id);
+            if (fullPerson) {
+              setPersonDetails({
+                competences: fullPerson.competences,
+                email: fullPerson.email,
+                phone: fullPerson.phone,
+                adresse: fullPerson.adresse,
+                date_entree: fullPerson.date_entree,
+                embeds: fullPerson.embeds as any[],
+                experience: fullPerson.experience,
+                formation: fullPerson.formation,
+                langues: fullPerson.langues,
+                hobbies: fullPerson.hobbies,
+                specialite: fullPerson.specialite,
+              });
+            }
+          }
+          setIsLoadingDetails(false);
+        });
+    } else {
+      setPersonDetails(null);
+    }
+  }, [selectedMember, isOpen]);
+
   const handleMemberClick = (person: Person) => {
     setSelectedMember(person);
   };
 
   const handleBackToSection = () => {
     setSelectedMember(null);
+    setPersonDetails(null);
   };
 
   if (!isOpen || !section) return null;
@@ -130,30 +196,80 @@ export const SectionDetailsSidebar: React.FC<SectionDetailsSidebarProps> = ({
                 </div>
               )}
 
-              {selectedMember.email && (
-                <div>
-                  <h3 className="font-semibold mb-2">Contact</h3>
-                  <p className="text-sm text-muted-foreground">{selectedMember.email}</p>
-                  {selectedMember.phone && (
-                    <p className="text-sm text-muted-foreground mt-1">{selectedMember.phone}</p>
-                  )}
-                </div>
-              )}
-
-              {selectedMember.competences && selectedMember.competences.length > 0 && (
-                <div>
-                  <h3 className="font-semibold mb-2">Compétences</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {selectedMember.competences.map((comp, idx) => (
-                      <span
-                        key={idx}
-                        className="text-xs bg-primary/10 text-primary px-2 py-1 rounded"
-                      >
-                        {comp}
-                      </span>
-                    ))}
+              {isLoadingDetails ? (
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Chargement des détails...
                   </div>
+                  <PersonInfoSkeleton />
                 </div>
+              ) : (
+                <>
+                  {(personDetails?.email || selectedMember.email) && (
+                    <div>
+                      <h3 className="font-semibold mb-2">Contact</h3>
+                      <p className="text-sm text-muted-foreground">{personDetails?.email || selectedMember.email}</p>
+                      {(personDetails?.phone || selectedMember.phone) && (
+                        <p className="text-sm text-muted-foreground mt-1">{personDetails?.phone || selectedMember.phone}</p>
+                      )}
+                    </div>
+                  )}
+
+                  {((personDetails?.competences && personDetails.competences.length > 0) || 
+                    (selectedMember.competences && selectedMember.competences.length > 0)) && (
+                    <div>
+                      <h3 className="font-semibold mb-2">Compétences</h3>
+                      <div className="flex flex-wrap gap-2">
+                        {(personDetails?.competences || selectedMember.competences || []).map((comp, idx) => (
+                          <span
+                            key={idx}
+                            className="text-xs bg-primary/10 text-primary px-2 py-1 rounded"
+                          >
+                            {comp}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {personDetails?.experience && (
+                    <div>
+                      <h3 className="font-semibold mb-2">Expérience</h3>
+                      <p className="text-sm text-muted-foreground">{personDetails.experience}</p>
+                    </div>
+                  )}
+
+                  {personDetails?.formation && (
+                    <div>
+                      <h3 className="font-semibold mb-2">Formation</h3>
+                      <p className="text-sm text-muted-foreground">{personDetails.formation}</p>
+                    </div>
+                  )}
+
+                  {personDetails?.langues && personDetails.langues.length > 0 && (
+                    <div>
+                      <h3 className="font-semibold mb-2">Langues</h3>
+                      <div className="flex flex-wrap gap-2">
+                        {personDetails.langues.map((lang, idx) => (
+                          <span
+                            key={idx}
+                            className="text-xs bg-secondary text-secondary-foreground px-2 py-1 rounded"
+                          >
+                            {lang}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {personDetails?.specialite && (
+                    <div>
+                      <h3 className="font-semibold mb-2">Spécialité</h3>
+                      <p className="text-sm text-muted-foreground">{personDetails.specialite}</p>
+                    </div>
+                  )}
+                </>
               )}
 
               {selectedMember.linkedin && (
