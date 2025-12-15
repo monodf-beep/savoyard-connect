@@ -14,3 +14,6 @@ verify_jwt = true
 
 [functions.complete-profile]
 verify_jwt = false
+
+[functions.sync-helloasso]
+verify_jwt = true
