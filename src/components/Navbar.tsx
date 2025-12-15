@@ -15,6 +15,7 @@ import {
   Upload,
   Settings,
   CheckCircle2,
+  LayoutDashboard,
 } from 'lucide-react';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
@@ -200,6 +201,22 @@ export const Navbar = ({
                   </NavigationMenuTrigger>
                   <NavigationMenuContent>
                     <ul className="grid gap-3 p-6 w-[400px] bg-popover z-50">
+                      <li>
+                        <NavigationMenuLink asChild>
+                          <Link
+                            to="/dashboard"
+                            className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+                          >
+                            <div className="flex items-center gap-2 text-sm font-medium leading-none">
+                              <LayoutDashboard className="h-4 w-4" />
+                              Dashboard
+                            </div>
+                            <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
+                              Suivi des financements et transparence
+                            </p>
+                          </Link>
+                        </NavigationMenuLink>
+                      </li>
                       <li>
                         <NavigationMenuLink asChild>
                           <Link

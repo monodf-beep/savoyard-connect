@@ -5,6 +5,7 @@ import { Input } from './ui/input';
 import { Textarea } from './ui/textarea';
 import { Label } from './ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import { Switch } from './ui/switch';
 import { Project } from '@/pages/Projects';
 import { Section } from '@/types/organigramme';
 import { Plus, X } from 'lucide-react';
@@ -18,7 +19,7 @@ interface ProjectFormProps {
 }
 
 export const ProjectForm = ({ project, sections, open, onOpenChange, onSave }: ProjectFormProps) => {
-  const [formData, setFormData] = useState<Partial<Project>>({
+  const [formData, setFormData] = useState<Partial<Project> & { is_funding_project?: boolean; funding_goal?: number; funding_deadline?: string; cover_image_url?: string }>({
     title: '',
     description: '',
     section_id: '',
@@ -27,13 +28,17 @@ export const ProjectForm = ({ project, sections, open, onOpenChange, onSave }: P
     end_date: '',
     roadmap: '',
     documents: [],
+    is_funding_project: false,
+    funding_goal: 0,
+    funding_deadline: '',
+    cover_image_url: '',
   });
 
   const [newDocument, setNewDocument] = useState({ name: '', url: '' });
 
   useEffect(() => {
     if (project) {
-      setFormData(project);
+      setFormData({ ...project, is_funding_project: (project as any).is_funding_project ?? false, funding_goal: (project as any).funding_goal ?? 0, funding_deadline: (project as any).funding_deadline ?? '', cover_image_url: (project as any).cover_image_url ?? '' });
     } else {
       setFormData({
         title: '',
@@ -44,6 +49,10 @@ export const ProjectForm = ({ project, sections, open, onOpenChange, onSave }: P
         end_date: '',
         roadmap: '',
         documents: [],
+        is_funding_project: false,
+        funding_goal: 0,
+        funding_deadline: '',
+        cover_image_url: '',
       });
     }
   }, [project]);
@@ -149,6 +158,55 @@ export const ProjectForm = ({ project, sections, open, onOpenChange, onSave }: P
               </SelectContent>
             </Select>
           </div>
+
+          {/* Funding Project Toggle */}
+          <div className="flex items-center justify-between p-4 border rounded-lg bg-muted/50">
+            <div>
+              <Label htmlFor="is_funding">Projet de financement</Label>
+              <p className="text-sm text-muted-foreground">Activer le suivi des collectes et dons</p>
+            </div>
+            <Switch
+              id="is_funding"
+              checked={formData.is_funding_project}
+              onCheckedChange={(checked) => setFormData({ ...formData, is_funding_project: checked })}
+            />
+          </div>
+
+          {/* Funding Fields (conditional) */}
+          {formData.is_funding_project && (
+            <div className="space-y-4 p-4 border rounded-lg border-primary/20 bg-primary/5">
+              <div className="space-y-2">
+                <Label htmlFor="funding_goal">Objectif de collecte (€)</Label>
+                <Input
+                  id="funding_goal"
+                  type="number"
+                  min="0"
+                  value={formData.funding_goal || ''}
+                  onChange={(e) => setFormData({ ...formData, funding_goal: parseFloat(e.target.value) || 0 })}
+                  placeholder="5000"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="funding_deadline">Date limite de collecte</Label>
+                <Input
+                  id="funding_deadline"
+                  type="date"
+                  value={formData.funding_deadline || ''}
+                  onChange={(e) => setFormData({ ...formData, funding_deadline: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="cover_image">Image de couverture (URL)</Label>
+                <Input
+                  id="cover_image"
+                  type="url"
+                  value={formData.cover_image_url || ''}
+                  onChange={(e) => setFormData({ ...formData, cover_image_url: e.target.value })}
+                  placeholder="https://..."
+                />
+              </div>
+            </div>
+          )}
 
           {/* Dates */}
           <div className="grid grid-cols-2 gap-4">
