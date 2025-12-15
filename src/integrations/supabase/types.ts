@@ -14,6 +14,27 @@ export type Database = {
   }
   public: {
     Tables: {
+      app_settings: {
+        Row: {
+          id: string
+          key: string
+          updated_at: string | null
+          value: Json
+        }
+        Insert: {
+          id?: string
+          key: string
+          updated_at?: string | null
+          value: Json
+        }
+        Update: {
+          id?: string
+          key?: string
+          updated_at?: string | null
+          value?: Json
+        }
+        Relationships: []
+      }
       invites: {
         Row: {
           created_at: string
@@ -90,6 +111,50 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: []
+      }
+      manual_funds: {
+        Row: {
+          amount: number
+          created_at: string | null
+          created_by: string | null
+          donor_name: string | null
+          id: string
+          is_public: boolean | null
+          note: string | null
+          project_id: string | null
+          source: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          created_by?: string | null
+          donor_name?: string | null
+          id?: string
+          is_public?: boolean | null
+          note?: string | null
+          project_id?: string | null
+          source: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          created_by?: string | null
+          donor_name?: string | null
+          id?: string
+          is_public?: boolean | null
+          note?: string | null
+          project_id?: string | null
+          source?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "manual_funds_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       organization_settings: {
         Row: {
@@ -194,48 +259,72 @@ export type Database = {
         Row: {
           approval_status: string | null
           approved_by: string | null
+          cover_image_url: string | null
           created_at: string
           created_by: string | null
           description: string | null
           documents: Json | null
           end_date: string | null
+          funded_amount: number | null
+          funding_deadline: string | null
+          funding_goal: number | null
+          ha_net_total: number | null
           id: string
+          is_funding_project: boolean | null
+          manual_cash_total: number | null
           roadmap: string | null
           section_id: string
           start_date: string | null
           status: Database["public"]["Enums"]["project_status"]
+          supporter_count: number | null
           title: string
           updated_at: string
         }
         Insert: {
           approval_status?: string | null
           approved_by?: string | null
+          cover_image_url?: string | null
           created_at?: string
           created_by?: string | null
           description?: string | null
           documents?: Json | null
           end_date?: string | null
+          funded_amount?: number | null
+          funding_deadline?: string | null
+          funding_goal?: number | null
+          ha_net_total?: number | null
           id?: string
+          is_funding_project?: boolean | null
+          manual_cash_total?: number | null
           roadmap?: string | null
           section_id: string
           start_date?: string | null
           status?: Database["public"]["Enums"]["project_status"]
+          supporter_count?: number | null
           title: string
           updated_at?: string
         }
         Update: {
           approval_status?: string | null
           approved_by?: string | null
+          cover_image_url?: string | null
           created_at?: string
           created_by?: string | null
           description?: string | null
           documents?: Json | null
           end_date?: string | null
+          funded_amount?: number | null
+          funding_deadline?: string | null
+          funding_goal?: number | null
+          ha_net_total?: number | null
           id?: string
+          is_funding_project?: boolean | null
+          manual_cash_total?: number | null
           roadmap?: string | null
           section_id?: string
           start_date?: string | null
           status?: Database["public"]["Enums"]["project_status"]
+          supporter_count?: number | null
           title?: string
           updated_at?: string
         }
