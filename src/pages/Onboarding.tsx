@@ -548,7 +548,7 @@ const Onboarding = () => {
 
       // Redirect to organigramme after 4 seconds
       setTimeout(() => {
-        navigate('/', { state: { highlightPersonId: data?.personId } });
+        navigate('/organigramme', { state: { highlightPersonId: data?.personId } });
       }, 4000);
     } catch (err: any) {
       console.error('Error submitting profile:', err);

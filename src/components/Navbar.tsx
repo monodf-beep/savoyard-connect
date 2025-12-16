@@ -55,7 +55,7 @@ export const Navbar = ({
   const { settings } = useOrganizationSettings();
 
   const isActive = (path: string) => location.pathname === path;
-  const isOrgPage = location.pathname === '/';
+  const isOrgPage = location.pathname === '/organigramme';
 
   return (
     <nav className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
@@ -89,7 +89,7 @@ export const Navbar = ({
                       <li>
                         <NavigationMenuLink asChild>
                           <Link
-                            to="/"
+                            to="/organigramme"
                             className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
                           >
                             <div className="flex items-center gap-2 text-sm font-medium leading-none">
@@ -204,7 +204,7 @@ export const Navbar = ({
                       <li>
                         <NavigationMenuLink asChild>
                           <Link
-                            to="/dashboard"
+                            to="/"
                             className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
                           >
                             <div className="flex items-center gap-2 text-sm font-medium leading-none">
@@ -345,11 +345,11 @@ export const Navbar = ({
                 Organisation
               </div>
               <Link
-                to="/"
+                to="/organigramme"
                 onClick={() => setMobileMenuOpen(false)}
                 className={cn(
                   'flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors',
-                  isActive('/')
+                  isActive('/organigramme')
                     ? 'bg-primary/10 text-primary'
                     : 'text-muted-foreground hover:bg-muted'
                 )}
@@ -438,6 +438,19 @@ export const Navbar = ({
               <div className="px-3 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                 Activités
               </div>
+              <Link
+                to="/"
+                onClick={() => setMobileMenuOpen(false)}
+                className={cn(
+                  'flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors',
+                  isActive('/')
+                    ? 'bg-primary/10 text-primary'
+                    : 'text-muted-foreground hover:bg-muted'
+                )}
+              >
+                <LayoutDashboard className="h-4 w-4" />
+                Dashboard
+              </Link>
               <Link
                 to="/projects"
                 onClick={() => setMobileMenuOpen(false)}
