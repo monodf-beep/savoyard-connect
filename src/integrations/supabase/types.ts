@@ -35,6 +35,68 @@ export type Database = {
         }
         Relationships: []
       }
+      idea_votes: {
+        Row: {
+          created_at: string
+          id: string
+          idea_id: string
+          points: number
+          voter_identifier: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          idea_id: string
+          points?: number
+          voter_identifier: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          idea_id?: string
+          points?: number
+          voter_identifier?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "idea_votes_idea_id_fkey"
+            columns: ["idea_id"]
+            isOneToOne: false
+            referencedRelation: "ideas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ideas: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          title: string
+          updated_at: string
+          votes_count: number
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          title: string
+          updated_at?: string
+          votes_count?: number
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          title?: string
+          updated_at?: string
+          votes_count?: number
+        }
+        Relationships: []
+      }
       invites: {
         Row: {
           created_at: string

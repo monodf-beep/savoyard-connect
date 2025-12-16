@@ -2,13 +2,22 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useOrganigramme } from '@/hooks/useOrganigramme';
 import { Button } from '@/components/ui/button';
-import { Plus } from 'lucide-react';
-import { ProjectCard } from '@/components/ProjectCard';
+import { Input } from '@/components/ui/input';
+import { Plus, Search } from 'lucide-react';
 import { ProjectForm } from '@/components/ProjectForm';
-import { TutorialDialog } from '@/components/TutorialDialog';
+import { ProjectGridCard } from '@/components/projects/ProjectGridCard';
+import { ProjectDetailDrawer } from '@/components/projects/ProjectDetailDrawer';
+import { IdeaBox } from '@/components/projects/IdeaBox';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Navbar } from '@/components/Navbar';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 export interface Project {
   id: string;
@@ -25,6 +34,15 @@ export interface Project {
   approval_status?: 'pending' | 'approved' | 'rejected';
   created_by?: string;
   approved_by?: string;
+  // Funding fields
+  funding_goal?: number;
+  funded_amount?: number;
+  ha_net_total?: number;
+  manual_cash_total?: number;
+  supporter_count?: number;
+  funding_deadline?: string;
+  is_funding_project?: boolean;
+  cover_image_url?: string;
 }
 
 const Projects = () => {
@@ -35,7 +53,10 @@ const Projects = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editingProject, setEditingProject] = useState<Project | undefined>();
-  const [selectedSectionId, setSelectedSectionId] = useState<string | undefined>();
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const [showDetail, setShowDetail] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterStatus, setFilterStatus] = useState('all');
 
   // Fetch projects
   useEffect(() => {
@@ -88,7 +109,6 @@ const Projects = () => {
   }, []);
 
   const handleSaveProject = async (projectData: Partial<Project>) => {
-    // Basic validation (Select required isn't enforced by the Radix Select)
     if (!projectData.title || !projectData.title.trim()) {
       toast({
         title: 'Champ manquant',
@@ -108,16 +128,14 @@ const Projects = () => {
 
     const sanitize = (data: Partial<Project>) => ({
       ...data,
-      // Convert empty strings to null for optional date columns to avoid Postgres errors
       start_date: data.start_date ? data.start_date : null,
       end_date: data.end_date ? data.end_date : null,
-      // Ensure documents is always an array
+      funding_deadline: data.funding_deadline ? data.funding_deadline : null,
       documents: (data.documents ?? []) as any,
     });
 
     try {
       if (editingProject) {
-        // Update
         const { error } = await supabase
           .from('projects')
           .update(sanitize(projectData) as any)
@@ -132,7 +150,6 @@ const Projects = () => {
         );
         toast({ title: 'Succès', description: 'Projet mis à jour' });
       } else {
-        // Create
         const { data: newData, error } = await supabase
           .from('projects')
           .insert([sanitize(projectData) as any])
@@ -154,42 +171,14 @@ const Projects = () => {
 
       setShowForm(false);
       setEditingProject(undefined);
-      setSelectedSectionId(undefined);
     } catch (error: any) {
       console.error('Error saving project:', error);
       toast({
         title: 'Erreur',
-        description: error?.message || "Impossible d’enregistrer le projet",
+        description: error?.message || "Impossible d'enregistrer le projet",
         variant: 'destructive',
       });
     }
-  };
-
-  const handleDeleteProject = async (projectId: string) => {
-    const { error } = await supabase
-      .from('projects')
-      .delete()
-      .eq('id', projectId);
-
-    if (error) {
-      toast({
-        title: 'Erreur',
-        description: 'Impossible de supprimer le projet',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    setProjects(projects.filter(p => p.id !== projectId));
-    toast({
-      title: 'Succès',
-      description: 'Projet supprimé',
-    });
-  };
-
-  const handleEditProject = (project: Project) => {
-    setEditingProject(project);
-    setShowForm(true);
   };
 
   const handleAddProject = () => {
@@ -197,69 +186,32 @@ const Projects = () => {
     setShowForm(true);
   };
 
-  const handleApproveProject = async (projectId: string) => {
-    try {
-      const { error } = await supabase
-        .from('projects')
-        .update({ 
-          approval_status: 'approved',
-          approved_by: user?.id 
-        })
-        .eq('id', projectId);
-
-      if (error) throw error;
-
-      setProjects(projects.map(p => 
-        p.id === projectId 
-          ? { ...p, approval_status: 'approved' as const, approved_by: user?.id }
-          : p
-      ));
-
-      toast({
-        title: 'Succès',
-        description: 'Projet approuvé',
-      });
-    } catch (error: any) {
-      console.error('Error approving project:', error);
-      toast({
-        title: 'Erreur',
-        description: "Impossible d'approuver le projet",
-        variant: 'destructive',
-      });
-    }
+  const handleProjectClick = (project: Project) => {
+    setSelectedProject(project);
+    setShowDetail(true);
   };
 
-  const handleRejectProject = async (projectId: string) => {
-    try {
-      const { error } = await supabase
-        .from('projects')
-        .update({ 
-          approval_status: 'rejected',
-          approved_by: user?.id 
-        })
-        .eq('id', projectId);
-
-      if (error) throw error;
-
-      setProjects(projects.map(p => 
-        p.id === projectId 
-          ? { ...p, approval_status: 'rejected' as const, approved_by: user?.id }
-          : p
-      ));
-
-      toast({
-        title: 'Succès',
-        description: 'Projet rejeté',
-      });
-    } catch (error: any) {
-      console.error('Error rejecting project:', error);
-      toast({
-        title: 'Erreur',
-        description: 'Impossible de rejeter le projet',
-        variant: 'destructive',
-      });
+  // Filter projects
+  const filteredProjects = projects.filter(p => {
+    // Only show approved projects to public
+    if (p.approval_status !== 'approved' && !isAdmin) return false;
+    
+    // Search filter
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      if (!p.title.toLowerCase().includes(query) && 
+          !(p.description?.toLowerCase().includes(query))) {
+        return false;
+      }
     }
-  };
+    
+    // Status filter
+    if (filterStatus !== 'all' && p.status !== filterStatus) {
+      return false;
+    }
+    
+    return true;
+  });
 
   if (authLoading || isLoading) {
     return (
@@ -269,128 +221,84 @@ const Projects = () => {
     );
   }
 
-  // Separate pending projects for admin approval
-  const pendingProjects = projects.filter(p => p.approval_status === 'pending');
-  const approvedProjects = projects.filter(p => p.approval_status !== 'pending');
-
-  // Group approved projects by section
-  const projectsBySection = approvedProjects.reduce((acc, project) => {
-    const sectionId = project.section_id;
-    if (!acc[sectionId]) {
-      acc[sectionId] = [];
-    }
-    acc[sectionId].push(project);
-    return acc;
-  }, {} as Record<string, Project[]>);
-
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
       <div className="container mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-3">
-            <div>
-              <h1 className="text-3xl font-bold">Projets</h1>
-              <p className="text-muted-foreground mt-1">
-                Découvrez les projets en cours et à venir des groupes et commissions
+        <div className="flex flex-col lg:flex-row gap-8">
+          {/* Main Content - Projects */}
+          <div className="flex-1">
+            {/* Header */}
+            <div className="mb-6">
+              <div className="flex items-center justify-between mb-2">
+                <h1 className="text-3xl font-bold">Projets & Idées</h1>
+                {(isAdmin || isSectionLeader) && (
+                  <Button onClick={handleAddProject}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Nouveau
+                  </Button>
+                )}
+              </div>
+              <p className="text-muted-foreground">
+                Financez les projets et partagez vos idées
               </p>
             </div>
-            <TutorialDialog
-              title="Gérer les projets"
-              description="Suivez et organisez les projets de votre organisation par section."
-              benefits={[
-                "Centraliser tous les projets de l'organisation",
-                "Suivre l'avancement de chaque projet (planifié, en cours, terminé)",
-                "Associer les projets aux bonnes sections/commissions",
-                "Partager des documents et feuilles de route",
-                "Maintenir un historique des réalisations"
-              ]}
-              steps={[
-                {
-                  title: "Créer un projet",
-                  description: "Cliquez sur 'Nouveau projet' pour ajouter un projet à une section. Remplissez les informations de base.",
-                  tips: ["Choisissez un titre clair et descriptif"]
-                },
-                {
-                  title: "Définir le statut",
-                  description: "Indiquez si le projet est planifié, en cours ou terminé pour suivre sa progression.",
-                  tips: ["Mettez à jour le statut régulièrement"]
-                },
-                {
-                  title: "Ajouter dates et documents",
-                  description: "Précisez les dates de début et fin, et joignez des documents pertinents (rapports, plans, etc.).",
-                  tips: ["Les documents restent accessibles à tous les membres"]
-                },
-                {
-                  title: "Décrire la feuille de route",
-                  description: "Utilisez le champ 'Roadmap' pour détailler les étapes et jalons du projet.",
-                  tips: ["Une feuille de route claire facilite la coordination"]
-                }
-              ]}
-            />
+
+            {/* Filters */}
+            <div className="flex flex-col sm:flex-row gap-3 mb-6">
+              <Select value={filterStatus} onValueChange={setFilterStatus}>
+                <SelectTrigger className="w-full sm:w-[150px]">
+                  <SelectValue placeholder="Filtrer" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Tous</SelectItem>
+                  <SelectItem value="planned">Planifiés</SelectItem>
+                  <SelectItem value="in_progress">En cours</SelectItem>
+                  <SelectItem value="completed">Terminés</SelectItem>
+                </SelectContent>
+              </Select>
+              
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Rechercher un projet..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+            </div>
+
+            {/* Projects Grid */}
+            {filteredProjects.length === 0 ? (
+              <div className="text-center py-12 bg-muted/30 rounded-xl">
+                <p className="text-muted-foreground">Aucun projet trouvé</p>
+              </div>
+            ) : (
+              <div className="grid gap-6 sm:grid-cols-2">
+                {filteredProjects.map(project => (
+                  <ProjectGridCard
+                    key={project.id}
+                    project={project}
+                    onClick={() => handleProjectClick(project)}
+                  />
+                ))}
+              </div>
+            )}
           </div>
-          {(isAdmin || isSectionLeader) && (
-            <Button onClick={handleAddProject}>
-              <Plus className="h-4 w-4 mr-2" />
-              Nouveau projet
-            </Button>
-          )}
+
+          {/* Sidebar - Idea Box */}
+          <div className="w-full lg:w-[380px] flex-shrink-0">
+            <IdeaBox />
+          </div>
         </div>
 
-        {/* Pending approvals section (Admin only) */}
-        {isAdmin && pendingProjects.length > 0 && (
-          <div className="mb-8">
-            <h2 className="text-2xl font-semibold mb-4 text-orange-700 dark:text-orange-300">
-              Projets en attente d'approbation ({pendingProjects.length})
-            </h2>
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {pendingProjects.map(project => (
-                <ProjectCard
-                  key={project.id}
-                  project={project}
-                  isAdmin={isAdmin}
-                  onEdit={() => handleEditProject(project)}
-                  onDelete={() => handleDeleteProject(project.id)}
-                  onApprove={() => handleApproveProject(project.id)}
-                  onReject={() => handleRejectProject(project.id)}
-                />
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Projects list */}
-        {approvedProjects.length === 0 && pendingProjects.length === 0 ? (
-          <div className="text-center py-12">
-            <p className="text-muted-foreground">Aucun projet pour le moment</p>
-          </div>
-        ) : approvedProjects.length > 0 ? (
-        <div className="space-y-8">
-            {Object.entries(projectsBySection).map(([sectionId, sectionProjects]) => {
-              const section = data.sections.find(s => s.id === sectionId);
-              
-              return (
-                <div key={sectionId}>
-                  <h2 className="text-2xl font-semibold mb-4">
-                    {section?.title || 'Section inconnue'}
-                  </h2>
-                  <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                    {sectionProjects.map(project => (
-                      <ProjectCard
-                        key={project.id}
-                        project={project}
-                        isAdmin={isAdmin}
-                        onEdit={() => handleEditProject(project)}
-                        onDelete={() => handleDeleteProject(project.id)}
-                      />
-                    ))}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        ) : null}
+        {/* Project Detail Drawer */}
+        <ProjectDetailDrawer
+          project={selectedProject}
+          open={showDetail}
+          onOpenChange={setShowDetail}
+        />
 
         {/* Project Form Dialog */}
         {showForm && (
@@ -402,7 +310,6 @@ const Projects = () => {
               setShowForm(open);
               if (!open) {
                 setEditingProject(undefined);
-                setSelectedSectionId(undefined);
               }
             }}
             onSave={handleSaveProject}
