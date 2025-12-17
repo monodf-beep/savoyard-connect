@@ -35,6 +35,150 @@ export type Database = {
         }
         Relationships: []
       }
+      community_milestones: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          display_order: number | null
+          id: string
+          target: number
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          display_order?: number | null
+          id?: string
+          target: number
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          display_order?: number | null
+          id?: string
+          target?: number
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      community_settings: {
+        Row: {
+          id: string
+          key: string
+          updated_at: string | null
+          value: Json
+        }
+        Insert: {
+          id?: string
+          key: string
+          updated_at?: string | null
+          value: Json
+        }
+        Update: {
+          id?: string
+          key?: string
+          updated_at?: string | null
+          value?: Json
+        }
+        Relationships: []
+      }
+      helloasso_donors: {
+        Row: {
+          created_at: string | null
+          donation_count: number | null
+          email: string | null
+          first_name: string | null
+          helloasso_id: string | null
+          id: string
+          is_hidden: boolean | null
+          last_donation_date: string | null
+          last_name: string | null
+          total_donated: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          donation_count?: number | null
+          email?: string | null
+          first_name?: string | null
+          helloasso_id?: string | null
+          id?: string
+          is_hidden?: boolean | null
+          last_donation_date?: string | null
+          last_name?: string | null
+          total_donated?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          donation_count?: number | null
+          email?: string | null
+          first_name?: string | null
+          helloasso_id?: string | null
+          id?: string
+          is_hidden?: boolean | null
+          last_donation_date?: string | null
+          last_name?: string | null
+          total_donated?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      helloasso_members: {
+        Row: {
+          amount: number | null
+          city: string | null
+          country: string | null
+          created_at: string | null
+          email: string | null
+          first_name: string | null
+          helloasso_id: string | null
+          id: string
+          is_hidden: boolean | null
+          last_name: string | null
+          membership_date: string | null
+          membership_type: string | null
+          postal_code: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          amount?: number | null
+          city?: string | null
+          country?: string | null
+          created_at?: string | null
+          email?: string | null
+          first_name?: string | null
+          helloasso_id?: string | null
+          id?: string
+          is_hidden?: boolean | null
+          last_name?: string | null
+          membership_date?: string | null
+          membership_type?: string | null
+          postal_code?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          amount?: number | null
+          city?: string | null
+          country?: string | null
+          created_at?: string | null
+          email?: string | null
+          first_name?: string | null
+          helloasso_id?: string | null
+          id?: string
+          is_hidden?: boolean | null
+          last_name?: string | null
+          membership_date?: string | null
+          membership_type?: string | null
+          postal_code?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       idea_votes: {
         Row: {
           created_at: string
@@ -217,6 +361,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      membership_options: {
+        Row: {
+          benefits: string[] | null
+          created_at: string | null
+          display_order: number | null
+          helloasso_link: string | null
+          id: string
+          is_featured: boolean | null
+          price: number
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          benefits?: string[] | null
+          created_at?: string | null
+          display_order?: number | null
+          helloasso_link?: string | null
+          id?: string
+          is_featured?: boolean | null
+          price: number
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          benefits?: string[] | null
+          created_at?: string | null
+          display_order?: number | null
+          helloasso_link?: string | null
+          id?: string
+          is_featured?: boolean | null
+          price?: number
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
       }
       organization_settings: {
         Row: {
