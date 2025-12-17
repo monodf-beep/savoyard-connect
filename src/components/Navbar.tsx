@@ -236,6 +236,22 @@ export const Navbar = ({
                       <li>
                         <NavigationMenuLink asChild>
                           <Link
+                            to="/contributors"
+                            className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+                          >
+                            <div className="flex items-center gap-2 text-sm font-medium leading-none">
+                              <Users className="h-4 w-4" />
+                              Contributeurs
+                            </div>
+                            <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
+                              Membres de la communauté et classements
+                            </p>
+                          </Link>
+                        </NavigationMenuLink>
+                      </li>
+                      <li>
+                        <NavigationMenuLink asChild>
+                          <Link
                             to="/value-chains"
                             className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
                           >
@@ -463,6 +479,19 @@ export const Navbar = ({
               >
                 <Briefcase className="h-4 w-4" />
                 Projets
+              </Link>
+              <Link
+                to="/contributors"
+                onClick={() => setMobileMenuOpen(false)}
+                className={cn(
+                  'flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors',
+                  isActive('/contributors')
+                    ? 'bg-primary/10 text-primary'
+                    : 'text-muted-foreground hover:bg-muted'
+                )}
+              >
+                <Users className="h-4 w-4" />
+                Contributeurs
               </Link>
               <Link
                 to="/value-chains"
