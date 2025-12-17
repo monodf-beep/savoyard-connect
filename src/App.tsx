@@ -12,6 +12,7 @@ import { useState, useEffect } from "react";
 import Index from "./pages/Index";
 import Jobs from "./pages/Jobs";
 import Projects from "./pages/Projects";
+import Contributors from "./pages/Contributors";
 import ValueChains from "./pages/ValueChains";
 import Auth from "./pages/Auth";
 import Onboarding from "./pages/Onboarding";
@@ -80,6 +81,7 @@ const AppContent = () => {
         <Route path="/organigramme" element={<Index />} />
         <Route path="/jobs" element={<Jobs />} />
         <Route path="/projects" element={<Projects />} />
+        <Route path="/contributors" element={<Contributors />} />
         <Route path="/value-chains" element={<ValueChains />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="/auth" element={<Auth />} />
