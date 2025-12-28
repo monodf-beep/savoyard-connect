@@ -7,7 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Users, Check, Trophy, MapPin, Settings, ExternalLink, EyeOff } from 'lucide-react';
+import { Users, Check, Trophy, MapPin, Settings, ExternalLink, Target, Flag } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import ContributorSettingsDialog from '@/components/contributors/ContributorSettingsDialog';
 import MembersMap from '@/components/contributors/MembersMap';
@@ -168,10 +168,17 @@ export default function Contributors() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Users className="w-8 h-8 text-primary" />
-            <h1 className="text-2xl md:text-3xl font-bold text-foreground">
-              Tableau de Bord Communautaire
-            </h1>
+            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+              <Users className="w-5 h-5 text-primary" />
+            </div>
+            <div>
+              <h1 className="text-xl md:text-2xl font-bold text-foreground">
+                Tableau de Bord Communautaire
+              </h1>
+              <p className="text-sm text-muted-foreground hidden md:block">
+                Suivez la croissance de notre communauté
+              </p>
+            </div>
           </div>
           {isAdmin && (
             <Button variant="outline" size="sm" onClick={() => setSettingsOpen(true)}>
@@ -182,70 +189,84 @@ export default function Contributors() {
         </div>
 
         {/* Force Collective - Progress */}
-        <Card className="bg-card border-border">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-lg font-semibold">
-              Notre Force Collective <span className="text-muted-foreground font-normal">({memberCount} membres)</span>
-            </CardTitle>
+        <Card className="border-border overflow-hidden">
+          <CardHeader className="pb-4 bg-gradient-to-r from-primary/5 to-transparent">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-lg font-semibold flex items-center gap-2">
+                <Target className="w-5 h-5 text-primary" />
+                Notre Force Collective
+              </CardTitle>
+              <Badge variant="secondary" className="text-sm font-bold">
+                {memberCount} membres
+              </Badge>
+            </div>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="relative">
-              <Progress value={progressPercent} className="h-4 bg-muted" />
-              
-              {milestones.length > 0 && (
-                <div className="relative mt-2">
-                  <div className="flex justify-between items-start">
-                    {milestones.map((milestone, index) => {
-                      const position = (milestone.target / maxMilestone) * 100;
-                      const isReached = memberCount >= milestone.target;
-                      const isLast = index === milestones.length - 1;
-                      
-                      return (
-                        <div 
-                          key={milestone.id}
-                          className="flex flex-col items-center text-center"
-                          style={{ 
-                            position: 'absolute', 
-                            left: `${position}%`,
-                            transform: 'translateX(-50%)',
-                            width: isLast ? '100px' : '80px'
-                          }}
-                        >
-                          {isLast && (
-                            <div className="mb-1">
-                              <MapPin className="w-6 h-6 text-yellow-500 fill-yellow-500" />
-                            </div>
-                          )}
-                          <span className={`text-xs font-bold ${isReached ? 'text-primary' : 'text-muted-foreground'}`}>
-                            {milestone.target}
-                          </span>
-                          <span className={`text-[10px] font-medium ${isReached ? 'text-foreground' : 'text-muted-foreground'}`}>
-                            {milestone.title}
-                          </span>
-                          <span className="text-[9px] text-muted-foreground hidden md:block max-w-[70px]">
-                            {milestone.description}
-                          </span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
+          <CardContent className="pt-4 pb-6">
+            {/* Progress bar */}
+            <div className="relative mb-6">
+              <Progress value={progressPercent} className="h-3" />
+              <div 
+                className="absolute top-1/2 -translate-y-1/2 w-4 h-4 bg-primary rounded-full border-2 border-background shadow-lg"
+                style={{ left: `calc(${progressPercent}% - 8px)` }}
+              />
             </div>
             
-            <div className="h-16 md:h-24" />
+            {/* Milestones as horizontal list */}
+            {milestones.length > 0 && (
+              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3">
+                {milestones.map((milestone, index) => {
+                  const isReached = memberCount >= milestone.target;
+                  const isLast = index === milestones.length - 1;
+                  
+                  return (
+                    <div 
+                      key={milestone.id}
+                      className={`p-3 rounded-lg border transition-all ${
+                        isReached 
+                          ? 'bg-primary/10 border-primary/30' 
+                          : 'bg-muted/30 border-border'
+                      } ${isLast ? 'ring-2 ring-amber-400/50' : ''}`}
+                    >
+                      <div className="flex items-center gap-2 mb-1">
+                        {isLast ? (
+                          <Flag className="w-4 h-4 text-amber-500" />
+                        ) : isReached ? (
+                          <Check className="w-4 h-4 text-primary" />
+                        ) : (
+                          <Target className="w-4 h-4 text-muted-foreground" />
+                        )}
+                        <span className={`text-lg font-bold ${isReached ? 'text-primary' : 'text-muted-foreground'}`}>
+                          {milestone.target}
+                        </span>
+                      </div>
+                      <p className={`text-xs font-medium ${isReached ? 'text-foreground' : 'text-muted-foreground'}`}>
+                        {milestone.title}
+                      </p>
+                      {milestone.description && (
+                        <p className="text-[10px] text-muted-foreground mt-1 line-clamp-2">
+                          {milestone.description}
+                        </p>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </CardContent>
         </Card>
 
         {/* Main Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Notre Communauté */}
-          <Card className="bg-card border-border">
+          <Card className="border-border">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-lg font-semibold">Notre Communauté</CardTitle>
+                <CardTitle className="text-base font-semibold flex items-center gap-2">
+                  <Users className="w-4 h-4 text-primary" />
+                  Notre Communauté
+                </CardTitle>
                 <Select value={yearFilter} onValueChange={setYearFilter}>
-                  <SelectTrigger className="w-[120px] h-8 text-xs">
+                  <SelectTrigger className="w-[100px] h-8 text-xs">
                     <SelectValue placeholder="Année" />
                   </SelectTrigger>
                   <SelectContent>
@@ -260,143 +281,164 @@ export default function Contributors() {
             <CardContent>
               {filteredMembers.length > 0 ? (
                 <>
-                  <div className="grid grid-cols-5 gap-3">
-                    {filteredMembers.slice(0, 20).map((member) => {
+                  <div className="grid grid-cols-5 gap-2">
+                    {filteredMembers.slice(0, 15).map((member) => {
                       const year = member.membership_date ? new Date(member.membership_date).getFullYear() : null;
                       
                       return (
-                        <div key={member.id} className="flex flex-col items-center text-center relative group">
-                          <Avatar className="w-10 h-10 md:w-12 md:h-12 border-2 border-border">
-                            <AvatarFallback className="bg-muted text-muted-foreground text-xs">
+                        <div key={member.id} className="flex flex-col items-center text-center">
+                          <Avatar className="w-10 h-10 border-2 border-border">
+                            <AvatarFallback className="bg-primary/10 text-primary text-xs font-medium">
                               {member.first_name?.[0]}{member.last_name?.[0]}
                             </AvatarFallback>
                           </Avatar>
-                          <span className="text-[10px] md:text-xs font-medium text-foreground mt-1 truncate w-full">
+                          <span className="text-[10px] font-medium text-foreground mt-1 truncate w-full">
                             {member.first_name}
-                          </span>
-                          <span className="text-[9px] text-muted-foreground">
-                            ({year || '2024'})
                           </span>
                         </div>
                       );
                     })}
                   </div>
-                  {filteredMembers.length > 20 && (
-                    <p className="text-xs text-muted-foreground text-center mt-4">
-                      +{filteredMembers.length - 20} autres membres
+                  {filteredMembers.length > 15 && (
+                    <p className="text-xs text-muted-foreground text-center mt-3">
+                      +{filteredMembers.length - 15} autres membres
                     </p>
                   )}
                   {manualAddition > 0 && (
-                    <p className="text-xs text-muted-foreground text-center mt-2">
+                    <p className="text-xs text-muted-foreground text-center mt-1">
                       +{manualAddition} membres (hors ligne)
                     </p>
                   )}
                 </>
               ) : (
-                <p className="text-sm text-muted-foreground text-center py-8">
-                  Synchronisez HelloAsso pour voir les membres
-                </p>
+                <div className="text-center py-8">
+                  <Users className="w-8 h-8 text-muted-foreground/50 mx-auto mb-2" />
+                  <p className="text-sm text-muted-foreground">
+                    Synchronisez HelloAsso pour voir les membres
+                  </p>
+                </div>
               )}
             </CardContent>
           </Card>
 
           {/* Devenir Membre */}
-          <Card className="bg-card border-border">
+          <Card className="border-border">
             <CardHeader className="pb-3">
-              <CardTitle className="text-lg font-semibold">Devenir Membre</CardTitle>
+              <CardTitle className="text-base font-semibold flex items-center gap-2">
+                <Check className="w-4 h-4 text-primary" />
+                Devenir Membre
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="flex gap-3 justify-center flex-wrap">
-                {membershipOptions.map((option) => (
-                  <div 
-                    key={option.id}
-                    className={`flex-1 min-w-[120px] max-w-[140px] rounded-lg border p-3 text-center relative ${
-                      option.is_featured 
-                        ? 'border-primary bg-primary/5 ring-2 ring-primary/20' 
-                        : 'border-border bg-background'
-                    }`}
-                  >
-                    {option.is_featured && (
-                      <Badge className="absolute -top-2 left-1/2 -translate-x-1/2 text-[9px] bg-primary text-primary-foreground">
-                        Meilleure offre
-                      </Badge>
-                    )}
-                    <p className="text-2xl font-bold text-foreground mt-2">{option.price}€</p>
-                    <p className="text-xs font-medium text-foreground mb-2">{option.title}</p>
-                    <ul className="text-[9px] text-muted-foreground space-y-1 text-left mb-3">
-                      {option.benefits.slice(0, 3).map((benefit, i) => (
-                        <li key={i} className="flex items-start gap-1">
-                          <Check className="w-3 h-3 text-primary flex-shrink-0 mt-0.5" />
-                          <span className="line-clamp-2">{benefit}</span>
-                        </li>
-                      ))}
-                    </ul>
-                    {option.helloasso_link ? (
-                      <Button 
-                        size="sm" 
-                        variant={option.is_featured ? 'default' : 'outline'}
-                        className="w-full text-xs h-7"
-                        asChild
-                      >
-                        <a href={option.helloasso_link} target="_blank" rel="noopener noreferrer">
-                          Rejoindre <ExternalLink className="w-3 h-3 ml-1" />
-                        </a>
-                      </Button>
-                    ) : (
-                      <Button 
-                        size="sm" 
-                        variant={option.is_featured ? 'default' : 'outline'}
-                        className="w-full text-xs h-7"
-                        disabled
-                      >
-                        Rejoindre
-                      </Button>
-                    )}
-                  </div>
-                ))}
-              </div>
+              {membershipOptions.length > 0 ? (
+                <div className="space-y-3">
+                  {membershipOptions.slice(0, 3).map((option) => (
+                    <div 
+                      key={option.id}
+                      className={`rounded-lg border p-3 relative ${
+                        option.is_featured 
+                          ? 'border-primary bg-primary/5' 
+                          : 'border-border'
+                      }`}
+                    >
+                      {option.is_featured && (
+                        <Badge className="absolute -top-2 right-2 text-[10px] bg-primary text-primary-foreground">
+                          Populaire
+                        </Badge>
+                      )}
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="font-medium text-foreground">{option.title}</span>
+                        <span className="text-lg font-bold text-primary">{option.price}€</span>
+                      </div>
+                      <ul className="text-xs text-muted-foreground space-y-1 mb-3">
+                        {option.benefits.slice(0, 2).map((benefit, i) => (
+                          <li key={i} className="flex items-start gap-1.5">
+                            <Check className="w-3 h-3 text-primary flex-shrink-0 mt-0.5" />
+                            <span className="line-clamp-1">{benefit}</span>
+                          </li>
+                        ))}
+                      </ul>
+                      {option.helloasso_link ? (
+                        <Button 
+                          size="sm" 
+                          variant={option.is_featured ? 'default' : 'outline'}
+                          className="w-full text-xs h-8"
+                          asChild
+                        >
+                          <a href={option.helloasso_link} target="_blank" rel="noopener noreferrer">
+                            Rejoindre <ExternalLink className="w-3 h-3 ml-1" />
+                          </a>
+                        </Button>
+                      ) : (
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          className="w-full text-xs h-8"
+                          disabled
+                        >
+                          Bientôt disponible
+                        </Button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <Check className="w-8 h-8 text-muted-foreground/50 mx-auto mb-2" />
+                  <p className="text-sm text-muted-foreground">
+                    Configurez les options d'adhésion
+                  </p>
+                </div>
+              )}
             </CardContent>
           </Card>
 
           {/* Classements */}
-          <Card className="bg-card border-border">
+          <Card className="border-border">
             <CardHeader className="pb-3">
-              <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                <Trophy className="w-5 h-5 text-yellow-500" />
-                Classements
+              <CardTitle className="text-base font-semibold flex items-center gap-2">
+                <Trophy className="w-4 h-4 text-amber-500" />
+                Top Donateurs
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-xs font-medium text-muted-foreground mb-3">Top Donateurs</p>
-              <div className="space-y-2">
-                {visibleDonors.length > 0 ? (
-                  visibleDonors.map((donor, index) => (
-                    <div key={donor.id} className="flex items-center gap-2">
-                      <span className={`w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold ${
-                        index === 0 ? 'bg-yellow-500 text-yellow-950' :
+              {visibleDonors.length > 0 ? (
+                <div className="space-y-2">
+                  {visibleDonors.slice(0, 5).map((donor, index) => (
+                    <div key={donor.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors">
+                      <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
+                        index === 0 ? 'bg-amber-400 text-amber-950' :
                         index === 1 ? 'bg-gray-300 text-gray-700' :
-                        index === 2 ? 'bg-amber-600 text-amber-950' :
+                        index === 2 ? 'bg-amber-600 text-white' :
                         'bg-muted text-muted-foreground'
                       }`}>
                         {index + 1}
                       </span>
-                      <Avatar className="w-6 h-6">
-                        <AvatarFallback className="bg-muted text-muted-foreground text-[10px]">
+                      <Avatar className="w-8 h-8">
+                        <AvatarFallback className="bg-primary/10 text-primary text-xs">
                           {donor.first_name?.[0]}{donor.last_name?.[0]}
                         </AvatarFallback>
                       </Avatar>
-                      <span className="text-sm text-foreground flex-1 truncate">
-                        {donor.first_name} {donor.last_name?.[0]}.
-                      </span>
-                      <span className="text-xs text-muted-foreground">({donor.total_donated}€)</span>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-foreground truncate">
+                          {donor.first_name} {donor.last_name?.[0]}.
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {donor.donation_count} don{donor.donation_count > 1 ? 's' : ''}
+                        </p>
+                      </div>
+                      <span className="text-sm font-bold text-primary">{donor.total_donated}€</span>
                     </div>
-                  ))
-                ) : (
-                  <p className="text-xs text-muted-foreground text-center py-4">
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <Trophy className="w-8 h-8 text-muted-foreground/50 mx-auto mb-2" />
+                  <p className="text-sm text-muted-foreground">
                     Synchronisez HelloAsso pour voir les donateurs
                   </p>
-                )}
-              </div>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
