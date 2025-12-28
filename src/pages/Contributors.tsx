@@ -29,6 +29,15 @@ interface HelloAssoDonor {
   total_donated: number;
   donation_count: number;
   is_hidden: boolean;
+  city?: string | null;
+}
+
+interface Learner {
+  id: string;
+  first_name: string;
+  last_name: string;
+  adresse?: string | null;
+  formation?: string | null;
 }
 
 interface Milestone {
@@ -115,6 +124,19 @@ export default function Contributors() {
         .limit(10);
       if (error) throw error;
       return data as HelloAssoDonor[];
+    },
+  });
+
+  // Fetch learners (people with formation)
+  const { data: learners = [] } = useQuery({
+    queryKey: ['learners'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('people')
+        .select('id, first_name, last_name, adresse, formation')
+        .not('formation', 'is', null);
+      if (error) throw error;
+      return data as Learner[];
     },
   });
 
@@ -382,6 +404,8 @@ export default function Contributors() {
         {/* Members Map */}
         <MembersMap 
           members={helloassoMembers.filter(m => !m.is_hidden)} 
+          donors={helloassoDonors.filter(d => !d.is_hidden)}
+          learners={learners}
           mapboxToken={mapboxToken} 
         />
 
