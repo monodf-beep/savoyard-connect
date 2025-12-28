@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
-import { Plus, Trash2, Edit2, Save, Loader2, RefreshCw } from 'lucide-react';
+import { Plus, Trash2, Edit2, Save, Loader2, RefreshCw, Map } from 'lucide-react';
 
 interface Milestone {
   id: string;
@@ -38,6 +38,7 @@ export default function ContributorSettingsDialog({ open, onOpenChange }: Contri
   const [editingMembership, setEditingMembership] = useState<MembershipOption | null>(null);
   const [currentMembers, setCurrentMembers] = useState(0);
   const [manualAddition, setManualAddition] = useState(0);
+  const [mapboxToken, setMapboxToken] = useState('');
   const [isSyncing, setIsSyncing] = useState(false);
 
   // Fetch milestones
@@ -85,6 +86,11 @@ export default function ContributorSettingsDialog({ open, onOpenChange }: Contri
         const value = memberSetting.value as { count: number; manual_addition: number };
         setCurrentMembers(value.count || 0);
         setManualAddition(value.manual_addition || 0);
+      }
+      const mapboxSetting = communitySettings.find(s => s.key === 'mapbox_token');
+      if (mapboxSetting) {
+        const tokenValue = mapboxSetting.value;
+        setMapboxToken(typeof tokenValue === 'string' ? tokenValue.replace(/"/g, '') : '');
       }
     }
   }, [communitySettings]);
@@ -189,6 +195,23 @@ export default function ContributorSettingsDialog({ open, onOpenChange }: Contri
     },
   });
 
+  const saveMapboxTokenMutation = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase
+        .from('community_settings')
+        .upsert({
+          key: 'mapbox_token',
+          value: mapboxToken,
+          updated_at: new Date().toISOString(),
+        }, { onConflict: 'key' });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['community-settings'] });
+      toast.success('Token Mapbox enregistré');
+    },
+  });
+
   const syncHelloAsso = async () => {
     setIsSyncing(true);
     try {
@@ -215,10 +238,11 @@ export default function ContributorSettingsDialog({ open, onOpenChange }: Contri
         </DialogHeader>
 
         <Tabs defaultValue="gauge" className="mt-4">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="gauge">Jauge</TabsTrigger>
             <TabsTrigger value="milestones">Jalons</TabsTrigger>
             <TabsTrigger value="membership">Adhésion</TabsTrigger>
+            <TabsTrigger value="map">Carte</TabsTrigger>
           </TabsList>
 
           <TabsContent value="gauge" className="space-y-4 mt-4">
@@ -407,6 +431,33 @@ export default function ContributorSettingsDialog({ open, onOpenChange }: Contri
                   </Button>
                 </div>
               ))}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="map" className="space-y-4 mt-4">
+            <div className="space-y-4 p-4 bg-muted/30 rounded-lg">
+              <div className="flex items-center gap-2">
+                <Map className="w-5 h-5 text-primary" />
+                <h3 className="font-semibold">Configuration Mapbox</h3>
+              </div>
+              
+              <div className="space-y-2">
+                <Label>Token Public Mapbox</Label>
+                <Input
+                  type="text"
+                  value={mapboxToken}
+                  onChange={(e) => setMapboxToken(e.target.value)}
+                  placeholder="pk.eyJ1..."
+                />
+                <p className="text-xs text-muted-foreground">
+                  Récupérez votre token sur <a href="https://mapbox.com" target="_blank" rel="noopener noreferrer" className="text-primary underline">mapbox.com</a> → Tokens
+                </p>
+              </div>
+
+              <Button onClick={() => saveMapboxTokenMutation.mutate()} disabled={saveMapboxTokenMutation.isPending}>
+                <Save className="w-4 h-4 mr-2" />
+                Enregistrer le Token
+              </Button>
             </div>
           </TabsContent>
         </Tabs>
