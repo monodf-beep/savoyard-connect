@@ -77,9 +77,9 @@ serve(async (req) => {
     const tokenData: HelloAssoToken = await tokenResponse.json();
     console.log('Got HelloAsso token');
 
-    // Fetch all payments (memberships and donations)
-    const paymentsResponse = await fetch(
-      `https://api.helloasso.com/v5/organizations/${organizationSlug}/payments?pageSize=100&states=Authorized`,
+    // First, get all forms for this organization
+    const formsResponse = await fetch(
+      `https://api.helloasso.com/v5/organizations/${organizationSlug}/forms?formTypes=Membership,Donation&pageSize=100`,
       {
         headers: {
           'Authorization': `Bearer ${tokenData.access_token}`,
@@ -87,15 +87,44 @@ serve(async (req) => {
       }
     );
 
-    if (!paymentsResponse.ok) {
-      const errorText = await paymentsResponse.text();
-      console.error('Payments error:', errorText);
-      throw new Error(`Failed to fetch payments: ${paymentsResponse.status}`);
+    if (!formsResponse.ok) {
+      const errorText = await formsResponse.text();
+      console.error('Forms error:', errorText);
+      throw new Error(`Failed to fetch forms: ${formsResponse.status}`);
     }
 
-    const paymentsData = await paymentsResponse.json();
-    const payments: HelloAssoPayment[] = paymentsData.data || [];
-    console.log(`Fetched ${payments.length} payments`);
+    const formsData = await formsResponse.json();
+    const forms = formsData.data || [];
+    console.log(`Found ${forms.length} forms`);
+
+    // Collect all payments from all forms
+    const payments: HelloAssoPayment[] = [];
+    
+    for (const form of forms) {
+      try {
+        const formPaymentsResponse = await fetch(
+          `https://api.helloasso.com/v5/organizations/${organizationSlug}/forms/${form.formType}/${form.formSlug}/payments?pageSize=100&states=Authorized`,
+          {
+            headers: {
+              'Authorization': `Bearer ${tokenData.access_token}`,
+            },
+          }
+        );
+
+        if (formPaymentsResponse.ok) {
+          const formPaymentsData = await formPaymentsResponse.json();
+          const formPayments = formPaymentsData.data || [];
+          console.log(`Form ${form.formSlug}: ${formPayments.length} payments`);
+          payments.push(...formPayments);
+        } else {
+          console.warn(`Could not fetch payments for form ${form.formSlug}: ${formPaymentsResponse.status}`);
+        }
+      } catch (e) {
+        console.warn(`Error fetching form ${form.formSlug}:`, e);
+      }
+    }
+    
+    console.log(`Total fetched ${payments.length} payments`);
 
     // Initialize Supabase client
     const supabase = createClient(supabaseUrl!, supabaseServiceKey!);

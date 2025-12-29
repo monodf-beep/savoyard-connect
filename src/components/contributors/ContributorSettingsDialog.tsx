@@ -216,7 +216,7 @@ export default function ContributorSettingsDialog({ open, onOpenChange }: Contri
     setIsSyncing(true);
     try {
       const { data, error } = await supabase.functions.invoke('sync-helloasso-members', {
-        body: { organizationSlug: 'institut-de-la-langue-savoyarde' },
+        body: { organizationSlug: 'institut-de-la-langue-savoyarde-le-franco-provencal-de-savoie' },
       });
       if (error) throw error;
       toast.success(`Synchronisé: ${data.members_synced} membres, ${data.donors_synced} donateurs`);
