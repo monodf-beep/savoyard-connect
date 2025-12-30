@@ -100,6 +100,16 @@ export default function Contributors() {
     },
   });
 
+  // Fetch Mapbox token from edge function
+  const { data: mapboxData } = useQuery({
+    queryKey: ['mapbox-token'],
+    queryFn: async () => {
+      const { data, error } = await supabase.functions.invoke('get-mapbox-token');
+      if (error) throw error;
+      return data;
+    },
+  });
+
   // Fetch HelloAsso members
   const { data: helloassoMembers = [] } = useQuery({
     queryKey: ['helloasso-members'],
@@ -142,11 +152,10 @@ export default function Contributors() {
 
   // Get settings values
   const memberSettings = communitySettings?.find(s => s.key === 'current_members');
-  const mapboxSettings = communitySettings?.find(s => s.key === 'mapbox_token');
   const settingsValue = memberSettings?.value as { count?: number; manual_addition?: number } | null;
   const helloassoCount = settingsValue?.count || helloassoMembers.length;
   const manualAddition = settingsValue?.manual_addition || 0;
-  const mapboxToken = typeof mapboxSettings?.value === 'string' ? mapboxSettings.value.replace(/"/g, '') : '';
+  const mapboxToken = mapboxData?.token || '';
 
   const memberCount = helloassoCount + manualAddition;
   const maxMilestone = milestones.length > 0 ? milestones[milestones.length - 1].target : 100;
