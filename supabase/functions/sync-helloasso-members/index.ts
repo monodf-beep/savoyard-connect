@@ -171,12 +171,17 @@ serve(async (req) => {
           if (new Date(payment.date) > new Date(existing.last_donation_date)) {
             existing.last_donation_date = payment.date.split('T')[0];
           }
+          // Update city if not set
+          if (!existing.city && payer.city) {
+            existing.city = payer.city;
+          }
         } else {
           donors.set(key, {
             helloasso_id: String(payment.id),
             first_name: payer.firstName,
             last_name: payer.lastName,
             email: payer.email,
+            city: payer.city,
             total_donated: payment.amount / 100,
             donation_count: 1,
             last_donation_date: payment.date.split('T')[0],
