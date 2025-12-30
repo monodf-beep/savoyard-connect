@@ -164,20 +164,28 @@ export default function MembersMap({ members, donors, learners, mapboxToken }: M
     markersRef.current.forEach(marker => marker.remove());
     markersRef.current = [];
 
+    // Only remove previous map if it exists and has a container
     if (map.current) {
-      map.current.remove();
+      try {
+        map.current.remove();
+      } catch (e) {
+        // Ignore cleanup errors
+      }
+      map.current = null;
     }
 
     mapboxgl.accessToken = mapboxToken;
 
-    map.current = new mapboxgl.Map({
+    const newMap = new mapboxgl.Map({
       container: mapContainer.current,
       style: 'mapbox://styles/mapbox/light-v11',
       center: [5.9, 45.8], // Center on Savoie
       zoom: 7,
     });
 
-    map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
+    map.current = newMap;
+
+    newMap.addControl(new mapboxgl.NavigationControl(), 'top-right');
 
     map.current.on('load', () => {
       // Add markers for each location
@@ -254,8 +262,22 @@ export default function MembersMap({ members, donors, learners, mapboxToken }: M
     });
 
     return () => {
-      markersRef.current.forEach(marker => marker.remove());
-      map.current?.remove();
+      markersRef.current.forEach(marker => {
+        try {
+          marker.remove();
+        } catch (e) {
+          // Ignore cleanup errors
+        }
+      });
+      markersRef.current = [];
+      if (map.current) {
+        try {
+          map.current.remove();
+        } catch (e) {
+          // Ignore cleanup errors
+        }
+        map.current = null;
+      }
     };
   }, [mapboxToken, locations]);
 
