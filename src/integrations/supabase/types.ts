@@ -88,6 +88,7 @@ export type Database = {
       }
       helloasso_donors: {
         Row: {
+          city: string | null
           created_at: string | null
           donation_count: number | null
           email: string | null
@@ -101,6 +102,7 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          city?: string | null
           created_at?: string | null
           donation_count?: number | null
           email?: string | null
@@ -114,6 +116,7 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          city?: string | null
           created_at?: string | null
           donation_count?: number | null
           email?: string | null
