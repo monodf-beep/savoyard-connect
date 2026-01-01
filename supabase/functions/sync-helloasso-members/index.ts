@@ -17,6 +17,7 @@ interface HelloAssoPayment {
   date: string;
   amount: number;
   state: string;
+  formType?: string;
   payer: {
     firstName: string;
     lastName: string;
@@ -53,7 +54,7 @@ serve(async (req) => {
       throw new Error('organizationSlug is required');
     }
 
-    console.log(`Syncing HelloAsso members for org: ${organizationSlug}`);
+    console.log(`Syncing HelloAsso data for org: ${organizationSlug}`);
 
     // Get OAuth token
     const tokenResponse = await fetch('https://api.helloasso.com/oauth2/token', {
@@ -77,33 +78,14 @@ serve(async (req) => {
     const tokenData: HelloAssoToken = await tokenResponse.json();
     console.log('Got HelloAsso token');
 
-    // First, get all forms for this organization
-    const formsResponse = await fetch(
-      `https://api.helloasso.com/v5/organizations/${organizationSlug}/forms?formTypes=Membership,Donation&pageSize=100`,
-      {
-        headers: {
-          'Authorization': `Bearer ${tokenData.access_token}`,
-        },
-      }
-    );
-
-    if (!formsResponse.ok) {
-      const errorText = await formsResponse.text();
-      console.error('Forms error:', errorText);
-      throw new Error(`Failed to fetch forms: ${formsResponse.status}`);
-    }
-
-    const formsData = await formsResponse.json();
-    const forms = formsData.data || [];
-    console.log(`Found ${forms.length} forms`);
-
-    // Collect all payments from all forms
-    const payments: HelloAssoPayment[] = [];
+    // Get ALL forms for this organization (all types)
+    const allFormTypes = ['Membership', 'Donation', 'Event', 'Crowdfunding', 'PaymentForm', 'Checkout', 'Shop'];
+    const allForms: any[] = [];
     
-    for (const form of forms) {
+    for (const formType of allFormTypes) {
       try {
-        const formPaymentsResponse = await fetch(
-          `https://api.helloasso.com/v5/organizations/${organizationSlug}/forms/${form.formType}/${form.formSlug}/payments?pageSize=100&states=Authorized`,
+        const formsResponse = await fetch(
+          `https://api.helloasso.com/v5/organizations/${organizationSlug}/forms?formTypes=${formType}&pageSize=100`,
           {
             headers: {
               'Authorization': `Bearer ${tokenData.access_token}`,
@@ -111,16 +93,66 @@ serve(async (req) => {
           }
         );
 
-        if (formPaymentsResponse.ok) {
-          const formPaymentsData = await formPaymentsResponse.json();
-          const formPayments = formPaymentsData.data || [];
-          console.log(`Form ${form.formSlug}: ${formPayments.length} payments`);
-          payments.push(...formPayments);
-        } else {
-          console.warn(`Could not fetch payments for form ${form.formSlug}: ${formPaymentsResponse.status}`);
+        if (formsResponse.ok) {
+          const formsData = await formsResponse.json();
+          const forms = formsData.data || [];
+          console.log(`Found ${forms.length} ${formType} forms`);
+          allForms.push(...forms);
         }
       } catch (e) {
-        console.warn(`Error fetching form ${form.formSlug}:`, e);
+        console.warn(`Error fetching ${formType} forms:`, e);
+      }
+    }
+    
+    console.log(`Total forms found: ${allForms.length}`);
+
+    // Collect all payments from all forms with pagination
+    const payments: HelloAssoPayment[] = [];
+    
+    for (const form of allForms) {
+      let page = 1;
+      let hasMore = true;
+      
+      while (hasMore) {
+        try {
+          const formPaymentsResponse = await fetch(
+            `https://api.helloasso.com/v5/organizations/${organizationSlug}/forms/${form.formType}/${form.formSlug}/payments?pageSize=100&pageIndex=${page}&states=Authorized`,
+            {
+              headers: {
+                'Authorization': `Bearer ${tokenData.access_token}`,
+              },
+            }
+          );
+
+          if (formPaymentsResponse.ok) {
+            const formPaymentsData = await formPaymentsResponse.json();
+            const formPayments = formPaymentsData.data || [];
+            
+            // Add formType to each payment for better categorization
+            formPayments.forEach((p: HelloAssoPayment) => {
+              p.formType = form.formType;
+            });
+            
+            payments.push(...formPayments);
+            
+            // Check if there are more pages
+            const pagination = formPaymentsData.pagination;
+            if (pagination && pagination.pageIndex < pagination.totalPages) {
+              page++;
+            } else {
+              hasMore = false;
+            }
+            
+            if (formPayments.length > 0) {
+              console.log(`Form ${form.formSlug} page ${page}: ${formPayments.length} payments`);
+            }
+          } else {
+            hasMore = false;
+          }
+        } catch (e) {
+          console.warn(`Error fetching form ${form.formSlug}:`, e);
+          hasMore = false;
+        }
       }
     }
     
@@ -137,18 +169,27 @@ serve(async (req) => {
       if (payment.state !== 'Authorized') continue;
       
       const payer = payment.payer;
+      if (!payer) continue;
+      
       const key = payer.email?.toLowerCase() || `${payer.firstName}-${payer.lastName}`.toLowerCase();
       
-      // Check if it's a membership or donation
-      const isMembership = payment.items?.some(item => 
-        item.type === 'Membership' || 
-        item.name?.toLowerCase().includes('adhésion') ||
-        item.name?.toLowerCase().includes('adhesion')
-      );
+      // Check if it's a membership - look at form type AND item type/name
+      const isMembership = 
+        payment.formType === 'Membership' ||
+        payment.items?.some(item => 
+          item.type === 'Membership' || 
+          item.name?.toLowerCase().includes('adhésion') ||
+          item.name?.toLowerCase().includes('adhesion') ||
+          item.name?.toLowerCase().includes('cotisation') ||
+          item.name?.toLowerCase().includes('membre')
+        );
 
       if (isMembership) {
-        // Add to members
-        if (!members.has(key)) {
+        // Add to members - use most recent membership date
+        const existingMember = members.get(key);
+        const paymentDate = payment.date.split('T')[0];
+        
+        if (!existingMember || new Date(paymentDate) > new Date(existingMember.membership_date)) {
           members.set(key, {
             helloasso_id: String(payment.id),
             first_name: payer.firstName,
@@ -157,7 +198,7 @@ serve(async (req) => {
             city: payer.city,
             postal_code: payer.zipCode,
             country: payer.country,
-            membership_date: payment.date.split('T')[0],
+            membership_date: paymentDate,
             membership_type: payment.items?.[0]?.name || 'Adhésion',
             amount: payment.amount / 100, // Convert from cents
           });
@@ -193,6 +234,7 @@ serve(async (req) => {
     console.log(`Found ${members.size} members and ${donors.size} donors`);
 
     // Upsert members
+    let membersInserted = 0;
     for (const member of members.values()) {
       const { error } = await supabase
         .from('helloasso_members')
@@ -203,10 +245,13 @@ serve(async (req) => {
       
       if (error) {
         console.error('Error upserting member:', error);
+      } else {
+        membersInserted++;
       }
     }
 
     // Upsert donors
+    let donorsInserted = 0;
     for (const donor of donors.values()) {
       const { error } = await supabase
         .from('helloasso_donors')
@@ -217,6 +262,8 @@ serve(async (req) => {
       
       if (error) {
         console.error('Error upserting donor:', error);
+      } else {
+        donorsInserted++;
       }
     }
 
@@ -230,11 +277,14 @@ serve(async (req) => {
         updated_at: new Date().toISOString(),
       }, { onConflict: 'key' });
 
+    console.log(`Inserted ${membersInserted} members and ${donorsInserted} donors`);
+
     return new Response(
       JSON.stringify({
         success: true,
-        members_synced: members.size,
-        donors_synced: donors.size,
+        members_synced: membersInserted,
+        donors_synced: donorsInserted,
+        total_payments_processed: payments.length,
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
