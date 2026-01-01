@@ -151,6 +151,18 @@ export default function Contributors() {
     },
   });
 
+  // Fetch volunteers (all people from organigramme)
+  const { data: volunteers = [] } = useQuery({
+    queryKey: ['volunteers'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('people')
+        .select('id, first_name, last_name, adresse');
+      if (error) throw error;
+      return data as Array<{ id: string; first_name: string; last_name: string; adresse?: string | null }>;
+    },
+  });
+
   // Get settings values
   const memberSettings = communitySettings?.find(s => s.key === 'current_members');
   const settingsValue = memberSettings?.value as { count?: number; manual_addition?: number } | null;
@@ -460,6 +472,7 @@ export default function Contributors() {
           members={helloassoMembers.filter(m => !m.is_hidden)} 
           donors={helloassoDonors.filter(d => !d.is_hidden)}
           learners={learners}
+          volunteers={volunteers}
           mapboxToken={mapboxToken} 
         />
 
