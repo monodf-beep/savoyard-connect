@@ -86,6 +86,99 @@ export type Database = {
         }
         Relationships: []
       }
+      financial_reports: {
+        Row: {
+          achats: number | null
+          autres_produits: number | null
+          autres_services: number | null
+          charges_financieres: number | null
+          charges_personnel: number | null
+          created_at: string | null
+          created_by: string | null
+          documents: Json | null
+          dons_cotisations: number | null
+          dotations_amortissements: number | null
+          id: string
+          is_provisional: boolean | null
+          is_published: boolean | null
+          notes: string | null
+          produits_financiers: number | null
+          report_name: string
+          reserves: number | null
+          resultat: number | null
+          services_exterieurs: number | null
+          subventions: number | null
+          total_actif: number | null
+          total_charges: number | null
+          total_passif: number | null
+          total_produits: number | null
+          tresorerie: number | null
+          updated_at: string | null
+          ventes_prestations: number | null
+          year: number
+        }
+        Insert: {
+          achats?: number | null
+          autres_produits?: number | null
+          autres_services?: number | null
+          charges_financieres?: number | null
+          charges_personnel?: number | null
+          created_at?: string | null
+          created_by?: string | null
+          documents?: Json | null
+          dons_cotisations?: number | null
+          dotations_amortissements?: number | null
+          id?: string
+          is_provisional?: boolean | null
+          is_published?: boolean | null
+          notes?: string | null
+          produits_financiers?: number | null
+          report_name?: string
+          reserves?: number | null
+          resultat?: number | null
+          services_exterieurs?: number | null
+          subventions?: number | null
+          total_actif?: number | null
+          total_charges?: number | null
+          total_passif?: number | null
+          total_produits?: number | null
+          tresorerie?: number | null
+          updated_at?: string | null
+          ventes_prestations?: number | null
+          year: number
+        }
+        Update: {
+          achats?: number | null
+          autres_produits?: number | null
+          autres_services?: number | null
+          charges_financieres?: number | null
+          charges_personnel?: number | null
+          created_at?: string | null
+          created_by?: string | null
+          documents?: Json | null
+          dons_cotisations?: number | null
+          dotations_amortissements?: number | null
+          id?: string
+          is_provisional?: boolean | null
+          is_published?: boolean | null
+          notes?: string | null
+          produits_financiers?: number | null
+          report_name?: string
+          reserves?: number | null
+          resultat?: number | null
+          services_exterieurs?: number | null
+          subventions?: number | null
+          total_actif?: number | null
+          total_charges?: number | null
+          total_passif?: number | null
+          total_produits?: number | null
+          tresorerie?: number | null
+          updated_at?: string | null
+          ventes_prestations?: number | null
+          year?: number
+        }
+        Relationships: []
+      }
       helloasso_donors: {
         Row: {
           city: string | null

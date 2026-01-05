@@ -16,6 +16,7 @@ import {
   Settings,
   CheckCircle2,
   LayoutDashboard,
+  Wallet,
 } from 'lucide-react';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
@@ -261,6 +262,22 @@ export const Navbar = ({
                             </div>
                             <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
                               Processus et flux opérationnels de l'organisation
+                            </p>
+                          </Link>
+                        </NavigationMenuLink>
+                      </li>
+                      <li>
+                        <NavigationMenuLink asChild>
+                          <Link
+                            to="/finance"
+                            className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+                          >
+                            <div className="flex items-center gap-2 text-sm font-medium leading-none">
+                              <Wallet className="h-4 w-4" />
+                              Finances
+                            </div>
+                            <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
+                              Transparence financière et rapports annuels
                             </p>
                           </Link>
                         </NavigationMenuLink>
