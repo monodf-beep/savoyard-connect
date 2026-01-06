@@ -3,6 +3,7 @@ import { Navbar } from '@/components/Navbar';
 import { useFinancialReports, FinancialReport } from '@/hooks/useFinancialReports';
 import { useFundingProjects } from '@/hooks/useFundingProjects';
 import { useAuth } from '@/hooks/useAuth';
+import { FinancialDocuments } from '@/components/finance/FinancialDocuments';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
@@ -179,6 +180,7 @@ const Finance = () => {
           <TabsList className="flex-wrap h-auto gap-1">
             <TabsTrigger value="overview">Vue d'ensemble</TabsTrigger>
             <TabsTrigger value="details">Compte de résultat</TabsTrigger>
+            <TabsTrigger value="documents">Documents</TabsTrigger>
             <TabsTrigger value="projects">Projets financés</TabsTrigger>
             <TabsTrigger value="donations">Collectes & Dons</TabsTrigger>
           </TabsList>
@@ -438,6 +440,14 @@ const Finance = () => {
                 )}
               </div>
             )}
+          </TabsContent>
+
+          {/* Documents Tab */}
+          <TabsContent value="documents">
+            <FinancialDocuments 
+              isAdmin={isAdmin} 
+              years={reports?.map(r => r.year) || [2023, 2024, 2025, 2026]} 
+            />
           </TabsContent>
 
           {/* Projects Tab */}
