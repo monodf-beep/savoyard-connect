@@ -4,6 +4,7 @@ import { useFinancialReports, FinancialReport } from '@/hooks/useFinancialReport
 import { useFundingProjects } from '@/hooks/useFundingProjects';
 import { useAuth } from '@/hooks/useAuth';
 import { FinancialDocuments } from '@/components/finance/FinancialDocuments';
+import { FinancialReportForm } from '@/components/finance/FinancialReportForm';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
@@ -22,7 +23,9 @@ import {
   Building,
   HandHeart,
   ChevronRight,
-  ExternalLink
+  ExternalLink,
+  Plus,
+  Pencil
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Legend, CartesianGrid } from 'recharts';
@@ -43,6 +46,8 @@ const Finance = () => {
   const { fundingProjects, stats, loading: projectsLoading } = useFundingProjects();
   const { isAdmin } = useAuth();
   const [selectedYear, setSelectedYear] = useState<number | null>(null);
+  const [formOpen, setFormOpen] = useState(false);
+  const [editingReport, setEditingReport] = useState<FinancialReport | null>(null);
 
   const loading = reportsLoading || projectsLoading;
 
@@ -99,12 +104,51 @@ const Finance = () => {
       <Navbar />
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Transparence financière</h1>
-          <p className="text-muted-foreground">
-            Consultez les comptes de l'Institut de la Langue Savoyarde en toute transparence
-          </p>
+        <div className="flex justify-between items-start mb-8">
+          <div>
+            <h1 className="text-3xl font-bold mb-2">Transparence financière</h1>
+            <p className="text-muted-foreground">
+              Consultez les comptes de l'Institut de la Langue Savoyarde en toute transparence
+            </p>
+          </div>
+          {isAdmin && (
+            <div className="flex gap-2">
+              {currentReport && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setEditingReport(currentReport);
+                    setFormOpen(true);
+                  }}
+                >
+                  <Pencil className="h-4 w-4 mr-2" />
+                  Modifier {currentReport.year}
+                </Button>
+              )}
+              <Button
+                size="sm"
+                onClick={() => {
+                  setEditingReport(null);
+                  setFormOpen(true);
+                }}
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Nouveau rapport
+              </Button>
+            </div>
+          )}
         </div>
+
+        {/* Financial Report Form Dialog */}
+        <FinancialReportForm
+          open={formOpen}
+          onOpenChange={(open) => {
+            setFormOpen(open);
+            if (!open) setEditingReport(null);
+          }}
+          report={editingReport}
+        />
 
         {/* Key Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
