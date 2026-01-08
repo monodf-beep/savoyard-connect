@@ -6,10 +6,11 @@ import { Label } from './ui/label';
 import { Textarea } from './ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Switch } from './ui/switch';
-import { X, Plus, Trash2 } from 'lucide-react';
+import { X, Plus, Trash2, Loader2, Link as LinkIcon } from 'lucide-react';
 import { Badge } from './ui/badge';
 import { jobPostingSchema } from '../lib/validations';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 
 interface JobPostingFormProps {
   jobPosting?: JobPosting | null;
@@ -40,6 +41,44 @@ export const JobPostingForm: React.FC<JobPostingFormProps> = ({
   });
 
   const [newRequirement, setNewRequirement] = useState('');
+  const [jeVeuxAiderUrl, setJeVeuxAiderUrl] = useState('');
+  const [isImporting, setIsImporting] = useState(false);
+
+  const importFromJeVeuxAider = async () => {
+    if (!jeVeuxAiderUrl.includes('jeveuxaider.gouv.fr')) {
+      toast.error('URL JeVeuxAider invalide');
+      return;
+    }
+    
+    setIsImporting(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('scrape-jeveuxaider', {
+        body: { url: jeVeuxAiderUrl },
+      });
+      
+      if (error) throw error;
+      
+      if (data.success && data.data) {
+        setFormData(prev => ({
+          ...prev,
+          title: data.data.title || prev.title,
+          description: data.data.description || prev.description,
+          department: data.data.department || prev.department,
+          location: data.data.location || prev.location,
+          type: 'Bénévolat',
+          applicationUrl: jeVeuxAiderUrl,
+          requirements: data.data.requirements?.length ? data.data.requirements : prev.requirements,
+        }));
+        toast.success('Mission importée ! Vérifiez et ajustez les champs.');
+      } else {
+        toast.error(data.error || 'Impossible d\'importer la mission');
+      }
+    } catch (error: any) {
+      toast.error(error.message || 'Erreur lors de l\'import');
+    } finally {
+      setIsImporting(false);
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -114,6 +153,30 @@ export const JobPostingForm: React.FC<JobPostingFormProps> = ({
         </div>
 
         <form onSubmit={handleSubmit} className="p-4 space-y-4">
+          {/* JeVeuxAider Import */}
+          <div className="p-3 bg-muted/50 rounded-lg space-y-2">
+            <Label className="text-sm font-medium flex items-center gap-2">
+              <LinkIcon className="w-4 h-4" />
+              Importer depuis JeVeuxAider.gouv.fr
+            </Label>
+            <div className="flex gap-2">
+              <Input
+                value={jeVeuxAiderUrl}
+                onChange={(e) => setJeVeuxAiderUrl(e.target.value)}
+                placeholder="https://www.jeveuxaider.gouv.fr/admin/missions/..."
+                className="flex-1"
+              />
+              <Button 
+                type="button" 
+                variant="secondary" 
+                onClick={importFromJeVeuxAider}
+                disabled={isImporting || !jeVeuxAiderUrl}
+              >
+                {isImporting ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Importer'}
+              </Button>
+            </div>
+          </div>
+
           <div>
             <Label htmlFor="title">Titre du poste *</Label>
             <Input
@@ -123,13 +186,6 @@ export const JobPostingForm: React.FC<JobPostingFormProps> = ({
               required
             />
           </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="department">Département *</Label>
-              <Input
-                id="department"
-                value={formData.department}
                 onChange={(e) => setFormData(prev => ({ ...prev, department: e.target.value }))}
                 required
               />
