@@ -5,6 +5,8 @@ import { useFundingProjects } from '@/hooks/useFundingProjects';
 import { useAuth } from '@/hooks/useAuth';
 import { FinancialDocuments } from '@/components/finance/FinancialDocuments';
 import { FinancialReportForm } from '@/components/finance/FinancialReportForm';
+import { FinanceImportExport } from '@/components/finance/FinanceImportExport';
+import { TreasuryCashflowChart } from '@/components/finance/TreasuryCashflowChart';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
@@ -29,6 +31,9 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Legend, CartesianGrid } from 'recharts';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 const COLORS = ['hsl(var(--primary))', 'hsl(var(--accent))', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899'];
 
@@ -48,6 +53,48 @@ const Finance = () => {
   const [selectedYear, setSelectedYear] = useState<number | null>(null);
   const [formOpen, setFormOpen] = useState(false);
   const [editingReport, setEditingReport] = useState<FinancialReport | null>(null);
+  const queryClient = useQueryClient();
+
+  // Mutation to create report from imported data
+  const createReportMutation = useMutation({
+    mutationFn: async (data: Partial<FinancialReport>) => {
+      const { error } = await supabase
+        .from('financial_reports')
+        .insert({
+          year: data.year!,
+          report_name: data.report_name || 'Rapport importé',
+          achats: data.achats || 0,
+          services_exterieurs: data.services_exterieurs || 0,
+          autres_services: data.autres_services || 0,
+          charges_personnel: data.charges_personnel || 0,
+          charges_financieres: data.charges_financieres || 0,
+          dotations_amortissements: data.dotations_amortissements || 0,
+          total_charges: data.total_charges || 0,
+          ventes_prestations: data.ventes_prestations || 0,
+          subventions: data.subventions || 0,
+          dons_cotisations: data.dons_cotisations || 0,
+          produits_financiers: data.produits_financiers || 0,
+          autres_produits: data.autres_produits || 0,
+          total_produits: data.total_produits || 0,
+          resultat: data.resultat || 0,
+          total_actif: data.total_actif || 0,
+          total_passif: data.total_passif || 0,
+          reserves: data.reserves || 0,
+          tresorerie: data.tresorerie || 0,
+          notes: data.notes || null,
+          is_provisional: data.is_provisional || false,
+          is_published: true,
+        });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['financial-reports'] });
+      toast.success('Rapport créé depuis l\'import');
+    },
+    onError: (error: any) => {
+      toast.error(error.message || 'Erreur lors de la création');
+    },
+  });
 
   const loading = reportsLoading || projectsLoading;
 
@@ -91,13 +138,13 @@ const Finance = () => {
     { name: 'Produits financiers', value: currentReport.produits_financiers },
   ].filter(d => d.value > 0) : [];
 
-  // Comparison data across years
+  // Comparison data across years - sorted chronologically (oldest to newest, left to right)
   const comparisonData = reports?.filter(r => !r.is_provisional).map(r => ({
     year: r.year.toString(),
     Charges: r.total_charges,
     Produits: r.total_produits,
     Résultat: r.resultat,
-  })).reverse() || [];
+  })).sort((a, b) => parseInt(a.year) - parseInt(b.year)) || [];
 
   return (
     <div className="min-h-screen bg-background">
@@ -231,10 +278,10 @@ const Finance = () => {
 
           {/* Overview Tab */}
           <TabsContent value="overview" className="space-y-6">
-            {/* Year selector */}
+            {/* Year selector - sorted chronologically (oldest left, newest right) */}
             {reports && reports.length > 1 && (
               <div className="flex gap-2 flex-wrap">
-                {reports.map(r => (
+                {[...reports].sort((a, b) => a.year - b.year).map(r => (
                   <Badge 
                     key={r.id}
                     variant={selectedYear === r.year || (!selectedYear && r === currentReport) ? 'default' : 'outline'}
@@ -344,6 +391,18 @@ const Finance = () => {
                 </CardContent>
               </Card>
             )}
+
+            {/* Treasury Cashflow Chart */}
+            {reports && reports.length > 0 && (
+              <TreasuryCashflowChart reports={reports} />
+            )}
+
+            {/* Import/Export Section */}
+            <FinanceImportExport 
+              reports={reports || []} 
+              onImport={(data) => createReportMutation.mutate(data)} 
+              isAdmin={isAdmin} 
+            />
 
             {/* Provisional Budget */}
             {provisionalReport && (
