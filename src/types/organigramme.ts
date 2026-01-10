@@ -32,7 +32,7 @@ export interface JobPosting {
   description: string;
   requirements: string[];
   location: string;
-  type: 'CDI' | 'CDD' | 'Stage' | 'Freelance';
+  type: 'CDI' | 'CDD' | 'Stage' | 'Freelance' | 'Bénévolat' | 'Alternance';
   applicationUrl: string;
   publishedDate: string;
   isActive: boolean;

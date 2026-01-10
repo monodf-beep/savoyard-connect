@@ -65,7 +65,7 @@ export const JobPostingForm: React.FC<JobPostingFormProps> = ({
           description: data.data.description || prev.description,
           department: data.data.department || prev.department,
           location: data.data.location || prev.location,
-          type: 'Bénévolat',
+          type: 'Bénévolat' as const,
           applicationUrl: jeVeuxAiderUrl,
           requirements: data.data.requirements?.length ? data.data.requirements : prev.requirements,
         }));
@@ -73,8 +73,9 @@ export const JobPostingForm: React.FC<JobPostingFormProps> = ({
       } else {
         toast.error(data.error || 'Impossible d\'importer la mission');
       }
-    } catch (error: any) {
-      toast.error(error.message || 'Erreur lors de l\'import');
+    } catch (error) {
+      console.error('Import error:', error);
+      toast.error('Erreur lors de l\'import');
     } finally {
       setIsImporting(false);
     }
@@ -83,36 +84,36 @@ export const JobPostingForm: React.FC<JobPostingFormProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validate form data
-    try {
-      jobPostingSchema.parse({
-        title: formData.title,
-        department: formData.department,
-        description: formData.description,
-        location: formData.location,
-        applicationUrl: formData.applicationUrl,
-        type: formData.type
-      });
-    } catch (error: any) {
-      const firstError = error.errors?.[0];
-      toast.error(firstError?.message || 'Erreur de validation');
-      return;
-    }
-
-    const jobPostingData: JobPosting = {
-      id: formData.id || formData.title.toLowerCase().replace(/\s+/g, '-'),
+    const result = jobPostingSchema.safeParse({
       title: formData.title,
       department: formData.department,
+      description: formData.description,
+      requirements: formData.requirements,
+      location: formData.location,
+      type: formData.type,
+      applicationUrl: formData.applicationUrl,
+    });
+    
+    if (!result.success) {
+      const errors = result.error.errors.map(err => err.message);
+      toast.error(errors.join(', '));
+      return;
+    }
+    
+    const jobPostingToSave: JobPosting = {
+      id: formData.id || '',
+      title: formData.title || '',
+      department: formData.department || '',
       description: formData.description || '',
       requirements: formData.requirements || [],
       location: formData.location || '',
-      type: formData.type as JobPosting['type'],
-      applicationUrl: formData.applicationUrl,
+      type: formData.type || 'CDI',
+      applicationUrl: formData.applicationUrl || '',
       publishedDate: formData.publishedDate || new Date().toISOString().split('T')[0],
       isActive: formData.isActive ?? true
     };
-
-    onSave(jobPostingData);
+    
+    onSave(jobPostingToSave);
     onClose();
   };
 
@@ -129,30 +130,25 @@ export const JobPostingForm: React.FC<JobPostingFormProps> = ({
   const removeRequirement = (index: number) => {
     setFormData(prev => ({
       ...prev,
-      requirements: prev.requirements?.filter((_, i) => i !== index) || []
+      requirements: (prev.requirements || []).filter((_, i) => i !== index)
     }));
   };
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-      <div className="bg-card rounded-lg border border-border w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-        <div className="sticky top-0 bg-card border-b border-border p-4 flex items-center justify-between">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div className="bg-background rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden">
+        <div className="flex items-center justify-between p-4 border-b">
           <h2 className="text-lg font-semibold">
-            {jobPosting ? 'Modifier la mission' : 'Ajouter une mission de bénévolat'}
+            {jobPosting ? 'Modifier la mission' : 'Nouvelle mission bénévole'}
           </h2>
-          <Button
-            onClick={onClose}
-            variant="ghost"
-            size="sm"
-            className="h-8 w-8 p-0"
-          >
+          <Button variant="ghost" size="icon" onClick={onClose}>
             <X className="w-4 h-4" />
           </Button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-4 space-y-4">
+        <form onSubmit={handleSubmit} className="p-4 space-y-4 overflow-y-auto max-h-[calc(90vh-140px)]">
           {/* JeVeuxAider Import */}
           <div className="p-3 bg-muted/50 rounded-lg space-y-2">
             <Label className="text-sm font-medium flex items-center gap-2">
@@ -177,129 +173,132 @@ export const JobPostingForm: React.FC<JobPostingFormProps> = ({
             </div>
           </div>
 
-          <div>
-            <Label htmlFor="title">Titre du poste *</Label>
-            <Input
-              id="title"
-              value={formData.title}
-              onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-              required
-            />
-          </div>
-                onChange={(e) => setFormData(prev => ({ ...prev, department: e.target.value }))}
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-2 sm:col-span-2">
+              <Label htmlFor="title">Titre de la mission *</Label>
+              <Input
+                id="title"
+                value={formData.title}
+                onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+                placeholder="Ex: Accompagnateur bénévole"
                 required
               />
             </div>
-            <div>
-              <Label htmlFor="location">Localisation</Label>
+
+            <div className="space-y-2">
+              <Label htmlFor="department">Domaine *</Label>
+              <Input
+                id="department"
+                value={formData.department}
+                onChange={(e) => setFormData(prev => ({ ...prev, department: e.target.value }))}
+                placeholder="Ex: Éducation, Culture..."
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="location">Lieu *</Label>
               <Input
                 id="location"
                 value={formData.location}
                 onChange={(e) => setFormData(prev => ({ ...prev, location: e.target.value }))}
-                placeholder="Paris, Remote, etc."
+                placeholder="Ex: Paris, À distance..."
               />
             </div>
-          </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="type">Type de contrat</Label>
+            <div className="space-y-2">
+              <Label htmlFor="type">Type</Label>
               <Select
                 value={formData.type}
-                onValueChange={(value) => setFormData(prev => ({ ...prev, type: value as JobPosting['type'] }))}
+                onValueChange={(value: 'CDI' | 'CDD' | 'Stage' | 'Freelance' | 'Bénévolat' | 'Alternance') => setFormData(prev => ({ ...prev, type: value }))}
               >
                 <SelectTrigger>
-                  <SelectValue />
+                  <SelectValue placeholder="Type de mission" />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="Bénévolat">Bénévolat</SelectItem>
                   <SelectItem value="CDI">CDI</SelectItem>
                   <SelectItem value="CDD">CDD</SelectItem>
                   <SelectItem value="Stage">Stage</SelectItem>
+                  <SelectItem value="Alternance">Alternance</SelectItem>
                   <SelectItem value="Freelance">Freelance</SelectItem>
                 </SelectContent>
               </Select>
             </div>
-            <div>
-              <Label htmlFor="publishedDate">Date de publication</Label>
+
+            <div className="space-y-2">
+              <Label htmlFor="applicationUrl">Lien de candidature</Label>
               <Input
-                id="publishedDate"
-                type="date"
-                value={formData.publishedDate}
-                onChange={(e) => setFormData(prev => ({ ...prev, publishedDate: e.target.value }))}
+                id="applicationUrl"
+                type="url"
+                value={formData.applicationUrl}
+                onChange={(e) => setFormData(prev => ({ ...prev, applicationUrl: e.target.value }))}
+                placeholder="https://..."
               />
             </div>
           </div>
 
-          <div>
-            <Label htmlFor="description">Description du poste</Label>
+          <div className="space-y-2">
+            <Label htmlFor="description">Description *</Label>
             <Textarea
               id="description"
               value={formData.description}
               onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+              placeholder="Décrivez la mission, les objectifs, le contexte..."
               rows={4}
-              placeholder="Décrivez le poste, les responsabilités..."
             />
           </div>
 
-          <div>
-            <Label htmlFor="applicationUrl">URL de candidature *</Label>
-            <Input
-              id="applicationUrl"
-              value={formData.applicationUrl}
-              onChange={(e) => setFormData(prev => ({ ...prev, applicationUrl: e.target.value }))}
-              placeholder="https://..."
-              required
-            />
-          </div>
-
-          <div>
-            <Label>Compétences requises</Label>
-            <div className="space-y-2">
-              <div className="flex gap-2">
-                <Input
-                  value={newRequirement}
-                  onChange={(e) => setNewRequirement(e.target.value)}
-                  placeholder="Ajouter une compétence..."
-                  onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addRequirement())}
-                />
-                <Button type="button" onClick={addRequirement} size="sm">
-                  <Plus className="w-4 h-4" />
-                </Button>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {formData.requirements?.map((req, index) => (
-                  <Badge key={index} variant="outline" className="flex items-center gap-1 bg-muted/50 border-border font-medium">
-                    {req}
-                    <button
-                      type="button"
-                      onClick={() => removeRequirement(index)}
-                      className="ml-1 hover:bg-destructive/20 rounded-full p-1"
-                    >
-                      <X className="w-3 h-3" />
-                    </button>
-                  </Badge>
-                ))}
-              </div>
+          <div className="space-y-2">
+            <Label>Compétences / Prérequis</Label>
+            <div className="flex gap-2">
+              <Input
+                value={newRequirement}
+                onChange={(e) => setNewRequirement(e.target.value)}
+                placeholder="Ajouter une compétence..."
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    addRequirement();
+                  }
+                }}
+              />
+              <Button type="button" variant="outline" onClick={addRequirement}>
+                <Plus className="w-4 h-4" />
+              </Button>
+            </div>
+            <div className="flex flex-wrap gap-2 mt-2">
+              {formData.requirements?.map((req, index) => (
+                <Badge key={index} variant="secondary" className="gap-1">
+                  {req}
+                  <button
+                    type="button"
+                    onClick={() => removeRequirement(index)}
+                    className="ml-1 hover:text-destructive"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </Badge>
+              ))}
             </div>
           </div>
 
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center gap-2">
             <Switch
               id="isActive"
               checked={formData.isActive}
               onCheckedChange={(checked) => setFormData(prev => ({ ...prev, isActive: checked }))}
             />
-            <Label htmlFor="isActive">Poste actif</Label>
+            <Label htmlFor="isActive">Mission active (visible publiquement)</Label>
           </div>
 
-          <div className="flex justify-between pt-4">
+          <div className="flex justify-between pt-4 border-t">
             <div>
               {jobPosting && onDelete && (
                 <Button
                   type="button"
                   variant="destructive"
                   onClick={() => {
-                    if (confirm('Êtes-vous sûr de vouloir supprimer ce poste ?')) {
+                    if (jobPosting.id && window.confirm('Supprimer cette mission ?')) {
                       onDelete(jobPosting.id);
                       onClose();
                     }
@@ -315,7 +314,7 @@ export const JobPostingForm: React.FC<JobPostingFormProps> = ({
                 Annuler
               </Button>
               <Button type="submit">
-                {jobPosting ? 'Modifier' : 'Ajouter'}
+                {jobPosting ? 'Enregistrer' : 'Créer'}
               </Button>
             </div>
           </div>
