@@ -3,13 +3,16 @@ import { Navbar } from '@/components/Navbar';
 import { useValueChains } from '@/hooks/useValueChains';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
-import { MinimalChainDisplay } from '@/components/valueChain/MinimalChainDisplay';
+import { WorkflowCanvas } from '@/components/valueChain/WorkflowCanvas';
+import { ChainSidebar } from '@/components/valueChain/ChainSidebar';
+import { SegmentDetailPanel } from '@/components/valueChain/SegmentDetailPanel';
 import { ValueChainForm } from '@/components/valueChain/ValueChainForm';
 import { TutorialDialog } from '@/components/TutorialDialog';
 import { ApprovalBadge } from '@/components/ApprovalBadge';
 import { ApprovalActions } from '@/components/ApprovalActions';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { useIsMobile } from '@/hooks/use-mobile';
 import {
   Plus,
   Edit,
@@ -17,6 +20,9 @@ import {
   Combine,
   Split,
   Loader2,
+  PanelLeftClose,
+  PanelLeft,
+  Info,
 } from 'lucide-react';
 import {
   AlertDialog,
@@ -36,6 +42,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from '@/components/ui/sheet';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -45,11 +57,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { ValueChain } from '@/types/valueChain';
+import { ValueChain, ValueChainSegment } from '@/types/valueChain';
 import { toast } from 'sonner';
 
 export default function ValueChains() {
   const { user, isAdmin, isSectionLeader } = useAuth();
+  const isMobile = useIsMobile();
   const {
     chains,
     people,
@@ -65,13 +78,12 @@ export default function ValueChains() {
   } = useValueChains();
 
   const [selectedChain, setSelectedChain] = useState<ValueChain | null>(null);
+  const [selectedSegment, setSelectedSegment] = useState<ValueChainSegment | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [detailPanelOpen, setDetailPanelOpen] = useState(false);
 
-  // Sélectionner automatiquement la première chaîne
-  useEffect(() => {
-    if (chains.length > 0 && !selectedChain) {
-      setSelectedChain(chains[0]);
-    }
-  }, [chains, selectedChain]);
+  // Form states
   const [formOpen, setFormOpen] = useState(false);
   const [editingChain, setEditingChain] = useState<ValueChain | undefined>();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -89,6 +101,16 @@ export default function ValueChains() {
   const [splitIndex, setSplitIndex] = useState(1);
   const [splitTitle1, setSplitTitle1] = useState('');
   const [splitTitle2, setSplitTitle2] = useState('');
+
+  // Auto-select first chain
+  useEffect(() => {
+    if (chains.length > 0 && !selectedChain) {
+      const approvedChains = chains.filter(c => c.approval_status !== 'pending');
+      if (approvedChains.length > 0) {
+        setSelectedChain(approvedChains[0]);
+      }
+    }
+  }, [chains, selectedChain]);
 
   const handleCreateOrUpdate = async (
     title: string,
@@ -214,13 +236,24 @@ export default function ValueChains() {
     }
   };
 
+  const handleSegmentClick = (segment: ValueChainSegment) => {
+    setSelectedSegment(segment);
+    setDetailPanelOpen(true);
+  };
+
+  const handleAddSegment = () => {
+    if (selectedChain) {
+      handleEdit(selectedChain);
+    }
+  };
+
   // Separate pending chains for admin approval
   const pendingChains = chains.filter(c => c.approval_status === 'pending');
   const approvedChains = chains.filter(c => c.approval_status !== 'pending');
 
   if (loading) {
     return (
-      <div className="min-h-screen flex flex-col">
+      <div className="min-h-screen flex flex-col bg-background">
         <Navbar />
         <div className="flex-1 flex items-center justify-center">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -233,234 +266,237 @@ export default function ValueChains() {
     <div className="min-h-screen flex flex-col bg-background">
       <Navbar />
 
-      <main className="flex-1 container mx-auto px-3 md:px-4 py-4 md:py-8">
-        <div className="mb-4 md:mb-8">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4">
-            <div className="flex items-center gap-2 md:gap-3">
+      <main className="flex-1 flex overflow-hidden">
+        {/* Left Sidebar - Chain List */}
+        {!isMobile && sidebarOpen && (
+          <div className="w-72 flex-shrink-0 border-r border-border">
+            <ChainSidebar
+              chains={approvedChains}
+              selectedChain={selectedChain}
+              onSelectChain={setSelectedChain}
+              onCreateChain={() => {
+                setEditingChain(undefined);
+                setFormOpen(true);
+              }}
+              searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
+              isAdmin={isAdmin}
+            />
+          </div>
+        )}
+
+        {/* Main Canvas Area */}
+        <div className="flex-1 flex flex-col overflow-hidden">
+          {/* Header */}
+          <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-card">
+            <div className="flex items-center gap-3">
+              {!isMobile && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setSidebarOpen(!sidebarOpen)}
+                  className="h-8 w-8"
+                >
+                  {sidebarOpen ? (
+                    <PanelLeftClose className="h-4 w-4" />
+                  ) : (
+                    <PanelLeft className="h-4 w-4" />
+                  )}
+                </Button>
+              )}
+              
               <div>
-                <h1 className="text-xl md:text-3xl font-bold text-foreground">Chaînes de valeur</h1>
-                <p className="text-xs md:text-base text-muted-foreground mt-0.5 md:mt-1">
-                  Gestion des processus et flux
-                </p>
+                <div className="flex items-center gap-2">
+                  <h1 className="text-lg font-semibold text-foreground">
+                    {selectedChain?.title || 'Chaînes de valeur'}
+                  </h1>
+                  <TutorialDialog
+                    title="Comprendre les chaînes de valeur"
+                    description="Les chaînes de valeur permettent de visualiser et organiser les processus opérationnels."
+                    benefits={[
+                      "Visualiser l'ensemble des processus",
+                      "Identifier les acteurs impliqués",
+                      "Optimiser les flux de travail",
+                    ]}
+                    steps={[
+                      {
+                        title: "Créer une chaîne",
+                        description: "Définissez un nouveau processus opérationnel.",
+                        tips: ["Choisissez un nom descriptif"]
+                      },
+                      {
+                        title: "Ajouter des segments",
+                        description: "Décomposez votre processus en étapes.",
+                        tips: ["Ordonnez les segments logiquement"]
+                      },
+                    ]}
+                  />
+                </div>
+                {selectedChain?.description && (
+                  <p className="text-xs text-muted-foreground">
+                    {selectedChain.description}
+                  </p>
+                )}
               </div>
-              <TutorialDialog
-                title="Comprendre les chaînes de valeur"
-                description="Les chaînes de valeur permettent de visualiser et organiser les processus opérationnels de votre organisation."
-                benefits={[
-                  "Visualiser l'ensemble des processus et leur enchaînement",
-                  "Identifier les acteurs impliqués dans chaque étape",
-                  "Optimiser les flux de travail en détectant les goulots d'étranglement",
-                  "Faciliter la communication entre les différentes fonctions",
-                  "Assurer la traçabilité et la cohérence des processus"
-                ]}
-                steps={[
-                  {
-                    title: "Créer une nouvelle chaîne",
-                    description: "Cliquez sur 'Créer une chaîne' pour définir un nouveau processus opérationnel. Donnez-lui un nom et une description claire.",
-                    tips: ["Choisissez un nom descriptif qui reflète le processus global"]
-                  },
-                  {
-                    title: "Ajouter des segments fonctionnels",
-                    description: "Décomposez votre processus en étapes (segments). Chaque segment représente une fonction ou activité clé.",
-                    tips: [
-                      "Ordonnez les segments de manière logique selon le flux",
-                      "Un segment = une fonction précise (ex: Accueil, Traitement, Validation)"
-                    ]
-                  },
-                  {
-                    title: "Assigner des acteurs",
-                    description: "Pour chaque segment, sélectionnez les personnes de l'organigramme qui interviennent dans cette étape.",
-                    tips: [
-                      "Les acteurs doivent déjà exister dans l'organigramme",
-                      "Un acteur peut apparaître dans plusieurs segments",
-                      "Respectez la règle : un acteur par chaîne maximum"
-                    ]
-                  },
-                  {
-                    title: "Fusionner des chaînes",
-                    description: "Combinez deux chaînes existantes pour créer un processus plus complexe. Les segments sont concaténés.",
-                    tips: ["Utile pour regrouper des processus complémentaires"]
-                  },
-                  {
-                    title: "Scinder une chaîne",
-                    description: "Divisez une chaîne longue en deux parties distinctes pour mieux organiser vos processus.",
-                    tips: ["Permet de séparer des sous-processus indépendants"]
-                  }
-                ]}
-              />
             </div>
-            {isAdmin && (
-              <div className="flex gap-1.5 md:gap-2 flex-wrap">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setMergeDialogOpen(true)}
-                  disabled={approvedChains.length < 2}
-                  className="text-xs md:text-sm"
-                >
-                  <Combine className="h-3.5 w-3.5 md:h-4 md:w-4 mr-1 md:mr-2" />
-                  <span className="hidden sm:inline">Fusionner</span>
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setSplitDialogOpen(true)}
-                  disabled={approvedChains.length === 0}
-                  className="text-xs md:text-sm"
-                >
-                  <Split className="h-3.5 w-3.5 md:h-4 md:w-4 mr-1 md:mr-2" />
-                  <span className="hidden sm:inline">Scinder</span>
-                </Button>
-                <Button
-                  size="sm"
-                  onClick={() => {
-                    setEditingChain(undefined);
-                    setFormOpen(true);
-                  }}
-                  className="text-xs md:text-sm"
-                >
-                  <Plus className="h-3.5 w-3.5 md:h-4 md:w-4 mr-1 md:mr-2" />
-                  <span className="hidden xs:inline">Créer</span>
-                </Button>
+
+            <div className="flex items-center gap-2">
+              {isAdmin && selectedChain && (
+                <>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleEdit(selectedChain)}
+                  >
+                    <Edit className="h-4 w-4 mr-1" />
+                    <span className="hidden sm:inline">Modifier</span>
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleDelete(selectedChain.id)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </>
+              )}
+              
+              {isAdmin && (
+                <div className="hidden md:flex gap-2 ml-2 pl-2 border-l border-border">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setMergeDialogOpen(true)}
+                    disabled={approvedChains.length < 2}
+                  >
+                    <Combine className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setSplitDialogOpen(true)}
+                    disabled={approvedChains.length === 0}
+                  >
+                    <Split className="h-4 w-4" />
+                  </Button>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Pending Approvals Alert */}
+          {isAdmin && pendingChains.length > 0 && (
+            <div className="mx-4 mt-4 p-4 bg-orange-500/10 border border-orange-500/30 rounded-lg">
+              <div className="flex items-center gap-2 mb-2">
+                <Info className="h-4 w-4 text-orange-600" />
+                <span className="font-medium text-orange-700 dark:text-orange-300">
+                  {pendingChains.length} chaîne(s) en attente d'approbation
+                </span>
               </div>
+              <div className="space-y-2">
+                {pendingChains.map((chain) => (
+                  <div key={chain.id} className="flex items-center justify-between bg-card/50 p-2 rounded">
+                    <span className="text-sm">{chain.title}</span>
+                    <ApprovalActions
+                      onApprove={() => handleApproveChain(chain.id)}
+                      onReject={() => handleRejectChain(chain.id)}
+                      itemType="chaîne de valeur"
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Canvas */}
+          <div className="flex-1 p-4 overflow-auto">
+            {chains.length === 0 ? (
+              <Card className="h-full flex flex-col items-center justify-center p-8 text-center">
+                <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
+                  <Combine className="h-8 w-8 text-muted-foreground" />
+                </div>
+                <p className="text-muted-foreground mb-4">
+                  Aucune chaîne de valeur créée
+                </p>
+                {(isAdmin || isSectionLeader) && (
+                  <Button onClick={() => setFormOpen(true)}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Créer la première chaîne
+                  </Button>
+                )}
+              </Card>
+            ) : selectedChain ? (
+              <WorkflowCanvas
+                chain={selectedChain}
+                onSegmentClick={handleSegmentClick}
+                onAddSegment={isAdmin ? handleAddSegment : undefined}
+              />
+            ) : (
+              <Card className="h-full flex flex-col items-center justify-center p-8 text-center">
+                <p className="text-muted-foreground">
+                  Sélectionnez une chaîne dans le menu latéral
+                </p>
+              </Card>
             )}
           </div>
         </div>
 
-        {chains.length === 0 ? (
-          <Card className="p-6 md:p-12 text-center">
-            <p className="text-sm md:text-base text-muted-foreground mb-4">Aucune chaîne de valeur créée</p>
-            {(isAdmin || isSectionLeader) && (
-              <Button onClick={() => setFormOpen(true)}>
-                <Plus className="h-4 w-4 mr-2" />
-                Créer la première chaîne
-              </Button>
-            )}
-          </Card>
-        ) : (
-          <div className="space-y-6">
-            {/* Pending approvals section (Admin only) */}
-            {isAdmin && pendingChains.length > 0 && (
-              <div>
-                <h2 className="text-2xl font-semibold mb-4 text-orange-700 dark:text-orange-300">
-                  Chaînes en attente d'approbation ({pendingChains.length})
-                </h2>
-                <div className="grid gap-4">
-                  {pendingChains.map((chain) => (
-                    <Card key={chain.id} className="p-6 border-orange-500/30">
-                      <div className="flex items-center justify-between mb-4">
-                        <div className="flex-1">
-                          <h3 className="text-xl font-semibold text-foreground mb-2">
-                            {chain.title}
-                          </h3>
-                          <div className="flex items-center gap-2">
-                            <ApprovalBadge status="pending" />
-                          </div>
-                          {chain.description && (
-                            <p className="text-sm text-muted-foreground mt-2">
-                              {chain.description}
-                            </p>
-                          )}
-                        </div>
-                        <div className="flex gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleEdit(chain)}
-                          >
-                            <Edit className="h-4 w-4 mr-1" />
-                            Modifier
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleDelete(chain.id)}
-                          >
-                            <Trash2 className="h-4 w-4 mr-1" />
-                            Supprimer
-                          </Button>
-                        </div>
-                      </div>
-                      <div className="mt-4 pt-4 border-t">
-                        <ApprovalActions 
-                          onApprove={() => handleApproveChain(chain.id)}
-                          onReject={() => handleRejectChain(chain.id)}
-                          itemType="chaîne de valeur"
-                        />
-                      </div>
-                    </Card>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Approved chains selector */}
-            {approvedChains.length > 0 && (
-              <>
-                <div className="flex flex-wrap gap-2">
-                  {approvedChains.map((chain) => (
-                    <Button
-                      key={chain.id}
-                      variant={selectedChain?.id === chain.id ? 'default' : 'outline'}
-                      onClick={() => setSelectedChain(chain)}
-                    >
-                      {chain.title}
-                      {chain.approval_status === 'approved' && isAdmin && (
-                        <span className="ml-2 text-xs">✓</span>
-                      )}
-                    </Button>
-                  ))}
-                </div>
-
-                {/* Selected chain diagram */}
-                {selectedChain && approvedChains.find(c => c.id === selectedChain.id) && (
-                  <Card className="p-6">
-                    <div className="flex items-center justify-between mb-4">
-                      <div>
-                        <h2 className="text-xl font-semibold text-foreground">
-                          {selectedChain.title}
-                        </h2>
-                        {selectedChain.description && (
-                          <p className="text-sm text-muted-foreground mt-1">
-                            {selectedChain.description}
-                          </p>
-                        )}
-                        {selectedChain.approval_status && (
-                          <div className="mt-2">
-                            <ApprovalBadge status={selectedChain.approval_status} />
-                          </div>
-                        )}
-                      </div>
-                      {isAdmin && (
-                        <div className="flex gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleEdit(selectedChain)}
-                          >
-                            <Edit className="h-4 w-4 mr-1" />
-                            Modifier
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleDelete(selectedChain.id)}
-                          >
-                            <Trash2 className="h-4 w-4 mr-1" />
-                            Supprimer
-                          </Button>
-                        </div>
-                      )}
-                    </div>
-
-                    <MinimalChainDisplay chain={selectedChain} />
-                  </Card>
-                )}
-              </>
-            )}
+        {/* Right Panel - Segment Details (Desktop) */}
+        {!isMobile && detailPanelOpen && (
+          <div className="w-80 flex-shrink-0 border-l border-border">
+            <SegmentDetailPanel
+              segment={selectedSegment}
+              onClose={() => {
+                setDetailPanelOpen(false);
+                setSelectedSegment(null);
+              }}
+              onEdit={() => selectedChain && handleEdit(selectedChain)}
+              isAdmin={isAdmin}
+            />
           </div>
         )}
+
+        {/* Right Panel - Segment Details (Mobile Sheet) */}
+        {isMobile && (
+          <Sheet open={detailPanelOpen} onOpenChange={setDetailPanelOpen}>
+            <SheetContent side="right" className="p-0 w-full sm:max-w-md">
+              <SegmentDetailPanel
+                segment={selectedSegment}
+                onClose={() => {
+                  setDetailPanelOpen(false);
+                  setSelectedSegment(null);
+                }}
+                onEdit={() => selectedChain && handleEdit(selectedChain)}
+                isAdmin={isAdmin}
+              />
+            </SheetContent>
+          </Sheet>
+        )}
       </main>
+
+      {/* Mobile bottom bar for chain selection */}
+      {isMobile && (
+        <div className="border-t border-border bg-card p-2">
+          <Select
+            value={selectedChain?.id || ''}
+            onValueChange={(id) => {
+              const chain = approvedChains.find(c => c.id === id);
+              if (chain) setSelectedChain(chain);
+            }}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Sélectionner une chaîne" />
+            </SelectTrigger>
+            <SelectContent>
+              {approvedChains.map((chain) => (
+                <SelectItem key={chain.id} value={chain.id}>
+                  {chain.title}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
 
       {/* Create/Edit Form */}
       {(isAdmin || isSectionLeader) && (
@@ -477,18 +513,20 @@ export default function ValueChains() {
         />
       )}
 
-      {/* Delete Dialog */}
+      {/* Delete Confirmation */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Supprimer la chaîne ?</AlertDialogTitle>
+            <AlertDialogTitle>Supprimer la chaîne de valeur</AlertDialogTitle>
             <AlertDialogDescription>
-              Cette action est irréversible. Tous les segments et assignations seront supprimés.
+              Êtes-vous sûr de vouloir supprimer cette chaîne de valeur ? Cette action est irréversible.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Annuler</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDelete}>Supprimer</AlertDialogAction>
+            <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground">
+              Supprimer
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
@@ -499,12 +537,12 @@ export default function ValueChains() {
           <DialogHeader>
             <DialogTitle>Fusionner deux chaînes</DialogTitle>
             <DialogDescription>
-              Sélectionnez deux chaînes à fusionner et donnez un nom à la nouvelle chaîne
+              Les segments de la chaîne B seront ajoutés à la fin de la chaîne A.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label>Première chaîne</Label>
+              <Label>Chaîne A (première)</Label>
               <Select value={mergeChainA} onValueChange={setMergeChainA}>
                 <SelectTrigger>
                   <SelectValue placeholder="Sélectionner..." />
@@ -519,7 +557,7 @@ export default function ValueChains() {
               </Select>
             </div>
             <div className="space-y-2">
-              <Label>Deuxième chaîne</Label>
+              <Label>Chaîne B (seconde)</Label>
               <Select value={mergeChainB} onValueChange={setMergeChainB}>
                 <SelectTrigger>
                   <SelectValue placeholder="Sélectionner..." />
@@ -536,11 +574,11 @@ export default function ValueChains() {
               </Select>
             </div>
             <div className="space-y-2">
-              <Label>Titre de la nouvelle chaîne</Label>
+              <Label>Nom de la nouvelle chaîne</Label>
               <Input
                 value={mergeTitle}
                 onChange={(e) => setMergeTitle(e.target.value)}
-                placeholder="Ex: Chaîne fusionnée"
+                placeholder="Entrez le nom..."
               />
             </div>
           </div>
@@ -559,7 +597,7 @@ export default function ValueChains() {
           <DialogHeader>
             <DialogTitle>Scinder une chaîne</DialogTitle>
             <DialogDescription>
-              Divisez une chaîne en deux nouvelles chaînes à partir d'un segment
+              Divisez une chaîne en deux parties distinctes.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
@@ -570,44 +608,55 @@ export default function ValueChains() {
                   <SelectValue placeholder="Sélectionner..." />
                 </SelectTrigger>
                 <SelectContent>
-                  {approvedChains.map((chain) => (
-                    <SelectItem key={chain.id} value={chain.id}>
-                      {chain.title}
-                    </SelectItem>
-                  ))}
+                  {approvedChains
+                    .filter((c) => c.segments && c.segments.length >= 2)
+                    .map((chain) => (
+                      <SelectItem key={chain.id} value={chain.id}>
+                        {chain.title} ({chain.segments?.length} segments)
+                      </SelectItem>
+                    ))}
                 </SelectContent>
               </Select>
             </div>
             {splitChainId && (
-              <>
-                <div className="space-y-2">
-                  <Label>Scinder après le segment n°</Label>
-                  <Input
-                    type="number"
-                    min="1"
-                    max={(approvedChains.find((c) => c.id === splitChainId)?.segments?.length || 1) - 1}
-                    value={splitIndex}
-                    onChange={(e) => setSplitIndex(parseInt(e.target.value) || 1)}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Titre de la première chaîne</Label>
-                  <Input
-                    value={splitTitle1}
-                    onChange={(e) => setSplitTitle1(e.target.value)}
-                    placeholder="Ex: Partie 1"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Titre de la deuxième chaîne</Label>
-                  <Input
-                    value={splitTitle2}
-                    onChange={(e) => setSplitTitle2(e.target.value)}
-                    placeholder="Ex: Partie 2"
-                  />
-                </div>
-              </>
+              <div className="space-y-2">
+                <Label>Scinder après le segment n°</Label>
+                <Select
+                  value={splitIndex.toString()}
+                  onValueChange={(v) => setSplitIndex(parseInt(v))}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {chains
+                      .find((c) => c.id === splitChainId)
+                      ?.segments?.slice(0, -1)
+                      .map((_, i) => (
+                        <SelectItem key={i + 1} value={(i + 1).toString()}>
+                          Après segment {i + 1}
+                        </SelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
+              </div>
             )}
+            <div className="space-y-2">
+              <Label>Nom de la première chaîne</Label>
+              <Input
+                value={splitTitle1}
+                onChange={(e) => setSplitTitle1(e.target.value)}
+                placeholder="Première partie..."
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Nom de la seconde chaîne</Label>
+              <Input
+                value={splitTitle2}
+                onChange={(e) => setSplitTitle2(e.target.value)}
+                placeholder="Seconde partie..."
+              />
+            </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setSplitDialogOpen(false)}>
