@@ -1,4 +1,4 @@
-import React, { useMemo, useCallback, useEffect } from 'react';
+import React, { useMemo, useCallback, useEffect, useRef } from 'react';
 import ReactFlow, {
   Node,
   Edge,
@@ -12,27 +12,34 @@ import ReactFlow, {
   NodeProps,
   Handle,
   Position,
+  useReactFlow,
+  ReactFlowProvider,
+  Panel,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import { ValueChain, ValueChainSegment } from '@/types/valueChain';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Building2, ChevronDown, Flag, Plus } from 'lucide-react';
+import { Building2, ChevronDown, Flag, Plus, LayoutGrid, GripVertical } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
 
 interface WorkflowCanvasProps {
   chain: ValueChain;
   onSegmentClick?: (segment: ValueChainSegment) => void;
   onAddSegment?: () => void;
+  onSegmentsReorder?: (segmentIds: string[]) => void;
 }
 
 // Custom Node Component
-const WorkflowNode = ({ data, selected }: NodeProps) => {
+const WorkflowNode = ({ data, selected, dragging }: NodeProps) => {
   const isStart = data.isStart;
   
   return (
     <div className={cn(
       "relative group",
-      selected && "ring-2 ring-primary ring-offset-2 ring-offset-background rounded-lg"
+      selected && "ring-2 ring-primary ring-offset-2 ring-offset-background rounded-lg",
+      dragging && "opacity-80 scale-105"
     )}>
       {/* Input Handle */}
       {!isStart && (
@@ -46,15 +53,22 @@ const WorkflowNode = ({ data, selected }: NodeProps) => {
       {/* Node Card */}
       <div 
         className={cn(
-          "min-w-[180px] max-w-[220px] bg-card border-2 rounded-xl shadow-lg transition-all duration-200 cursor-pointer",
+          "min-w-[180px] max-w-[220px] bg-card border-2 rounded-xl shadow-lg transition-all duration-200 cursor-grab active:cursor-grabbing",
           isStart ? "border-primary/50 bg-primary/5" : "border-border hover:border-primary/50",
-          selected && "border-primary"
+          selected && "border-primary",
+          dragging && "shadow-2xl border-primary"
         )}
-        onClick={() => data.onClick?.(data.segment)}
       >
-        {/* Header */}
-        <div className="flex items-center justify-between px-3 py-2 border-b border-border/50">
+        {/* Drag Handle Header */}
+        <div 
+          className="flex items-center justify-between px-3 py-2 border-b border-border/50 cursor-grab"
+          onClick={(e) => {
+            e.stopPropagation();
+            data.onClick?.(data.segment);
+          }}
+        >
           <div className="flex items-center gap-2">
+            <GripVertical className="h-3.5 w-3.5 text-muted-foreground/50" />
             {isStart && <Flag className="h-3.5 w-3.5 text-primary" />}
             <span className="text-xs font-medium text-muted-foreground">
               {isStart ? 'Début' : `Étape ${data.index}`}
@@ -64,7 +78,7 @@ const WorkflowNode = ({ data, selected }: NodeProps) => {
         </div>
         
         {/* Content */}
-        <div className="p-3">
+        <div className="p-3" onClick={() => data.onClick?.(data.segment)}>
           <h4 className="font-semibold text-sm text-foreground mb-2 line-clamp-2">
             {data.label}
           </h4>
@@ -146,19 +160,24 @@ const nodeTypes = {
   addNode: AddNodeButton,
 };
 
-export const WorkflowCanvas: React.FC<WorkflowCanvasProps> = ({
+// Inner component that uses ReactFlow hooks
+const WorkflowCanvasInner: React.FC<WorkflowCanvasProps> = ({
   chain,
   onSegmentClick,
   onAddSegment,
+  onSegmentsReorder,
 }) => {
+  const reactFlowInstance = useReactFlow();
+  const containerRef = useRef<HTMLDivElement>(null);
+
   const { nodes: initialNodes, edges: initialEdges } = useMemo(() => {
     if (!chain.segments || chain.segments.length === 0) {
-      // Show only add button when no segments
       const nodes: Node[] = onAddSegment ? [{
         id: 'add-first',
         type: 'addNode',
         position: { x: 200, y: 150 },
         data: { onClick: onAddSegment },
+        draggable: false,
       }] : [];
       
       return { nodes, edges: [] };
@@ -167,9 +186,7 @@ export const WorkflowCanvas: React.FC<WorkflowCanvasProps> = ({
     const HORIZONTAL_SPACING = 280;
     const VERTICAL_OFFSET = 100;
     
-    // Create a more organic layout with slight vertical variations
     const nodes: Node[] = chain.segments.map((segment, index) => {
-      // Create slight vertical wave for visual interest
       const yOffset = Math.sin(index * 0.8) * 30;
       
       return {
@@ -188,10 +205,10 @@ export const WorkflowCanvas: React.FC<WorkflowCanvasProps> = ({
           isStart: index === 0,
           onClick: onSegmentClick,
         },
+        draggable: true,
       };
     });
 
-    // Add "Add new segment" button at the end
     if (onAddSegment) {
       const lastNode = nodes[nodes.length - 1];
       nodes.push({
@@ -202,10 +219,10 @@ export const WorkflowCanvas: React.FC<WorkflowCanvasProps> = ({
           y: VERTICAL_OFFSET 
         },
         data: { onClick: onAddSegment },
+        draggable: false,
       });
     }
 
-    // Create curved edges between nodes
     const edges: Edge[] = chain.segments.slice(0, -1).map((segment, index) => {
       const nextSegment = chain.segments![index + 1];
       return {
@@ -227,7 +244,6 @@ export const WorkflowCanvas: React.FC<WorkflowCanvasProps> = ({
       };
     });
 
-    // Add edge to "add new" button
     if (onAddSegment && chain.segments.length > 0) {
       const lastSegment = chain.segments[chain.segments.length - 1];
       edges.push({
@@ -250,11 +266,128 @@ export const WorkflowCanvas: React.FC<WorkflowCanvasProps> = ({
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
 
-  // Update nodes and edges when chain changes
   useEffect(() => {
     setNodes(initialNodes);
     setEdges(initialEdges);
   }, [initialNodes, initialEdges, setNodes, setEdges]);
+
+  // Auto-layout function
+  const handleAutoLayout = useCallback(() => {
+    if (!chain.segments || chain.segments.length === 0) return;
+
+    const containerWidth = containerRef.current?.clientWidth || 800;
+    const containerHeight = containerRef.current?.clientHeight || 400;
+    
+    const nodeWidth = 200;
+    const nodeHeight = 150;
+    const padding = 50;
+    
+    const segmentCount = chain.segments.length;
+    const addButtonCount = onAddSegment ? 1 : 0;
+    const totalNodes = segmentCount + addButtonCount;
+    
+    // Calculate optimal spacing to fit all nodes
+    const availableWidth = containerWidth - (padding * 2);
+    const minSpacing = 250;
+    const maxSpacing = 320;
+    
+    // Try to fit horizontally first
+    let horizontalSpacing = Math.max(minSpacing, Math.min(maxSpacing, availableWidth / totalNodes));
+    
+    // Calculate how many rows we need
+    const nodesPerRow = Math.max(1, Math.floor(availableWidth / horizontalSpacing));
+    const rows = Math.ceil(totalNodes / nodesPerRow);
+    
+    // Adjust vertical spacing
+    const verticalSpacing = rows > 1 ? Math.min(200, (containerHeight - padding * 2) / rows) : 0;
+    
+    // Reposition nodes in a grid/flow layout
+    const newNodes = nodes.map((node, index) => {
+      if (node.type === 'addNode') {
+        // Position add button at the end
+        const lastSegmentIndex = segmentCount - 1;
+        const row = Math.floor(lastSegmentIndex / nodesPerRow);
+        const col = (lastSegmentIndex % nodesPerRow) + 1;
+        
+        // Check if add button should be on next row
+        const finalRow = col >= nodesPerRow ? row + 1 : row;
+        const finalCol = col >= nodesPerRow ? 0 : col;
+        
+        return {
+          ...node,
+          position: {
+            x: padding + (finalCol * horizontalSpacing) + nodeWidth / 2 - 20,
+            y: padding + (finalRow * verticalSpacing) + nodeHeight / 2,
+          },
+        };
+      }
+      
+      const segmentIndex = chain.segments!.findIndex(s => s.id === node.id);
+      if (segmentIndex === -1) return node;
+      
+      const row = Math.floor(segmentIndex / nodesPerRow);
+      const col = segmentIndex % nodesPerRow;
+      
+      return {
+        ...node,
+        position: {
+          x: padding + (col * horizontalSpacing),
+          y: padding + (row * verticalSpacing),
+        },
+        data: {
+          ...node.data,
+          index: segmentIndex + 1,
+          isStart: segmentIndex === 0,
+        },
+      };
+    });
+
+    setNodes(newNodes);
+    
+    // Fit view after layout
+    setTimeout(() => {
+      reactFlowInstance.fitView({ padding: 0.2, duration: 300 });
+    }, 50);
+    
+    toast.success('Layout optimisé');
+  }, [chain.segments, nodes, setNodes, onAddSegment, reactFlowInstance]);
+
+  // Handle drag end to reorder segments
+  const handleNodeDragStop = useCallback((event: React.MouseEvent, node: Node) => {
+    if (node.type === 'addNode' || !onSegmentsReorder) return;
+    
+    // Get all workflow nodes sorted by x position
+    const workflowNodes = nodes
+      .filter(n => n.type === 'workflow')
+      .sort((a, b) => a.position.x - b.position.x);
+    
+    // Extract segment IDs in new order
+    const newOrder = workflowNodes.map(n => n.id);
+    
+    // Check if order changed
+    const currentOrder = chain.segments?.map(s => s.id) || [];
+    const orderChanged = newOrder.some((id, index) => currentOrder[index] !== id);
+    
+    if (orderChanged) {
+      onSegmentsReorder(newOrder);
+      
+      // Update node indices
+      setNodes(prevNodes => 
+        prevNodes.map(n => {
+          if (n.type !== 'workflow') return n;
+          const newIndex = newOrder.indexOf(n.id);
+          return {
+            ...n,
+            data: {
+              ...n.data,
+              index: newIndex + 1,
+              isStart: newIndex === 0,
+            },
+          };
+        })
+      );
+    }
+  }, [nodes, chain.segments, onSegmentsReorder, setNodes]);
 
   if (!chain) {
     return (
@@ -265,22 +398,24 @@ export const WorkflowCanvas: React.FC<WorkflowCanvasProps> = ({
   }
 
   return (
-    <div className="h-[400px] w-full rounded-xl overflow-hidden bg-muted/30 border border-border">
+    <div ref={containerRef} className="h-[400px] w-full rounded-xl overflow-hidden bg-muted/30 border border-border">
       <ReactFlow
         nodes={nodes}
         edges={edges}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
+        onNodeDragStop={handleNodeDragStop}
         nodeTypes={nodeTypes}
         connectionLineType={ConnectionLineType.SmoothStep}
         fitView
         fitViewOptions={{ padding: 0.3 }}
-        minZoom={0.5}
-        maxZoom={1.5}
+        minZoom={0.3}
+        maxZoom={2}
         proOptions={{ hideAttribution: true }}
-        nodesDraggable={false}
+        nodesDraggable={true}
         nodesConnectable={false}
         elementsSelectable={true}
+        selectNodesOnDrag={false}
       >
         <Background 
           variant={BackgroundVariant.Dots} 
@@ -292,7 +427,27 @@ export const WorkflowCanvas: React.FC<WorkflowCanvasProps> = ({
           showInteractive={false}
           className="!bg-card !border-border !shadow-md"
         />
+        <Panel position="top-right" className="flex gap-2">
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={handleAutoLayout}
+            className="shadow-md"
+          >
+            <LayoutGrid className="h-4 w-4 mr-2" />
+            Réorganiser
+          </Button>
+        </Panel>
       </ReactFlow>
     </div>
+  );
+};
+
+// Wrapper component with ReactFlowProvider
+export const WorkflowCanvas: React.FC<WorkflowCanvasProps> = (props) => {
+  return (
+    <ReactFlowProvider>
+      <WorkflowCanvasInner {...props} />
+    </ReactFlowProvider>
   );
 };
