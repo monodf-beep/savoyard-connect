@@ -271,37 +271,30 @@ const WorkflowCanvasInner: React.FC<WorkflowCanvasProps> = ({
     setEdges(initialEdges);
   }, [initialNodes, initialEdges, setNodes, setEdges]);
 
-  // Auto-layout function
+  // Auto-layout function with proper spacing
   const handleAutoLayout = useCallback(() => {
     if (!chain.segments || chain.segments.length === 0) return;
 
     const containerWidth = containerRef.current?.clientWidth || 800;
     const containerHeight = containerRef.current?.clientHeight || 400;
     
-    const nodeWidth = 200;
-    const nodeHeight = 150;
-    const padding = 50;
+    const nodeWidth = 220;
+    const nodeHeight = 180;
+    const horizontalGap = 80; // Gap between nodes horizontally
+    const verticalGap = 60;   // Gap between rows
+    const padding = 60;
     
     const segmentCount = chain.segments.length;
     const addButtonCount = onAddSegment ? 1 : 0;
     const totalNodes = segmentCount + addButtonCount;
     
-    // Calculate optimal spacing to fit all nodes
+    // Calculate how many nodes fit per row with proper spacing
     const availableWidth = containerWidth - (padding * 2);
-    const minSpacing = 250;
-    const maxSpacing = 320;
-    
-    // Try to fit horizontally first
-    let horizontalSpacing = Math.max(minSpacing, Math.min(maxSpacing, availableWidth / totalNodes));
-    
-    // Calculate how many rows we need
-    const nodesPerRow = Math.max(1, Math.floor(availableWidth / horizontalSpacing));
+    const nodeWithGap = nodeWidth + horizontalGap;
+    const nodesPerRow = Math.max(1, Math.floor(availableWidth / nodeWithGap));
     const rows = Math.ceil(totalNodes / nodesPerRow);
     
-    // Adjust vertical spacing
-    const verticalSpacing = rows > 1 ? Math.min(200, (containerHeight - padding * 2) / rows) : 0;
-    
-    // Reposition nodes in a grid/flow layout
+    // Reposition nodes in a grid layout with proper spacing
     const newNodes = nodes.map((node, index) => {
       if (node.type === 'addNode') {
         // Position add button at the end
@@ -316,8 +309,8 @@ const WorkflowCanvasInner: React.FC<WorkflowCanvasProps> = ({
         return {
           ...node,
           position: {
-            x: padding + (finalCol * horizontalSpacing) + nodeWidth / 2 - 20,
-            y: padding + (finalRow * verticalSpacing) + nodeHeight / 2,
+            x: padding + (finalCol * nodeWithGap) + nodeWidth / 2 - 20,
+            y: padding + (finalRow * (nodeHeight + verticalGap)) + nodeHeight / 2,
           },
         };
       }
@@ -331,8 +324,8 @@ const WorkflowCanvasInner: React.FC<WorkflowCanvasProps> = ({
       return {
         ...node,
         position: {
-          x: padding + (col * horizontalSpacing),
-          y: padding + (row * verticalSpacing),
+          x: padding + (col * nodeWithGap),
+          y: padding + (row * (nodeHeight + verticalGap)),
         },
         data: {
           ...node.data,
@@ -346,14 +339,14 @@ const WorkflowCanvasInner: React.FC<WorkflowCanvasProps> = ({
     
     // Fit view after layout
     setTimeout(() => {
-      reactFlowInstance.fitView({ padding: 0.2, duration: 300 });
+      reactFlowInstance.fitView({ padding: 0.15, duration: 300 });
     }, 50);
     
     toast.success('Layout optimisé');
   }, [chain.segments, nodes, setNodes, onAddSegment, reactFlowInstance]);
 
-  // Handle drag end to reorder segments
-  const handleNodeDragStop = useCallback((event: React.MouseEvent, node: Node) => {
+  // Handle drag end to reorder segments and save to database
+  const handleNodeDragStop = useCallback(async (event: React.MouseEvent, node: Node) => {
     if (node.type === 'addNode' || !onSegmentsReorder) return;
     
     // Get all workflow nodes sorted by x position
@@ -369,9 +362,7 @@ const WorkflowCanvasInner: React.FC<WorkflowCanvasProps> = ({
     const orderChanged = newOrder.some((id, index) => currentOrder[index] !== id);
     
     if (orderChanged) {
-      onSegmentsReorder(newOrder);
-      
-      // Update node indices
+      // Update node indices immediately for visual feedback
       setNodes(prevNodes => 
         prevNodes.map(n => {
           if (n.type !== 'workflow') return n;
@@ -386,6 +377,10 @@ const WorkflowCanvasInner: React.FC<WorkflowCanvasProps> = ({
           };
         })
       );
+      
+      // Save to database
+      onSegmentsReorder(newOrder);
+      toast.success('Ordre des segments sauvegardé');
     }
   }, [nodes, chain.segments, onSegmentsReorder, setNodes]);
 
