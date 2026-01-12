@@ -429,10 +429,10 @@ const WorkflowCanvasInner: React.FC<WorkflowCanvasProps> = ({
         />
         <Panel position="top-right" className="flex gap-2">
           <Button
-            variant="secondary"
-            size="sm"
+            variant="default"
+            size="default"
             onClick={handleAutoLayout}
-            className="shadow-md"
+            className="shadow-lg font-semibold px-5 py-2.5 text-sm"
           >
             <LayoutGrid className="h-4 w-4 mr-2" />
             Réorganiser

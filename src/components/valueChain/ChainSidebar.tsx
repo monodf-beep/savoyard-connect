@@ -104,11 +104,11 @@ export const ChainSidebar: React.FC<ChainSidebarProps> = ({
                     </p>
                   )}
                   <div className="flex items-center gap-2 mt-2 ml-6">
-                    <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
+                    <Badge variant="secondary" className="text-xs px-2 py-0.5 font-medium">
                       {chain.segments?.length || 0} étapes
                     </Badge>
                     {chain.approval_status === 'pending' && (
-                      <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-orange-500/50 text-orange-600">
+                      <Badge variant="outline" className="text-xs px-2 py-0.5 border-orange-500/50 text-orange-600">
                         En attente
                       </Badge>
                     )}
