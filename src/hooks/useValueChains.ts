@@ -444,6 +444,26 @@ export const useValueChains = () => {
     }
   };
 
+  const reorderSegments = async (chainId: string, segmentIds: string[]) => {
+    try {
+      // Update display_order for each segment
+      for (let i = 0; i < segmentIds.length; i++) {
+        const { error } = await supabase
+          .from('value_chain_segments')
+          .update({ display_order: i })
+          .eq('id', segmentIds[i]);
+        
+        if (error) throw error;
+      }
+      
+      await loadData();
+    } catch (error: any) {
+      console.error('Error reordering segments:', error);
+      toast.error('Erreur lors de la réorganisation');
+      throw error;
+    }
+  };
+
   return {
     chains,
     people,
@@ -456,6 +476,7 @@ export const useValueChains = () => {
     moveActor,
     mergeChains,
     splitChain,
+    reorderSegments,
     refetch: loadData,
   };
 };
