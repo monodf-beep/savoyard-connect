@@ -1,4 +1,4 @@
-import React, { useMemo, useCallback, useEffect, useRef, useState } from 'react';
+import React, { useMemo, useCallback, useEffect, useRef, useState, useImperativeHandle, forwardRef } from 'react';
 import ReactFlow, {
   Node,
   Edge,
@@ -19,10 +19,15 @@ import ReactFlow, {
 import 'reactflow/dist/style.css';
 import { ValueChain, ValueChainSegment } from '@/types/valueChain';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Building2, ChevronDown, Flag, Plus, LayoutGrid, GripVertical, Loader2 } from 'lucide-react';
+import { Building2, ChevronDown, Flag, Plus, LayoutGrid, GripVertical, Loader2, Save } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+
+export interface WorkflowCanvasRef {
+  savePositions: () => Promise<void>;
+  hasUnsavedChanges: () => boolean;
+}
 
 interface WorkflowCanvasProps {
   chain: ValueChain;
@@ -178,16 +183,24 @@ const nodeTypes = {
 };
 
 // Inner component that uses ReactFlow hooks
-const WorkflowCanvasInner: React.FC<WorkflowCanvasProps> = ({
+interface WorkflowCanvasInnerProps extends WorkflowCanvasProps {
+  onDirtyChange?: (isDirty: boolean) => void;
+  innerRef?: React.Ref<WorkflowCanvasRef>;
+}
+
+const WorkflowCanvasInner: React.FC<WorkflowCanvasInnerProps> = ({
   chain,
   onSegmentClick,
   onAddSegment,
   onSegmentsReorder,
   onSavePositions,
+  onDirtyChange,
+  innerRef,
 }) => {
   const reactFlowInstance = useReactFlow();
   const containerRef = useRef<HTMLDivElement>(null);
-  const [isReorganizing, setIsReorganizing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isDirty, setIsDirty] = useState(false);
   const [hoveredNodeId, setHoveredNodeId] = useState<string | null>(null);
 
   // Handle node hover for edge highlighting
@@ -354,15 +367,57 @@ const WorkflowCanvasInner: React.FC<WorkflowCanvasProps> = ({
     })));
   }, [hoveredNodeId, edges, setEdges, setNodes, handleNodeHover]);
 
-  // Auto-layout function with animation and save
-  const handleAutoLayout = useCallback(async () => {
+  // Notify parent when dirty state changes
+  useEffect(() => {
+    onDirtyChange?.(isDirty);
+  }, [isDirty, onDirtyChange]);
+
+  // Save positions function
+  const savePositions = useCallback(async () => {
+    if (!isDirty || !onSavePositions) return;
+    
+    setIsSaving(true);
+    
+    const workflowNodes = nodes
+      .filter(n => n.type === 'workflow')
+      .sort((a, b) => {
+        const rowA = Math.floor(a.position.y / 200);
+        const rowB = Math.floor(b.position.y / 200);
+        if (rowA !== rowB) return rowA - rowB;
+        return a.position.x - b.position.x;
+      });
+    
+    const positionsToSave = workflowNodes.map((n, index) => ({
+      id: n.id,
+      x: n.position.x,
+      y: n.position.y,
+      order: index,
+    }));
+    
+    try {
+      await onSavePositions(positionsToSave);
+      setIsDirty(false);
+      toast.success('Positions sauvegardées');
+    } catch (error) {
+      toast.error('Erreur lors de la sauvegarde');
+    } finally {
+      setIsSaving(false);
+    }
+  }, [isDirty, nodes, onSavePositions]);
+
+  // Expose ref methods
+  useImperativeHandle(innerRef, () => ({
+    savePositions,
+    hasUnsavedChanges: () => isDirty,
+  }), [savePositions, isDirty]);
+
+  // Auto-layout function (no auto-save, just marks as dirty)
+  const handleAutoLayout = useCallback(() => {
     if (!chain.segments || chain.segments.length === 0) return;
     if (!onSavePositions) {
       toast.error("Vous n'avez pas les droits pour réorganiser");
       return;
     }
-
-    setIsReorganizing(true);
 
     const containerWidth = containerRef.current?.clientWidth || 800;
     
@@ -377,9 +432,6 @@ const WorkflowCanvasInner: React.FC<WorkflowCanvasProps> = ({
     const availableWidth = containerWidth - (padding * 2);
     const nodeWithGap = nodeWidth + horizontalGap;
     const nodesPerRow = Math.max(1, Math.floor(availableWidth / nodeWithGap));
-    
-    // Calculate new positions
-    const positionsToSave: Array<{ id: string; x: number; y: number; order: number }> = [];
     
     const newNodes = nodes.map((node) => {
       if (node.type === 'addNode') {
@@ -407,13 +459,6 @@ const WorkflowCanvasInner: React.FC<WorkflowCanvasProps> = ({
       const newX = padding + (col * nodeWithGap);
       const newY = padding + (row * (nodeHeight + verticalGap));
       
-      positionsToSave.push({
-        id: node.id,
-        x: newX,
-        y: newY,
-        order: segmentIndex,
-      });
-      
       return {
         ...node,
         position: { x: newX, y: newY },
@@ -426,30 +471,21 @@ const WorkflowCanvasInner: React.FC<WorkflowCanvasProps> = ({
     });
 
     setNodes(newNodes);
+    setIsDirty(true);
     
     // Fit view with animation
     setTimeout(() => {
       reactFlowInstance.fitView({ padding: 0.2, duration: 500 });
     }, 100);
-
-    // Save positions to database
-    try {
-      await onSavePositions(positionsToSave);
-      toast.success('Layout optimisé et sauvegardé');
-    } catch (error) {
-      toast.error('Erreur lors de la sauvegarde');
-    } finally {
-      setIsReorganizing(false);
-    }
+    
+    toast.info('Layout réorganisé - N\'oubliez pas de sauvegarder');
   }, [chain.segments, nodes, setNodes, onAddSegment, reactFlowInstance, onSavePositions]);
 
-  // Handle drag end to save positions to database
-  const handleNodeDragStop = useCallback(async (event: React.MouseEvent, node: Node) => {
+  // Handle drag end - just mark as dirty, don't save
+  const handleNodeDragStop = useCallback((event: React.MouseEvent, node: Node) => {
     if (node.type === 'addNode' || !onSavePositions) return;
     
-    setIsReorganizing(true);
-    
-    // Get all workflow nodes sorted by x position, then by y for same row
+    // Get all workflow nodes sorted by position
     const workflowNodes = nodes
       .filter(n => n.type === 'workflow')
       .sort((a, b) => {
@@ -459,15 +495,7 @@ const WorkflowCanvasInner: React.FC<WorkflowCanvasProps> = ({
         return a.position.x - b.position.x;
       });
     
-    // Build positions array with order based on visual position
-    const positionsToSave = workflowNodes.map((n, index) => ({
-      id: n.id,
-      x: n.position.x,
-      y: n.position.y,
-      order: index,
-    }));
-    
-    // Update node indices immediately for visual feedback
+    // Update node indices for visual feedback
     setNodes(prevNodes => 
       prevNodes.map(n => {
         if (n.type !== 'workflow') return n;
@@ -483,15 +511,7 @@ const WorkflowCanvasInner: React.FC<WorkflowCanvasProps> = ({
       })
     );
     
-    // Save to database
-    try {
-      await onSavePositions(positionsToSave);
-      toast.success('Positions sauvegardées');
-    } catch (error) {
-      toast.error('Erreur lors de la sauvegarde');
-    } finally {
-      setIsReorganizing(false);
-    }
+    setIsDirty(true);
   }, [nodes, onSavePositions, setNodes]);
 
   if (!chain) {
@@ -505,7 +525,7 @@ const WorkflowCanvasInner: React.FC<WorkflowCanvasProps> = ({
   return (
     <div ref={containerRef} className="h-[500px] w-full rounded-xl overflow-hidden bg-muted/30 border border-border relative">
       {/* Loading overlay */}
-      {isReorganizing && (
+      {isSaving && (
         <div className="absolute inset-0 bg-background/50 backdrop-blur-sm z-50 flex items-center justify-center">
           <div className="flex items-center gap-3 bg-card px-4 py-3 rounded-lg shadow-lg border border-border">
             <Loader2 className="h-5 w-5 animate-spin text-primary" />
@@ -544,31 +564,69 @@ const WorkflowCanvasInner: React.FC<WorkflowCanvasProps> = ({
           className="!bg-card !border-border !shadow-md"
         />
         <Panel position="top-right" className="flex gap-2">
+          {isDirty && onSavePositions && (
+            <Button
+              variant="default"
+              size="default"
+              onClick={savePositions}
+              disabled={isSaving}
+              className="shadow-lg font-semibold px-5 py-2.5 text-sm bg-green-600 hover:bg-green-700"
+            >
+              {isSaving ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <Save className="h-4 w-4 mr-2" />
+              )}
+              Sauvegarder
+            </Button>
+          )}
           <Button
-            variant="default"
+            variant={isDirty ? "outline" : "default"}
             size="default"
             onClick={handleAutoLayout}
-            disabled={isReorganizing}
+            disabled={isSaving}
             className="shadow-lg font-semibold px-5 py-2.5 text-sm"
           >
-            {isReorganizing ? (
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-            ) : (
-              <LayoutGrid className="h-4 w-4 mr-2" />
-            )}
+            <LayoutGrid className="h-4 w-4 mr-2" />
             Réorganiser
           </Button>
         </Panel>
       </ReactFlow>
+      
+      {/* Dirty indicator */}
+      {isDirty && (
+        <div className="absolute bottom-4 left-4 px-3 py-1.5 bg-orange-500/90 text-white text-xs font-medium rounded-full shadow-lg">
+          Modifications non sauvegardées
+        </div>
+      )}
     </div>
   );
 };
 
 // Wrapper component with ReactFlowProvider
-export const WorkflowCanvas: React.FC<WorkflowCanvasProps> = (props) => {
+interface WorkflowCanvasWrapperProps extends WorkflowCanvasProps {
+  canvasRef?: React.Ref<WorkflowCanvasRef>;
+}
+
+export const WorkflowCanvas = forwardRef<WorkflowCanvasRef, WorkflowCanvasProps>((props, ref) => {
+  const [isDirty, setIsDirty] = useState(false);
+  const innerRef = useRef<WorkflowCanvasRef>(null);
+
+  // Forward ref methods
+  useImperativeHandle(ref, () => ({
+    savePositions: async () => {
+      await innerRef.current?.savePositions();
+    },
+    hasUnsavedChanges: () => innerRef.current?.hasUnsavedChanges() ?? false,
+  }), []);
+
   return (
     <ReactFlowProvider>
-      <WorkflowCanvasInner {...props} />
+      <WorkflowCanvasInner 
+        {...props} 
+        innerRef={innerRef}
+        onDirtyChange={setIsDirty}
+      />
     </ReactFlowProvider>
   );
-};
+});
