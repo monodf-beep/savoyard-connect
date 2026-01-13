@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Navbar } from '@/components/Navbar';
 import { useValueChains } from '@/hooks/useValueChains';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
-import { WorkflowCanvas } from '@/components/valueChain/WorkflowCanvas';
+import { WorkflowCanvas, WorkflowCanvasRef } from '@/components/valueChain/WorkflowCanvas';
 import { ChainSidebar } from '@/components/valueChain/ChainSidebar';
 import { SegmentDetailPanel } from '@/components/valueChain/SegmentDetailPanel';
 import { ValueChainForm } from '@/components/valueChain/ValueChainForm';
@@ -79,6 +80,8 @@ export default function ValueChains() {
     refetch,
   } = useValueChains();
 
+  const canvasRef = useRef<WorkflowCanvasRef>(null);
+
   const [selectedChain, setSelectedChain] = useState<ValueChain | null>(null);
   const [selectedSegment, setSelectedSegment] = useState<ValueChainSegment | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -103,6 +106,34 @@ export default function ValueChains() {
   const [splitIndex, setSplitIndex] = useState(1);
   const [splitTitle1, setSplitTitle1] = useState('');
   const [splitTitle2, setSplitTitle2] = useState('');
+
+  // Save positions before switching or leaving
+  const saveBeforeLeave = useCallback(async () => {
+    if (canvasRef.current?.hasUnsavedChanges()) {
+      await canvasRef.current.savePositions();
+    }
+  }, []);
+
+  // Save when switching chains
+  const handleSelectChain = useCallback(async (chain: ValueChain) => {
+    await saveBeforeLeave();
+    setSelectedChain(chain);
+  }, [saveBeforeLeave]);
+
+  // Save before leaving the page (navigation)
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (canvasRef.current?.hasUnsavedChanges()) {
+        e.preventDefault();
+        e.returnValue = '';
+        // Try to save (may not complete before page unload)
+        canvasRef.current.savePositions();
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, []);
 
   // Auto-select first chain
   useEffect(() => {
@@ -275,7 +306,7 @@ export default function ValueChains() {
             <ChainSidebar
               chains={approvedChains}
               selectedChain={selectedChain}
-              onSelectChain={setSelectedChain}
+              onSelectChain={handleSelectChain}
               onCreateChain={() => {
                 setEditingChain(undefined);
                 setFormOpen(true);
@@ -429,6 +460,7 @@ export default function ValueChains() {
               </Card>
             ) : selectedChain ? (
               <WorkflowCanvas
+                ref={canvasRef}
                 chain={selectedChain}
                 onSegmentClick={handleSegmentClick}
                 onAddSegment={isAdmin ? handleAddSegment : undefined}
@@ -483,9 +515,9 @@ export default function ValueChains() {
         <div className="border-t border-border bg-card p-2">
           <Select
             value={selectedChain?.id || ''}
-            onValueChange={(id) => {
+            onValueChange={async (id) => {
               const chain = approvedChains.find(c => c.id === id);
-              if (chain) setSelectedChain(chain);
+              if (chain) await handleSelectChain(chain);
             }}
           >
             <SelectTrigger>
