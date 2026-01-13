@@ -17,6 +17,8 @@ export interface ValueChainSegment {
   value_chain_id: string;
   function_name: string;
   display_order: number;
+  position_x?: number | null;
+  position_y?: number | null;
   created_at?: string;
   updated_at?: string;
   actors?: Person[];

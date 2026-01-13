@@ -110,6 +110,8 @@ export const useValueChains = () => {
               value_chain_id: seg.value_chain_id,
               function_name: seg.function_name,
               display_order: seg.display_order,
+              position_x: seg.position_x,
+              position_y: seg.position_y,
               actors: segmentActors,
               sections: segmentSections,
             };
@@ -464,6 +466,30 @@ export const useValueChains = () => {
     }
   };
 
+  const saveSegmentPositions = async (positions: Array<{ id: string; x: number; y: number; order: number }>) => {
+    try {
+      // Update positions and order for each segment
+      for (const pos of positions) {
+        const { error } = await supabase
+          .from('value_chain_segments')
+          .update({ 
+            position_x: pos.x, 
+            position_y: pos.y,
+            display_order: pos.order 
+          })
+          .eq('id', pos.id);
+        
+        if (error) throw error;
+      }
+      
+      await loadData();
+    } catch (error: any) {
+      console.error('Error saving segment positions:', error);
+      toast.error('Erreur lors de la sauvegarde des positions');
+      throw error;
+    }
+  };
+
   return {
     chains,
     people,
@@ -477,6 +503,7 @@ export const useValueChains = () => {
     mergeChains,
     splitChain,
     reorderSegments,
+    saveSegmentPositions,
     refetch: loadData,
   };
 };
