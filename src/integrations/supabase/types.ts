@@ -1007,6 +1007,8 @@ export type Database = {
           display_order: number
           function_name: string
           id: string
+          position_x: number | null
+          position_y: number | null
           updated_at: string | null
           value_chain_id: string
         }
@@ -1015,6 +1017,8 @@ export type Database = {
           display_order?: number
           function_name: string
           id?: string
+          position_x?: number | null
+          position_y?: number | null
           updated_at?: string | null
           value_chain_id: string
         }
@@ -1023,6 +1027,8 @@ export type Database = {
           display_order?: number
           function_name?: string
           id?: string
+          position_x?: number | null
+          position_y?: number | null
           updated_at?: string | null
           value_chain_id?: string
         }

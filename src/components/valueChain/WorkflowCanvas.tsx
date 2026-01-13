@@ -29,6 +29,7 @@ interface WorkflowCanvasProps {
   onSegmentClick?: (segment: ValueChainSegment) => void;
   onAddSegment?: () => void;
   onSegmentsReorder?: (segmentIds: string[]) => Promise<void>;
+  onSavePositions?: (positions: Array<{ id: string; x: number; y: number; order: number }>) => Promise<void>;
 }
 
 // Custom Node Component
@@ -182,6 +183,7 @@ const WorkflowCanvasInner: React.FC<WorkflowCanvasProps> = ({
   onSegmentClick,
   onAddSegment,
   onSegmentsReorder,
+  onSavePositions,
 }) => {
   const reactFlowInstance = useReactFlow();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -210,15 +212,16 @@ const WorkflowCanvasInner: React.FC<WorkflowCanvasProps> = ({
     const VERTICAL_OFFSET = 100;
     
     const nodes: Node[] = chain.segments.map((segment, index) => {
+      // Use saved positions if available, otherwise calculate default positions
+      const hasSavedPosition = segment.position_x != null && segment.position_y != null;
       const yOffset = Math.sin(index * 0.8) * 30;
       
       return {
         id: segment.id,
         type: 'workflow',
-        position: { 
-          x: 100 + (index * HORIZONTAL_SPACING), 
-          y: VERTICAL_OFFSET + yOffset 
-        },
+        position: hasSavedPosition 
+          ? { x: segment.position_x!, y: segment.position_y! }
+          : { x: 100 + (index * HORIZONTAL_SPACING), y: VERTICAL_OFFSET + yOffset },
         data: {
           label: segment.function_name,
           actors: segment.actors || [],
@@ -354,7 +357,7 @@ const WorkflowCanvasInner: React.FC<WorkflowCanvasProps> = ({
   // Auto-layout function with animation and save
   const handleAutoLayout = useCallback(async () => {
     if (!chain.segments || chain.segments.length === 0) return;
-    if (!onSegmentsReorder) {
+    if (!onSavePositions) {
       toast.error("Vous n'avez pas les droits pour réorganiser");
       return;
     }
@@ -370,14 +373,14 @@ const WorkflowCanvasInner: React.FC<WorkflowCanvasProps> = ({
     const padding = 80;
     
     const segmentCount = chain.segments.length;
-    const addButtonCount = onAddSegment ? 1 : 0;
-    const totalNodes = segmentCount + addButtonCount;
     
     const availableWidth = containerWidth - (padding * 2);
     const nodeWithGap = nodeWidth + horizontalGap;
     const nodesPerRow = Math.max(1, Math.floor(availableWidth / nodeWithGap));
     
-    // Animate nodes to new positions
+    // Calculate new positions
+    const positionsToSave: Array<{ id: string; x: number; y: number; order: number }> = [];
+    
     const newNodes = nodes.map((node) => {
       if (node.type === 'addNode') {
         const lastSegmentIndex = segmentCount - 1;
@@ -401,12 +404,19 @@ const WorkflowCanvasInner: React.FC<WorkflowCanvasProps> = ({
       const row = Math.floor(segmentIndex / nodesPerRow);
       const col = segmentIndex % nodesPerRow;
       
+      const newX = padding + (col * nodeWithGap);
+      const newY = padding + (row * (nodeHeight + verticalGap));
+      
+      positionsToSave.push({
+        id: node.id,
+        x: newX,
+        y: newY,
+        order: segmentIndex,
+      });
+      
       return {
         ...node,
-        position: {
-          x: padding + (col * nodeWithGap),
-          y: padding + (row * (nodeHeight + verticalGap)),
-        },
+        position: { x: newX, y: newY },
         data: {
           ...node.data,
           index: segmentIndex + 1,
@@ -422,21 +432,22 @@ const WorkflowCanvasInner: React.FC<WorkflowCanvasProps> = ({
       reactFlowInstance.fitView({ padding: 0.2, duration: 500 });
     }, 100);
 
-    // Save the current order to database
+    // Save positions to database
     try {
-      const orderedSegmentIds = chain.segments.map(s => s.id);
-      await onSegmentsReorder(orderedSegmentIds);
+      await onSavePositions(positionsToSave);
       toast.success('Layout optimisé et sauvegardé');
     } catch (error) {
       toast.error('Erreur lors de la sauvegarde');
     } finally {
       setIsReorganizing(false);
     }
-  }, [chain.segments, nodes, setNodes, onAddSegment, reactFlowInstance, onSegmentsReorder]);
+  }, [chain.segments, nodes, setNodes, onAddSegment, reactFlowInstance, onSavePositions]);
 
-  // Handle drag end to reorder segments and save to database
+  // Handle drag end to save positions to database
   const handleNodeDragStop = useCallback(async (event: React.MouseEvent, node: Node) => {
-    if (node.type === 'addNode' || !onSegmentsReorder) return;
+    if (node.type === 'addNode' || !onSavePositions) return;
+    
+    setIsReorganizing(true);
     
     // Get all workflow nodes sorted by x position, then by y for same row
     const workflowNodes = nodes
@@ -448,43 +459,40 @@ const WorkflowCanvasInner: React.FC<WorkflowCanvasProps> = ({
         return a.position.x - b.position.x;
       });
     
-    // Extract segment IDs in new order
-    const newOrder = workflowNodes.map(n => n.id);
+    // Build positions array with order based on visual position
+    const positionsToSave = workflowNodes.map((n, index) => ({
+      id: n.id,
+      x: n.position.x,
+      y: n.position.y,
+      order: index,
+    }));
     
-    // Check if order changed
-    const currentOrder = chain.segments?.map(s => s.id) || [];
-    const orderChanged = newOrder.some((id, index) => currentOrder[index] !== id);
+    // Update node indices immediately for visual feedback
+    setNodes(prevNodes => 
+      prevNodes.map(n => {
+        if (n.type !== 'workflow') return n;
+        const newIndex = workflowNodes.findIndex(wn => wn.id === n.id);
+        return {
+          ...n,
+          data: {
+            ...n.data,
+            index: newIndex + 1,
+            isStart: newIndex === 0,
+          },
+        };
+      })
+    );
     
-    if (orderChanged) {
-      setIsReorganizing(true);
-      
-      // Update node indices immediately for visual feedback
-      setNodes(prevNodes => 
-        prevNodes.map(n => {
-          if (n.type !== 'workflow') return n;
-          const newIndex = newOrder.indexOf(n.id);
-          return {
-            ...n,
-            data: {
-              ...n.data,
-              index: newIndex + 1,
-              isStart: newIndex === 0,
-            },
-          };
-        })
-      );
-      
-      // Save to database
-      try {
-        await onSegmentsReorder(newOrder);
-        toast.success('Ordre des segments sauvegardé');
-      } catch (error) {
-        toast.error('Erreur lors de la sauvegarde');
-      } finally {
-        setIsReorganizing(false);
-      }
+    // Save to database
+    try {
+      await onSavePositions(positionsToSave);
+      toast.success('Positions sauvegardées');
+    } catch (error) {
+      toast.error('Erreur lors de la sauvegarde');
+    } finally {
+      setIsReorganizing(false);
     }
-  }, [nodes, chain.segments, onSegmentsReorder, setNodes]);
+  }, [nodes, onSavePositions, setNodes]);
 
   if (!chain) {
     return (
