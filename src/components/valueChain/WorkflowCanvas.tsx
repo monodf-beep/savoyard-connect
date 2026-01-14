@@ -43,7 +43,11 @@ interface WorkflowCanvasProps {
   onSavePositions?: (positions: Array<{ id: string; x: number; y: number; order: number }>, viewport?: ViewportData) => Promise<void>;
 }
 
-// Custom Node Component
+// Snap to grid settings
+const GRID_SIZE = 20;
+const snapToGrid = (value: number) => Math.round(value / GRID_SIZE) * GRID_SIZE;
+
+// Custom Node Component - Larger and more readable
 const WorkflowNode = ({ data, selected, dragging }: NodeProps) => {
   const isStart = data.isStart;
   const isHighlighted = data.isHighlighted;
@@ -52,9 +56,9 @@ const WorkflowNode = ({ data, selected, dragging }: NodeProps) => {
     <div 
       className={cn(
         "relative group transition-all duration-300",
-        selected && "ring-2 ring-primary ring-offset-2 ring-offset-background rounded-lg",
-        dragging && "opacity-80 scale-105",
-        isHighlighted && "scale-105 z-10"
+        selected && "ring-2 ring-primary ring-offset-2 ring-offset-background rounded-xl",
+        dragging && "opacity-90 scale-[1.02]",
+        isHighlighted && "scale-[1.02] z-10"
       )}
       onMouseEnter={() => data.onHover?.(data.segment?.id, true)}
       onMouseLeave={() => data.onHover?.(data.segment?.id, false)}
@@ -65,16 +69,16 @@ const WorkflowNode = ({ data, selected, dragging }: NodeProps) => {
           type="target"
           position={Position.Left}
           className={cn(
-            "!w-3 !h-3 !border-2 !border-background transition-all duration-300",
+            "!w-4 !h-4 !border-2 !border-background transition-all duration-300",
             isHighlighted ? "!bg-primary !scale-125" : "!bg-primary"
           )}
         />
       )}
       
-      {/* Node Card */}
+      {/* Node Card - Larger size */}
       <div 
         className={cn(
-          "min-w-[180px] max-w-[220px] bg-card border-2 rounded-xl shadow-lg transition-all duration-300 cursor-grab active:cursor-grabbing",
+          "min-w-[260px] max-w-[320px] bg-card border-2 rounded-xl shadow-lg transition-all duration-300 cursor-grab active:cursor-grabbing",
           isStart ? "border-primary/50 bg-primary/5" : "border-border hover:border-primary/50",
           selected && "border-primary",
           dragging && "shadow-2xl border-primary",
@@ -83,63 +87,63 @@ const WorkflowNode = ({ data, selected, dragging }: NodeProps) => {
       >
         {/* Drag Handle Header */}
         <div 
-          className="flex items-center justify-between px-3 py-2 border-b border-border/50 cursor-grab"
+          className="flex items-center justify-between px-4 py-3 border-b border-border/50 cursor-grab"
           onClick={(e) => {
             e.stopPropagation();
             data.onClick?.(data.segment);
           }}
         >
           <div className="flex items-center gap-2">
-            <GripVertical className="h-3.5 w-3.5 text-muted-foreground/50" />
-            {isStart && <Flag className="h-3.5 w-3.5 text-primary" />}
-            <span className="text-xs font-medium text-muted-foreground">
+            <GripVertical className="h-4 w-4 text-muted-foreground/50" />
+            {isStart && <Flag className="h-4 w-4 text-primary" />}
+            <span className="text-sm font-medium text-muted-foreground">
               {isStart ? 'Début' : `Étape ${data.index}`}
             </span>
           </div>
-          <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+          <ChevronDown className="h-4 w-4 text-muted-foreground" />
         </div>
         
-        {/* Content */}
-        <div className="p-3" onClick={() => data.onClick?.(data.segment)}>
-          <h4 className="font-semibold text-sm text-foreground mb-2 line-clamp-2">
+        {/* Content - Larger padding and text */}
+        <div className="p-4" onClick={() => data.onClick?.(data.segment)}>
+          <h4 className="font-semibold text-base text-foreground mb-3 line-clamp-2 leading-tight">
             {data.label}
           </h4>
           
-          {/* Actors */}
-          <div className="space-y-1.5">
+          {/* Actors - Larger avatars and text */}
+          <div className="space-y-2">
             {data.actors?.slice(0, 3).map((actor: any) => (
-              <div key={actor.id} className="flex items-center gap-2">
-                <Avatar className="h-5 w-5 border border-border">
+              <div key={actor.id} className="flex items-center gap-2.5">
+                <Avatar className="h-7 w-7 border border-border">
                   <AvatarImage src={actor.photo} />
-                  <AvatarFallback className="text-[8px] bg-primary/10">
+                  <AvatarFallback className="text-[10px] bg-primary/10">
                     {actor.firstName?.[0]}{actor.lastName?.[0]}
                   </AvatarFallback>
                 </Avatar>
-                <span className="text-xs text-muted-foreground truncate">
+                <span className="text-sm text-foreground/80 truncate">
                   {actor.firstName} {actor.lastName}
                 </span>
               </div>
             ))}
             
             {data.sections?.slice(0, 2).map((section: any) => (
-              <div key={section.id} className="flex items-center gap-2">
-                <div className="h-5 w-5 rounded-full bg-primary/10 flex items-center justify-center">
-                  <Building2 className="h-3 w-3 text-primary" />
+              <div key={section.id} className="flex items-center gap-2.5">
+                <div className="h-7 w-7 rounded-full bg-primary/10 flex items-center justify-center">
+                  <Building2 className="h-4 w-4 text-primary" />
                 </div>
-                <span className="text-xs text-muted-foreground truncate">
+                <span className="text-sm text-foreground/80 truncate">
                   {section.title}
                 </span>
               </div>
             ))}
             
             {data.actors?.length > 3 && (
-              <span className="text-xs text-muted-foreground">
+              <span className="text-sm text-muted-foreground">
                 +{data.actors.length - 3} autres
               </span>
             )}
             
             {(!data.actors?.length && !data.sections?.length) && (
-              <span className="text-xs text-muted-foreground/60 italic">
+              <span className="text-sm text-muted-foreground/60 italic">
                 Aucun acteur
               </span>
             )}
@@ -152,32 +156,32 @@ const WorkflowNode = ({ data, selected, dragging }: NodeProps) => {
         type="source"
         position={Position.Right}
         className={cn(
-          "!w-3 !h-3 !border-2 !border-background transition-all duration-300",
+          "!w-4 !h-4 !border-2 !border-background transition-all duration-300",
           isHighlighted ? "!bg-primary !scale-125" : "!bg-primary"
         )}
       />
       
       {/* Connection point decoration */}
       <div className={cn(
-        "absolute -right-1.5 top-1/2 -translate-y-1/2 w-1.5 h-1.5 bg-primary rounded-full transition-opacity",
+        "absolute -right-2 top-1/2 -translate-y-1/2 w-2 h-2 bg-primary rounded-full transition-opacity",
         isHighlighted ? "opacity-100" : "opacity-0 group-hover:opacity-100"
       )} />
     </div>
   );
 };
 
-// Add Node Button
+// Add Node Button - Larger
 const AddNodeButton = ({ data }: NodeProps) => {
   return (
     <button
       onClick={data.onClick}
-      className="w-10 h-10 rounded-full bg-card border-2 border-dashed border-primary/40 hover:border-primary hover:bg-primary/5 flex items-center justify-center transition-all duration-200 group"
+      className="w-14 h-14 rounded-full bg-card border-2 border-dashed border-primary/40 hover:border-primary hover:bg-primary/5 flex items-center justify-center transition-all duration-200 group"
     >
-      <Plus className="h-5 w-5 text-primary/60 group-hover:text-primary transition-colors" />
+      <Plus className="h-7 w-7 text-primary/60 group-hover:text-primary transition-colors" />
       <Handle
         type="target"
         position={Position.Left}
-        className="!w-3 !h-3 !bg-primary/40 !border-2 !border-background opacity-0"
+        className="!w-4 !h-4 !bg-primary/40 !border-2 !border-background opacity-0"
       />
     </button>
   );
@@ -227,7 +231,7 @@ const WorkflowCanvasInner: React.FC<WorkflowCanvasInnerProps> = ({
       return { nodes, edges: [] };
     }
 
-    const HORIZONTAL_SPACING = 280;
+    const HORIZONTAL_SPACING = 360;
     const VERTICAL_OFFSET = 100;
     
     const nodes: Node[] = chain.segments.map((segment, index) => {
@@ -319,18 +323,26 @@ const WorkflowCanvasInner: React.FC<WorkflowCanvasInnerProps> = ({
     setEdges(initialEdges);
   }, [initialNodes, initialEdges, setNodes, setEdges]);
 
-  // Restore saved viewport on chain load
+  // Track if we have a saved viewport to restore
+  const hasSavedViewport = chain.viewport_zoom && chain.viewport_zoom > 0;
+  const viewportRestoredRef = useRef<string | null>(null);
+  
+  // Restore saved viewport on chain load (with exact precision)
   useEffect(() => {
-    if (chain.viewport_zoom && chain.viewport_zoom > 0) {
-      setTimeout(() => {
+    if (hasSavedViewport && viewportRestoredRef.current !== chain.id) {
+      // Mark as restored immediately to avoid race conditions
+      viewportRestoredRef.current = chain.id;
+      
+      // Use requestAnimationFrame for precise timing after render
+      requestAnimationFrame(() => {
         reactFlowInstance.setViewport({
-          x: chain.viewport_x || 0,
-          y: chain.viewport_y || 0,
-          zoom: chain.viewport_zoom || 1,
-        });
-      }, 100);
+          x: chain.viewport_x ?? 0,
+          y: chain.viewport_y ?? 0,
+          zoom: chain.viewport_zoom ?? 1,
+        }, { duration: 0 }); // No animation for exact positioning
+      });
     }
-  }, [chain.id]);
+  }, [chain.id, chain.viewport_x, chain.viewport_y, chain.viewport_zoom, hasSavedViewport, reactFlowInstance]);
 
   // Update add-new node position when workflow nodes change
   const workflowNodesKey = useMemo(() => {
@@ -354,7 +366,7 @@ const WorkflowCanvasInner: React.FC<WorkflowCanvasInnerProps> = ({
       return last;
     }, workflowNodes[0]);
 
-    const newX = lastNode.position.x + 280;
+    const newX = lastNode.position.x + 360;
     const newY = lastNode.position.y;
 
     // Only update if position actually changed
@@ -488,10 +500,10 @@ const WorkflowCanvasInner: React.FC<WorkflowCanvasInnerProps> = ({
 
     const containerWidth = containerRef.current?.clientWidth || 800;
     
-    const nodeWidth = 220;
-    const nodeHeight = 180;
-    const horizontalGap = 100;
-    const verticalGap = 80;
+    const nodeWidth = 320;
+    const nodeHeight = 200;
+    const horizontalGap = 120;
+    const verticalGap = 100;
     const padding = 80;
     
     const segmentCount = chain.segments.length;
@@ -548,35 +560,55 @@ const WorkflowCanvasInner: React.FC<WorkflowCanvasInnerProps> = ({
     toast.info('Layout réorganisé - N\'oubliez pas de sauvegarder');
   }, [chain.segments, nodes, setNodes, onAddSegment, reactFlowInstance, onSavePositions]);
 
-  // Handle drag end - just mark as dirty, don't save
+  // Handle drag end - snap to grid and mark as dirty
   const handleNodeDragStop = useCallback((event: React.MouseEvent, node: Node) => {
     if (node.type === 'addNode' || !onSavePositions) return;
     
-    // Get all workflow nodes sorted by position
-    const workflowNodes = nodes
-      .filter(n => n.type === 'workflow')
-      .sort((a, b) => {
-        const rowA = Math.floor(a.position.y / 200);
-        const rowB = Math.floor(b.position.y / 200);
-        if (rowA !== rowB) return rowA - rowB;
-        return a.position.x - b.position.x;
-      });
+    // Snap position to grid
+    const snappedX = snapToGrid(node.position.x);
+    const snappedY = snapToGrid(node.position.y);
     
-    // Update node indices for visual feedback
+    // Update the node with snapped position
     setNodes(prevNodes => 
       prevNodes.map(n => {
-        if (n.type !== 'workflow') return n;
-        const newIndex = workflowNodes.findIndex(wn => wn.id === n.id);
-        return {
-          ...n,
-          data: {
-            ...n.data,
-            index: newIndex + 1,
-            isStart: newIndex === 0,
-          },
-        };
+        if (n.id === node.id) {
+          return {
+            ...n,
+            position: { x: snappedX, y: snappedY },
+          };
+        }
+        return n;
       })
     );
+    
+    // Get all workflow nodes sorted by position (after snapping)
+    setTimeout(() => {
+      const workflowNodes = nodes
+        .filter(n => n.type === 'workflow')
+        .map(n => n.id === node.id ? { ...n, position: { x: snappedX, y: snappedY } } : n)
+        .sort((a, b) => {
+          const rowA = Math.floor(a.position.y / 200);
+          const rowB = Math.floor(b.position.y / 200);
+          if (rowA !== rowB) return rowA - rowB;
+          return a.position.x - b.position.x;
+        });
+      
+      // Update node indices for visual feedback
+      setNodes(prevNodes => 
+        prevNodes.map(n => {
+          if (n.type !== 'workflow') return n;
+          const newIndex = workflowNodes.findIndex(wn => wn.id === n.id);
+          return {
+            ...n,
+            data: {
+              ...n.data,
+              index: newIndex + 1,
+              isStart: newIndex === 0,
+            },
+          };
+        })
+      );
+    }, 0);
     
     setIsDirty(true);
   }, [nodes, onSavePositions, setNodes]);
@@ -609,7 +641,7 @@ const WorkflowCanvasInner: React.FC<WorkflowCanvasInnerProps> = ({
         onNodeDragStop={handleNodeDragStop}
         nodeTypes={nodeTypes}
         connectionLineType={ConnectionLineType.SmoothStep}
-        fitView
+        fitView={!hasSavedViewport}
         fitViewOptions={{ padding: 0.3 }}
         minZoom={0.3}
         maxZoom={2}
@@ -618,13 +650,15 @@ const WorkflowCanvasInner: React.FC<WorkflowCanvasInnerProps> = ({
         nodesConnectable={false}
         elementsSelectable={true}
         selectNodesOnDrag={false}
+        snapToGrid={true}
+        snapGrid={[GRID_SIZE, GRID_SIZE]}
         className="transition-all duration-300"
       >
         <Background 
           variant={BackgroundVariant.Dots} 
-          gap={20} 
-          size={1}
-          color="hsl(var(--muted-foreground) / 0.15)"
+          gap={GRID_SIZE} 
+          size={1.5}
+          color="hsl(var(--muted-foreground) / 0.2)"
         />
         <Controls 
           showInteractive={false}
