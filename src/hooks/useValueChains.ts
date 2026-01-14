@@ -9,130 +9,153 @@ export const useValueChains = () => {
   const [people, setPeople] = useState<Person[]>([]);
   const [sections, setSections] = useState<Section[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
+  // Core data loading logic (shared between initial load and refresh)
+  const fetchAllData = async () => {
+    // Load all people from organigramme
+    const { data: peopleData, error: peopleError } = await supabase.rpc('people_public_fn');
+    if (peopleError) throw peopleError;
+    
+    const formattedPeople: Person[] = (peopleData || []).map((p: any) => ({
+      id: p.id,
+      firstName: p.first_name,
+      lastName: p.last_name,
+      photo: p.avatar_url,
+      role: p.title,
+      description: p.bio,
+      linkedin: p.linkedin,
+    }));
+
+    // Load value chains
+    const { data: chainsData, error: chainsError } = await supabase
+      .from('value_chains')
+      .select('*')
+      .order('title');
+    
+    if (chainsError) throw chainsError;
+
+    // Load segments
+    const { data: segmentsData, error: segmentsError } = await supabase
+      .from('value_chain_segments')
+      .select('*')
+      .order('display_order');
+    
+    if (segmentsError) throw segmentsError;
+
+    // Load segment actors
+    const { data: actorsData, error: actorsError } = await supabase
+      .from('segment_actors')
+      .select('*');
+    
+    if (actorsError) throw actorsError;
+
+    // Load segment sections
+    const { data: sectionsData, error: sectionsError } = await supabase
+      .from('segment_sections')
+      .select('*');
+    
+    if (sectionsError) throw sectionsError;
+
+    // Load all sections from organigramme
+    const { data: allSections, error: allSectionsError } = await supabase
+      .from('sections')
+      .select('*');
+    
+    if (allSectionsError) throw allSectionsError;
+
+    // Format sections
+    const formattedSections: Section[] = (allSections || []).map((s: any) => ({
+      id: s.id,
+      title: s.title,
+      type: 'commission' as const,
+      isExpanded: s.is_expanded,
+      members: [],
+    }));
+
+    // Build complete structure
+    const chainsWithSegments: ValueChain[] = (chainsData || []).map((chain) => {
+      const chainSegments = (segmentsData || [])
+        .filter((seg: any) => seg.value_chain_id === chain.id)
+        .map((seg: any): ValueChainSegment => {
+          const segmentActorLinks = (actorsData || []).filter(
+            (actor: any) => actor.segment_id === seg.id
+          );
+          const segmentActors = segmentActorLinks
+            .map((link: any) => formattedPeople.find((p) => p.id === link.person_id))
+            .filter(Boolean) as Person[];
+
+          const segmentSectionLinks = (sectionsData || []).filter(
+            (section: any) => section.segment_id === seg.id
+          );
+          const segmentSections = segmentSectionLinks
+            .map((link: any) => {
+              const section = allSections?.find((s: any) => s.id === link.section_id);
+              if (!section) return null;
+              return {
+                id: section.id,
+                title: section.title,
+                type: 'commission' as const,
+                isExpanded: section.is_expanded,
+                members: [],
+              };
+            })
+            .filter(Boolean) as any[];
+
+          return {
+            id: seg.id,
+            value_chain_id: seg.value_chain_id,
+            function_name: seg.function_name,
+            display_order: seg.display_order,
+            position_x: seg.position_x,
+            position_y: seg.position_y,
+            actors: segmentActors,
+            sections: segmentSections,
+          };
+        });
+
+      return {
+        ...chain,
+        segments: chainSegments,
+        approval_status: (chain.approval_status as 'pending' | 'approved' | 'rejected' | undefined) || 'pending',
+        viewport_x: chain.viewport_x,
+        viewport_y: chain.viewport_y,
+        viewport_zoom: chain.viewport_zoom,
+      };
+    });
+
+    return { formattedPeople, formattedSections, chainsWithSegments };
+  };
+
+  // Initial load (shows full page loader)
   const loadData = async () => {
     try {
       setLoading(true);
-
-      // Load all people from organigramme
-      const { data: peopleData, error: peopleError } = await supabase.rpc('people_public_fn');
-      if (peopleError) throw peopleError;
-      
-      const formattedPeople: Person[] = (peopleData || []).map((p: any) => ({
-        id: p.id,
-        firstName: p.first_name,
-        lastName: p.last_name,
-        photo: p.avatar_url,
-        role: p.title,
-        description: p.bio,
-        linkedin: p.linkedin,
-      }));
+      const { formattedPeople, formattedSections, chainsWithSegments } = await fetchAllData();
       setPeople(formattedPeople);
-
-      // Load value chains
-      const { data: chainsData, error: chainsError } = await supabase
-        .from('value_chains')
-        .select('*')
-        .order('title');
-      
-      if (chainsError) throw chainsError;
-
-      // Load segments
-      const { data: segmentsData, error: segmentsError } = await supabase
-        .from('value_chain_segments')
-        .select('*')
-        .order('display_order');
-      
-      if (segmentsError) throw segmentsError;
-
-      // Load segment actors
-      const { data: actorsData, error: actorsError } = await supabase
-        .from('segment_actors')
-        .select('*');
-      
-      if (actorsError) throw actorsError;
-
-      // Load segment sections
-      const { data: sectionsData, error: sectionsError } = await supabase
-        .from('segment_sections')
-        .select('*');
-      
-      if (sectionsError) throw sectionsError;
-
-      // Load all sections from organigramme
-      const { data: allSections, error: allSectionsError } = await supabase
-        .from('sections')
-        .select('*');
-      
-      if (allSectionsError) throw allSectionsError;
-
-      // Format sections
-      const formattedSections: Section[] = (allSections || []).map((s: any) => ({
-        id: s.id,
-        title: s.title,
-        type: 'commission' as const,
-        isExpanded: s.is_expanded,
-        members: [],
-      }));
       setSections(formattedSections);
-
-      // Build complete structure
-      const chainsWithSegments: ValueChain[] = (chainsData || []).map((chain) => {
-        const chainSegments = (segmentsData || [])
-          .filter((seg: any) => seg.value_chain_id === chain.id)
-          .map((seg: any): ValueChainSegment => {
-            const segmentActorLinks = (actorsData || []).filter(
-              (actor: any) => actor.segment_id === seg.id
-            );
-            const segmentActors = segmentActorLinks
-              .map((link: any) => formattedPeople.find((p) => p.id === link.person_id))
-              .filter(Boolean) as Person[];
-
-            const segmentSectionLinks = (sectionsData || []).filter(
-              (section: any) => section.segment_id === seg.id
-            );
-            const segmentSections = segmentSectionLinks
-              .map((link: any) => {
-                const section = allSections?.find((s: any) => s.id === link.section_id);
-                if (!section) return null;
-                return {
-                  id: section.id,
-                  title: section.title,
-                  type: 'commission' as const,
-                  isExpanded: section.is_expanded,
-                  members: [],
-                };
-              })
-              .filter(Boolean) as any[];
-
-            return {
-              id: seg.id,
-              value_chain_id: seg.value_chain_id,
-              function_name: seg.function_name,
-              display_order: seg.display_order,
-              position_x: seg.position_x,
-              position_y: seg.position_y,
-              actors: segmentActors,
-              sections: segmentSections,
-            };
-          });
-
-        return {
-          ...chain,
-          segments: chainSegments,
-          approval_status: (chain.approval_status as 'pending' | 'approved' | 'rejected' | undefined) || 'pending',
-          viewport_x: chain.viewport_x,
-          viewport_y: chain.viewport_y,
-          viewport_zoom: chain.viewport_zoom,
-        };
-      });
-
       setChains(chainsWithSegments);
     } catch (error: any) {
       console.error('Error loading value chains:', error);
       toast.error('Erreur lors du chargement des chaînes de valeur');
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Silent refresh (no loader, for background updates)
+  const loadDataSilently = async () => {
+    try {
+      setIsRefreshing(true);
+      const { formattedPeople, formattedSections, chainsWithSegments } = await fetchAllData();
+      setPeople(formattedPeople);
+      setSections(formattedSections);
+      setChains(chainsWithSegments);
+    } catch (error: any) {
+      console.error('Error refreshing value chains:', error);
+      // Don't show toast for silent refresh failures
+    } finally {
+      setIsRefreshing(false);
     }
   };
 
@@ -503,7 +526,8 @@ export const useValueChains = () => {
         if (viewportError) throw viewportError;
       }
       
-      await loadData();
+      // Use silent refresh to avoid full page reload
+      await loadDataSilently();
     } catch (error: any) {
       console.error('Error saving segment positions:', error);
       throw error;

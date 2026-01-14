@@ -327,8 +327,10 @@ const WorkflowCanvasInner: React.FC<WorkflowCanvasInnerProps> = ({
   // Track if we have a saved viewport to restore
   const hasSavedViewport = chain.viewport_zoom && chain.viewport_zoom > 0;
   const viewportRestoredRef = useRef<string | null>(null);
+  const lastSavedViewportRef = useRef<ViewportData | null>(null);
   
   // Restore saved viewport on chain load (with exact precision)
+  // Only restore when chain ID changes (switching chains), not on data refresh
   useEffect(() => {
     if (hasSavedViewport && viewportRestoredRef.current !== chain.id) {
       // Mark as restored immediately to avoid race conditions
@@ -343,7 +345,7 @@ const WorkflowCanvasInner: React.FC<WorkflowCanvasInnerProps> = ({
         }, { duration: 0 }); // No animation for exact positioning
       });
     }
-  }, [chain.id, chain.viewport_x, chain.viewport_y, chain.viewport_zoom, hasSavedViewport, reactFlowInstance]);
+  }, [chain.id]); // Only depend on chain.id, not on viewport values
 
   // Update add-new node position when workflow nodes change
   const workflowNodesKey = useMemo(() => {
