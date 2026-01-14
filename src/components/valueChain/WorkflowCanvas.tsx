@@ -19,7 +19,7 @@ import ReactFlow, {
 import 'reactflow/dist/style.css';
 import { ValueChain, ValueChainSegment } from '@/types/valueChain';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Building2, ChevronDown, Flag, Plus, LayoutGrid, GripVertical, Loader2, Save } from 'lucide-react';
+import { Building2, ChevronDown, Flag, Plus, LayoutGrid, GripVertical, Loader2, Save, Undo2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
@@ -212,6 +212,7 @@ const WorkflowCanvasInner: React.FC<WorkflowCanvasInnerProps> = ({
   const [isSaving, setIsSaving] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
   const [hoveredNodeId, setHoveredNodeId] = useState<string | null>(null);
+  const [previousLayout, setPreviousLayout] = useState<{ nodes: Node[]; viewport: ViewportData } | null>(null);
 
   // Handle node hover for edge highlighting
   const handleNodeHover = useCallback((nodeId: string | undefined, isHovering: boolean) => {
@@ -490,7 +491,18 @@ const WorkflowCanvasInner: React.FC<WorkflowCanvasInnerProps> = ({
     hasUnsavedChanges: () => isDirty,
   }), [savePositions, isDirty]);
 
-  // Auto-layout function (no auto-save, just marks as dirty)
+  // Undo layout function - restore previous positions
+  const handleUndoLayout = useCallback(() => {
+    if (!previousLayout) return;
+    
+    setNodes(previousLayout.nodes);
+    reactFlowInstance.setViewport(previousLayout.viewport, { duration: 300 });
+    setPreviousLayout(null);
+    setIsDirty(true);
+    toast.info('Layout précédent restauré');
+  }, [previousLayout, setNodes, reactFlowInstance]);
+
+  // Auto-layout function - compact, readable, full width with close camera
   const handleAutoLayout = useCallback(() => {
     if (!chain.segments || chain.segments.length === 0) return;
     if (!onSavePositions) {
@@ -498,33 +510,65 @@ const WorkflowCanvasInner: React.FC<WorkflowCanvasInnerProps> = ({
       return;
     }
 
+    // Save current layout for undo
+    const currentViewport = reactFlowInstance.getViewport();
+    setPreviousLayout({
+      nodes: nodes.map(n => ({ ...n })),
+      viewport: { x: currentViewport.x, y: currentViewport.y, zoom: currentViewport.zoom },
+    });
+
     const containerWidth = containerRef.current?.clientWidth || 800;
+    const containerHeight = containerRef.current?.clientHeight || 500;
     
-    const nodeWidth = 320;
-    const nodeHeight = 200;
-    const horizontalGap = 120;
-    const verticalGap = 100;
-    const padding = 80;
+    // Card dimensions - keep them readable
+    const nodeWidth = 280;
+    const nodeHeight = 180;
+    const horizontalGap = 60; // Compact gap
+    const verticalGap = 50; // Compact gap
+    const padding = 40; // Smaller padding for full width usage
     
     const segmentCount = chain.segments.length;
     
+    // Calculate optimal nodes per row to fill width
     const availableWidth = containerWidth - (padding * 2);
     const nodeWithGap = nodeWidth + horizontalGap;
-    const nodesPerRow = Math.max(1, Math.floor(availableWidth / nodeWithGap));
+    
+    // Try to fit as many as possible while keeping readable
+    let nodesPerRow = Math.max(1, Math.floor(availableWidth / nodeWithGap));
+    
+    // If we have fewer segments than can fit in a row, center them
+    if (segmentCount <= nodesPerRow) {
+      nodesPerRow = segmentCount;
+    }
+    
+    // Calculate total rows needed
+    const totalRows = Math.ceil(segmentCount / nodesPerRow);
+    
+    // Calculate actual used width and height
+    const actualWidth = nodesPerRow * nodeWidth + (nodesPerRow - 1) * horizontalGap;
+    const actualHeight = totalRows * nodeHeight + (totalRows - 1) * verticalGap;
+    
+    // Center horizontally
+    const startX = (containerWidth - actualWidth) / 2;
+    const startY = padding;
     
     const newNodes = nodes.map((node) => {
       if (node.type === 'addNode') {
+        // Position add button after the last segment
         const lastSegmentIndex = segmentCount - 1;
         const row = Math.floor(lastSegmentIndex / nodesPerRow);
-        const col = (lastSegmentIndex % nodesPerRow) + 1;
-        const finalRow = col >= nodesPerRow ? row + 1 : row;
-        const finalCol = col >= nodesPerRow ? 0 : col;
+        const col = lastSegmentIndex % nodesPerRow;
+        
+        // If room on same row, put it there
+        const isRoomOnRow = col < nodesPerRow - 1;
+        const finalRow = isRoomOnRow ? row : row + 1;
+        const finalCol = isRoomOnRow ? col + 1 : 0;
         
         return {
           ...node,
           position: {
-            x: padding + (finalCol * nodeWithGap) + nodeWidth / 2 - 20,
-            y: padding + (finalRow * (nodeHeight + verticalGap)) + nodeHeight / 2,
+            x: startX + (finalCol * (nodeWidth + horizontalGap)) + nodeWidth / 2 - 28,
+            y: startY + (finalRow * (nodeHeight + verticalGap)) + nodeHeight / 2 - 28,
           },
         };
       }
@@ -535,8 +579,9 @@ const WorkflowCanvasInner: React.FC<WorkflowCanvasInnerProps> = ({
       const row = Math.floor(segmentIndex / nodesPerRow);
       const col = segmentIndex % nodesPerRow;
       
-      const newX = padding + (col * nodeWithGap);
-      const newY = padding + (row * (nodeHeight + verticalGap));
+      // Snap to grid
+      const newX = snapToGrid(startX + (col * (nodeWidth + horizontalGap)));
+      const newY = snapToGrid(startY + (row * (nodeHeight + verticalGap)));
       
       return {
         ...node,
@@ -552,9 +597,27 @@ const WorkflowCanvasInner: React.FC<WorkflowCanvasInnerProps> = ({
     setNodes(newNodes);
     setIsDirty(true);
     
-    // Fit view with animation
+    // Calculate optimal zoom to fit content while keeping cards readable
+    // We want zoom to be between 0.8 and 1.2 for readability
+    const widthRatio = (containerWidth - 40) / (actualWidth + 80);
+    const heightRatio = (containerHeight - 40) / (actualHeight + 80);
+    const optimalZoom = Math.min(widthRatio, heightRatio, 1.2);
+    const finalZoom = Math.max(0.7, Math.min(optimalZoom, 1.2));
+    
+    // Calculate center position for viewport
+    const centerX = startX + actualWidth / 2;
+    const centerY = startY + actualHeight / 2;
+    
+    // Set viewport to center content with optimal zoom
     setTimeout(() => {
-      reactFlowInstance.fitView({ padding: 0.2, duration: 500 });
+      const viewportX = (containerWidth / 2) - (centerX * finalZoom);
+      const viewportY = (containerHeight / 2) - (centerY * finalZoom);
+      
+      reactFlowInstance.setViewport({
+        x: viewportX,
+        y: viewportY,
+        zoom: finalZoom,
+      }, { duration: 400 });
     }, 100);
     
     toast.info('Layout réorganisé - N\'oubliez pas de sauvegarder');
@@ -679,6 +742,18 @@ const WorkflowCanvasInner: React.FC<WorkflowCanvasInnerProps> = ({
                 <Save className="h-4 w-4 mr-2" />
               )}
               Sauvegarder
+            </Button>
+          )}
+          {previousLayout && (
+            <Button
+              variant="outline"
+              size="default"
+              onClick={handleUndoLayout}
+              disabled={isSaving}
+              className="shadow-lg font-semibold px-4 py-2.5 text-sm"
+            >
+              <Undo2 className="h-4 w-4 mr-2" />
+              Annuler
             </Button>
           )}
           <Button
