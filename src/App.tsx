@@ -21,6 +21,7 @@ import Onboarding from "./pages/Onboarding";
 import OnboardingAsso from "./pages/OnboardingAsso";
 import Signup from "./pages/Signup";
 import Login from "./pages/Login";
+import ForgotPassword from "./pages/ForgotPassword";
 import NotFound from "./pages/NotFound";
 import Settings from "./pages/Settings";
 import Dashboard from "./pages/Dashboard";
@@ -76,6 +77,7 @@ const AppContent = () => {
         <Route path="/" element={<Landing />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/onboarding-asso" element={<OnboardingAsso />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/organigramme" element={<Index />} />
