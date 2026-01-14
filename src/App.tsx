@@ -9,6 +9,7 @@ import { SectionLeaderOnboarding } from "@/components/SectionLeaderOnboarding";
 import { useAuth } from "@/hooks/useAuth";
 import { useOrganizationSettings } from "@/hooks/useOrganizationSettings";
 import { useState, useEffect } from "react";
+import Landing from "./pages/Landing";
 import Index from "./pages/Index";
 import Jobs from "./pages/Jobs";
 import Projects from "./pages/Projects";
@@ -78,7 +79,8 @@ const AppContent = () => {
   return (
     <>
       <Routes>
-        <Route path="/" element={<Dashboard />} />
+        <Route path="/" element={<Landing />} />
+        <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/organigramme" element={<Index />} />
         <Route path="/jobs" element={<Jobs />} />
         <Route path="/projects" element={<Projects />} />
