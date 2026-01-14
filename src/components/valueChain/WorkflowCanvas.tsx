@@ -264,13 +264,18 @@ const WorkflowCanvasInner: React.FC<WorkflowCanvasInnerProps> = ({
     });
 
     if (onAddSegment) {
-      const lastNode = nodes[nodes.length - 1];
+      // Find the rightmost node to position the add button after it
+      const rightmostNode = nodes.reduce((rightmost, current) => {
+        if (current.position.x > rightmost.position.x) return current;
+        return rightmost;
+      }, nodes[0]);
+      
       nodes.push({
         id: 'add-new',
         type: 'addNode',
         position: { 
-          x: lastNode.position.x + HORIZONTAL_SPACING, 
-          y: VERTICAL_OFFSET 
+          x: rightmostNode.position.x + HORIZONTAL_SPACING, 
+          y: rightmostNode.position.y + 40 // Center vertically relative to the rightmost node
         },
         data: { onClick: onAddSegment },
         draggable: false,
@@ -409,15 +414,14 @@ const WorkflowCanvasInner: React.FC<WorkflowCanvasInnerProps> = ({
     const addNewNode = nodes.find(n => n.id === 'add-new');
     if (!addNewNode) return;
 
-    // Find the last workflow node by position (bottom-right)
-    const lastNode = workflowNodes.reduce((last, current) => {
-      if (current.position.y > last.position.y) return current;
-      if (current.position.y === last.position.y && current.position.x > last.position.x) return current;
-      return last;
+    // Find the rightmost workflow node
+    const rightmostNode = workflowNodes.reduce((rightmost, current) => {
+      if (current.position.x > rightmost.position.x) return current;
+      return rightmost;
     }, workflowNodes[0]);
 
-    const newX = lastNode.position.x + 360;
-    const newY = lastNode.position.y;
+    const newX = rightmostNode.position.x + 360;
+    const newY = rightmostNode.position.y + 40; // Center vertically relative to the rightmost node
 
     // Only update if position actually changed
     if (Math.abs(addNewNode.position.x - newX) > 1 || Math.abs(addNewNode.position.y - newY) > 1) {
