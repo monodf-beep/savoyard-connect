@@ -89,7 +89,7 @@ const AppContent = () => {
         <Route path="/value-chains" element={<ValueChains />} />
         <Route path="/finance" element={<Finance />} />
         <Route path="/settings" element={<Settings />} />
-        <Route path="/auth" element={<Login />} />
+        
         <Route path="/onboarding" element={<Onboarding />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
