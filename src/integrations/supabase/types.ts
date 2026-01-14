@@ -1052,6 +1052,9 @@ export type Database = {
           id: string
           title: string
           updated_at: string | null
+          viewport_x: number | null
+          viewport_y: number | null
+          viewport_zoom: number | null
         }
         Insert: {
           approval_status?: string | null
@@ -1062,6 +1065,9 @@ export type Database = {
           id?: string
           title: string
           updated_at?: string | null
+          viewport_x?: number | null
+          viewport_y?: number | null
+          viewport_zoom?: number | null
         }
         Update: {
           approval_status?: string | null
@@ -1072,6 +1078,9 @@ export type Database = {
           id?: string
           title?: string
           updated_at?: string | null
+          viewport_x?: number | null
+          viewport_y?: number | null
+          viewport_zoom?: number | null
         }
         Relationships: []
       }

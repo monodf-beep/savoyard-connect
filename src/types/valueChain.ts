@@ -10,6 +10,9 @@ export interface ValueChain {
   approval_status?: 'pending' | 'approved' | 'rejected';
   created_by?: string;
   approved_by?: string;
+  viewport_x?: number | null;
+  viewport_y?: number | null;
+  viewport_zoom?: number | null;
 }
 
 export interface ValueChainSegment {

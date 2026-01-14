@@ -121,6 +121,9 @@ export const useValueChains = () => {
           ...chain,
           segments: chainSegments,
           approval_status: (chain.approval_status as 'pending' | 'approved' | 'rejected' | undefined) || 'pending',
+          viewport_x: chain.viewport_x,
+          viewport_y: chain.viewport_y,
+          viewport_zoom: chain.viewport_zoom,
         };
       });
 
@@ -466,7 +469,11 @@ export const useValueChains = () => {
     }
   };
 
-  const saveSegmentPositions = async (positions: Array<{ id: string; x: number; y: number; order: number }>) => {
+  const saveSegmentPositions = async (
+    positions: Array<{ id: string; x: number; y: number; order: number }>,
+    viewport?: { x: number; y: number; zoom: number },
+    chainId?: string
+  ) => {
     try {
       // Update positions and order for each segment
       for (const pos of positions) {
@@ -481,11 +488,24 @@ export const useValueChains = () => {
         
         if (error) throw error;
       }
+
+      // Save viewport if provided
+      if (viewport && chainId) {
+        const { error: viewportError } = await supabase
+          .from('value_chains')
+          .update({
+            viewport_x: viewport.x,
+            viewport_y: viewport.y,
+            viewport_zoom: viewport.zoom,
+          })
+          .eq('id', chainId);
+        
+        if (viewportError) throw viewportError;
+      }
       
       await loadData();
     } catch (error: any) {
       console.error('Error saving segment positions:', error);
-      toast.error('Erreur lors de la sauvegarde des positions');
       throw error;
     }
   };
