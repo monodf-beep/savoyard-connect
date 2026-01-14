@@ -308,7 +308,7 @@ export default function ValueChains() {
     <div className="min-h-screen flex flex-col bg-background">
       <Navbar />
 
-      <main className="flex-1 flex overflow-hidden">
+      <main className="flex-1 flex overflow-hidden relative">
         {/* Left Sidebar - Chain List */}
         {!isMobile && sidebarOpen && (
           <div className="w-72 flex-shrink-0 border-r border-border">
@@ -486,9 +486,9 @@ export default function ValueChains() {
           </div>
         </div>
 
-        {/* Right Panel - Segment Details (Desktop) */}
+        {/* Right Panel - Segment Details (Desktop) - Overlay */}
         {!isMobile && detailPanelOpen && (
-          <div className="w-80 flex-shrink-0 border-l border-border">
+          <div className="absolute right-0 top-0 h-full w-80 bg-card border-l border-border shadow-xl z-20">
             <SegmentDetailPanel
               segment={selectedSegment}
               onClose={() => {
