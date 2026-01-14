@@ -35,6 +35,54 @@ export type Database = {
         }
         Relationships: []
       }
+      associations: {
+        Row: {
+          created_at: string
+          id: string
+          instagram_url: string | null
+          is_active: boolean | null
+          linkedin_url: string | null
+          logo_url: string | null
+          naf_ape: string | null
+          name: string
+          owner_id: string
+          rna: string | null
+          siret: string | null
+          statuts_url: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          instagram_url?: string | null
+          is_active?: boolean | null
+          linkedin_url?: string | null
+          logo_url?: string | null
+          naf_ape?: string | null
+          name: string
+          owner_id: string
+          rna?: string | null
+          siret?: string | null
+          statuts_url?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          instagram_url?: string | null
+          is_active?: boolean | null
+          linkedin_url?: string | null
+          logo_url?: string | null
+          naf_ape?: string | null
+          name?: string
+          owner_id?: string
+          rna?: string | null
+          siret?: string | null
+          statuts_url?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       community_milestones: {
         Row: {
           created_at: string | null
@@ -939,6 +987,42 @@ export type Database = {
           section_id?: string
           status?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      user_profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          first_name: string | null
+          id: string
+          last_name: string | null
+          phone: string | null
+          region: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          first_name?: string | null
+          id?: string
+          last_name?: string | null
+          phone?: string | null
+          region?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          first_name?: string | null
+          id?: string
+          last_name?: string | null
+          phone?: string | null
+          region?: string | null
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
