@@ -16,7 +16,7 @@ import Jobs from "./pages/Jobs";
 import Projects from "./pages/Projects";
 import Contributors from "./pages/Contributors";
 import ValueChains from "./pages/ValueChains";
-import Auth from "./pages/Auth";
+// Auth page removed - using Login instead
 import Onboarding from "./pages/Onboarding";
 import OnboardingAsso from "./pages/OnboardingAsso";
 import Signup from "./pages/Signup";
@@ -85,7 +85,7 @@ const AppContent = () => {
         <Route path="/value-chains" element={<ValueChains />} />
         <Route path="/finance" element={<Finance />} />
         <Route path="/settings" element={<Settings />} />
-        <Route path="/auth" element={<Auth />} />
+        <Route path="/auth" element={<Login />} />
         <Route path="/onboarding" element={<Onboarding />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
