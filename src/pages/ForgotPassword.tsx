@@ -18,8 +18,10 @@ const ForgotPassword = () => {
     setIsLoading(true);
 
     try {
+      // Use published URL for proper redirect (preview URLs go through auth-bridge which can fail)
+      const publishedUrl = "https://organigramme-enstitut.lovable.app";
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/reset-password`,
+        redirectTo: `${publishedUrl}/reset-password`,
       });
 
       if (error) throw error;
