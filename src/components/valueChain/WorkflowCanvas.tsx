@@ -329,7 +329,8 @@ const WorkflowCanvasInner: React.FC<WorkflowCanvasInnerProps> = ({
   // Track if we have a saved viewport to restore
   const hasSavedViewport = chain.viewport_zoom && chain.viewport_zoom > 0;
   const viewportRestoredRef = useRef<string | null>(null);
-  const lastSavedViewportRef = useRef<ViewportData | null>(null);
+  const initialViewportRef = useRef<ViewportData | null>(null);
+  const isInitialLoadRef = useRef(true);
   
   // Restore saved viewport on chain load (with exact precision)
   // Only restore when chain ID changes (switching chains), not on data refresh
@@ -337,6 +338,14 @@ const WorkflowCanvasInner: React.FC<WorkflowCanvasInnerProps> = ({
     if (hasSavedViewport && viewportRestoredRef.current !== chain.id) {
       // Mark as restored immediately to avoid race conditions
       viewportRestoredRef.current = chain.id;
+      isInitialLoadRef.current = true;
+      
+      // Store the initial viewport for comparison
+      initialViewportRef.current = {
+        x: chain.viewport_x ?? 0,
+        y: chain.viewport_y ?? 0,
+        zoom: chain.viewport_zoom ?? 1,
+      };
       
       // Use requestAnimationFrame for precise timing after render
       requestAnimationFrame(() => {
@@ -345,9 +354,45 @@ const WorkflowCanvasInner: React.FC<WorkflowCanvasInnerProps> = ({
           y: chain.viewport_y ?? 0,
           zoom: chain.viewport_zoom ?? 1,
         }, { duration: 0 }); // No animation for exact positioning
+        
+        // Mark initial load as complete after a short delay
+        setTimeout(() => {
+          isInitialLoadRef.current = false;
+        }, 500);
       });
+    } else if (!hasSavedViewport && viewportRestoredRef.current !== chain.id) {
+      viewportRestoredRef.current = chain.id;
+      isInitialLoadRef.current = true;
+      initialViewportRef.current = null;
+      setTimeout(() => {
+        isInitialLoadRef.current = false;
+      }, 500);
     }
   }, [chain.id]); // Only depend on chain.id, not on viewport values
+
+  // Handle viewport changes (pan/zoom) to mark as dirty
+  const handleMoveEnd = useCallback(() => {
+    // Skip during initial load
+    if (isInitialLoadRef.current) return;
+    
+    const currentViewport = reactFlowInstance.getViewport();
+    const initial = initialViewportRef.current;
+    
+    // Check if viewport has changed significantly from initial
+    if (initial) {
+      const hasChanged = 
+        Math.abs(currentViewport.x - initial.x) > 1 ||
+        Math.abs(currentViewport.y - initial.y) > 1 ||
+        Math.abs(currentViewport.zoom - initial.zoom) > 0.01;
+      
+      if (hasChanged && !isDirty) {
+        setIsDirty(true);
+      }
+    } else if (!isDirty) {
+      // No initial viewport saved, any move should allow saving
+      setIsDirty(true);
+    }
+  }, [reactFlowInstance, isDirty]);
 
   // Update add-new node position when workflow nodes change
   const workflowNodesKey = useMemo(() => {
@@ -706,6 +751,7 @@ const WorkflowCanvasInner: React.FC<WorkflowCanvasInnerProps> = ({
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onNodeDragStop={handleNodeDragStop}
+        onMoveEnd={handleMoveEnd}
         onPaneClick={onPaneClick}
         nodeTypes={nodeTypes}
         connectionLineType={ConnectionLineType.SmoothStep}
