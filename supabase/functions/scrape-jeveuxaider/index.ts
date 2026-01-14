@@ -17,12 +17,14 @@ serve(async (req) => {
       throw new Error('URL JeVeuxAider invalide');
     }
 
-    // Extract mission ID from URL
-    const missionIdMatch = url.match(/missions\/(\d+)/);
+    // Extract mission ID from URL - supports both /missions/ and /missions-benevolat/ patterns
+    const missionIdMatch = url.match(/missions(?:-benevolat)?\/(\d+)/);
     if (!missionIdMatch) {
       throw new Error('Impossible d\'extraire l\'ID de la mission');
     }
     const missionId = missionIdMatch[1];
+    
+    console.log('Extracted mission ID:', missionId);
 
     // Try to fetch the public API or scrape the page
     // JeVeuxAider has a public API for some endpoints
