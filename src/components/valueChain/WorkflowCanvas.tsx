@@ -41,6 +41,7 @@ interface WorkflowCanvasProps {
   onAddSegment?: () => void;
   onSegmentsReorder?: (segmentIds: string[]) => Promise<void>;
   onSavePositions?: (positions: Array<{ id: string; x: number; y: number; order: number }>, viewport?: ViewportData) => Promise<void>;
+  onPaneClick?: () => void;
 }
 
 // Snap to grid settings
@@ -204,6 +205,7 @@ const WorkflowCanvasInner: React.FC<WorkflowCanvasInnerProps> = ({
   onAddSegment,
   onSegmentsReorder,
   onSavePositions,
+  onPaneClick,
   onDirtyChange,
   innerRef,
 }) => {
@@ -704,6 +706,7 @@ const WorkflowCanvasInner: React.FC<WorkflowCanvasInnerProps> = ({
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onNodeDragStop={handleNodeDragStop}
+        onPaneClick={onPaneClick}
         nodeTypes={nodeTypes}
         connectionLineType={ConnectionLineType.SmoothStep}
         fitView={!hasSavedViewport}
