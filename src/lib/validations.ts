@@ -105,7 +105,7 @@ export const jobPostingSchema = z.object({
     .url({ message: "URL invalide" })
     .max(1000, { message: "L'URL ne peut pas dépasser 1000 caractères" }),
   
-  type: z.enum(['CDI', 'CDD', 'Stage', 'Freelance'])
+  type: z.enum(['CDI', 'CDD', 'Stage', 'Freelance', 'Bénévolat', 'Alternance'])
 });
 
 // Vacant position validation schema
