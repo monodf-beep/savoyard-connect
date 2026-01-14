@@ -264,18 +264,15 @@ const WorkflowCanvasInner: React.FC<WorkflowCanvasInnerProps> = ({
     });
 
     if (onAddSegment) {
-      // Find the rightmost node to position the add button after it
-      const rightmostNode = nodes.reduce((rightmost, current) => {
-        if (current.position.x > rightmost.position.x) return current;
-        return rightmost;
-      }, nodes[0]);
+      // Use the last node in chain order (not by position)
+      const lastNode = nodes[nodes.length - 1];
       
       nodes.push({
         id: 'add-new',
         type: 'addNode',
         position: { 
-          x: rightmostNode.position.x + HORIZONTAL_SPACING, 
-          y: rightmostNode.position.y + 40 // Center vertically relative to the rightmost node
+          x: lastNode.position.x + HORIZONTAL_SPACING, 
+          y: lastNode.position.y + 40 // Center vertically relative to the last node
         },
         data: { onClick: onAddSegment },
         draggable: false,
@@ -414,14 +411,15 @@ const WorkflowCanvasInner: React.FC<WorkflowCanvasInnerProps> = ({
     const addNewNode = nodes.find(n => n.id === 'add-new');
     if (!addNewNode) return;
 
-    // Find the rightmost workflow node
-    const rightmostNode = workflowNodes.reduce((rightmost, current) => {
-      if (current.position.x > rightmost.position.x) return current;
-      return rightmost;
+    // Find the last workflow node by display order (using segment index from data)
+    const lastNode = workflowNodes.reduce((last, current) => {
+      const lastIndex = last.data?.index ?? 0;
+      const currentIndex = current.data?.index ?? 0;
+      return currentIndex > lastIndex ? current : last;
     }, workflowNodes[0]);
 
-    const newX = rightmostNode.position.x + 360;
-    const newY = rightmostNode.position.y + 40; // Center vertically relative to the rightmost node
+    const newX = lastNode.position.x + 360;
+    const newY = lastNode.position.y + 40; // Center vertically relative to the last node
 
     // Only update if position actually changed
     if (Math.abs(addNewNode.position.x - newX) > 1 || Math.abs(addNewNode.position.y - newY) > 1) {
