@@ -29,12 +29,18 @@ export interface WorkflowCanvasRef {
   hasUnsavedChanges: () => boolean;
 }
 
+export interface ViewportData {
+  x: number;
+  y: number;
+  zoom: number;
+}
+
 interface WorkflowCanvasProps {
   chain: ValueChain;
   onSegmentClick?: (segment: ValueChainSegment) => void;
   onAddSegment?: () => void;
   onSegmentsReorder?: (segmentIds: string[]) => Promise<void>;
-  onSavePositions?: (positions: Array<{ id: string; x: number; y: number; order: number }>) => Promise<void>;
+  onSavePositions?: (positions: Array<{ id: string; x: number; y: number; order: number }>, viewport?: ViewportData) => Promise<void>;
 }
 
 // Custom Node Component
@@ -313,6 +319,58 @@ const WorkflowCanvasInner: React.FC<WorkflowCanvasInnerProps> = ({
     setEdges(initialEdges);
   }, [initialNodes, initialEdges, setNodes, setEdges]);
 
+  // Restore saved viewport on chain load
+  useEffect(() => {
+    if (chain.viewport_zoom && chain.viewport_zoom > 0) {
+      setTimeout(() => {
+        reactFlowInstance.setViewport({
+          x: chain.viewport_x || 0,
+          y: chain.viewport_y || 0,
+          zoom: chain.viewport_zoom || 1,
+        });
+      }, 100);
+    }
+  }, [chain.id]);
+
+  // Update add-new node position when workflow nodes change
+  const workflowNodesKey = useMemo(() => {
+    return nodes
+      .filter(n => n.type === 'workflow')
+      .map(n => `${n.id}:${Math.round(n.position.x)}:${Math.round(n.position.y)}`)
+      .join(',');
+  }, [nodes]);
+
+  useEffect(() => {
+    const workflowNodes = nodes.filter(n => n.type === 'workflow');
+    if (workflowNodes.length === 0 || !onAddSegment) return;
+
+    const addNewNode = nodes.find(n => n.id === 'add-new');
+    if (!addNewNode) return;
+
+    // Find the last workflow node by position (bottom-right)
+    const lastNode = workflowNodes.reduce((last, current) => {
+      if (current.position.y > last.position.y) return current;
+      if (current.position.y === last.position.y && current.position.x > last.position.x) return current;
+      return last;
+    }, workflowNodes[0]);
+
+    const newX = lastNode.position.x + 280;
+    const newY = lastNode.position.y;
+
+    // Only update if position actually changed
+    if (Math.abs(addNewNode.position.x - newX) > 1 || Math.abs(addNewNode.position.y - newY) > 1) {
+      setNodes(prevNodes => prevNodes.map(n => {
+        if (n.id === 'add-new') {
+          return {
+            ...n,
+            position: { x: newX, y: newY },
+          };
+        }
+        return n;
+      }));
+    }
+  }, [workflowNodesKey, onAddSegment]);
+
   // Update edges and nodes based on hover state
   useEffect(() => {
     if (!hoveredNodeId) {
@@ -394,16 +452,25 @@ const WorkflowCanvasInner: React.FC<WorkflowCanvasInnerProps> = ({
       order: index,
     }));
     
+    // Get current viewport (camera position)
+    const viewport = reactFlowInstance.getViewport();
+    const viewportData: ViewportData = {
+      x: viewport.x,
+      y: viewport.y,
+      zoom: viewport.zoom,
+    };
+    
     try {
-      await onSavePositions(positionsToSave);
+      await onSavePositions(positionsToSave, viewportData);
       setIsDirty(false);
       toast.success('Positions sauvegardées');
     } catch (error) {
-      toast.error('Erreur lors de la sauvegarde');
+      console.error('Error saving positions:', error);
+      toast.error('Erreur lors de la sauvegarde des positions');
     } finally {
       setIsSaving(false);
     }
-  }, [isDirty, nodes, onSavePositions]);
+  }, [isDirty, nodes, onSavePositions, reactFlowInstance]);
 
   // Expose ref methods
   useImperativeHandle(innerRef, () => ({
