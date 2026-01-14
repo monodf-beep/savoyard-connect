@@ -14,6 +14,53 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_tasks: {
+        Row: {
+          association_id: string | null
+          created_at: string
+          description: string | null
+          due_date: string | null
+          id: string
+          priority: string | null
+          status: string
+          template_key: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          association_id?: string | null
+          created_at?: string
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          priority?: string | null
+          status?: string
+          template_key?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          association_id?: string | null
+          created_at?: string
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          priority?: string | null
+          status?: string
+          template_key?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admin_tasks_association_id_fkey"
+            columns: ["association_id"]
+            isOneToOne: false
+            referencedRelation: "associations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       app_settings: {
         Row: {
           id: string
@@ -34,6 +81,48 @@ export type Database = {
           value?: Json
         }
         Relationships: []
+      }
+      association_messages: {
+        Row: {
+          created_at: string
+          id: string
+          is_read: boolean | null
+          message: string
+          receiver_association_id: string | null
+          sender_association_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_read?: boolean | null
+          message: string
+          receiver_association_id?: string | null
+          sender_association_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_read?: boolean | null
+          message?: string
+          receiver_association_id?: string | null
+          sender_association_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "association_messages_receiver_association_id_fkey"
+            columns: ["receiver_association_id"]
+            isOneToOne: false
+            referencedRelation: "associations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "association_messages_sender_association_id_fkey"
+            columns: ["sender_association_id"]
+            isOneToOne: false
+            referencedRelation: "associations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       associations: {
         Row: {
@@ -539,6 +628,51 @@ export type Database = {
           price?: number
           title?: string
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      opportunities: {
+        Row: {
+          amount: number | null
+          application_url: string | null
+          category: string | null
+          created_at: string
+          deadline: string | null
+          description: string | null
+          id: string
+          is_active: boolean | null
+          region: string | null
+          source: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          amount?: number | null
+          application_url?: string | null
+          category?: string | null
+          created_at?: string
+          deadline?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          region?: string | null
+          source?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number | null
+          application_url?: string | null
+          category?: string | null
+          created_at?: string
+          deadline?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          region?: string | null
+          source?: string | null
+          title?: string
+          updated_at?: string
         }
         Relationships: []
       }

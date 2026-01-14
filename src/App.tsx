@@ -16,7 +16,6 @@ import Jobs from "./pages/Jobs";
 import Projects from "./pages/Projects";
 import Contributors from "./pages/Contributors";
 import ValueChains from "./pages/ValueChains";
-// Auth page removed - using Login instead
 import Onboarding from "./pages/Onboarding";
 import OnboardingAsso from "./pages/OnboardingAsso";
 import Signup from "./pages/Signup";
@@ -27,6 +26,8 @@ import NotFound from "./pages/NotFound";
 import Settings from "./pages/Settings";
 import Dashboard from "./pages/Dashboard";
 import Finance from "./pages/Finance";
+import Admin from "./pages/Admin";
+import Pricing from "./pages/Pricing";
 
 const queryClient = new QueryClient();
 
@@ -89,7 +90,8 @@ const AppContent = () => {
         <Route path="/value-chains" element={<ValueChains />} />
         <Route path="/finance" element={<Finance />} />
         <Route path="/settings" element={<Settings />} />
-        
+        <Route path="/admin" element={<Admin />} />
+        <Route path="/tarifs" element={<Pricing />} />
         <Route path="/onboarding" element={<Onboarding />} />
         <Route path="*" element={<NotFound />} />
       </Routes>

@@ -12,7 +12,8 @@ import {
   X,
   Briefcase,
   PiggyBank,
-  Map
+  Map,
+  ClipboardList
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { AssociationSwitcher } from "@/components/AssociationSwitcher";
@@ -33,13 +34,16 @@ const NAV_ITEMS = [
   { path: "/jobs", label: "Bénévolat", icon: Briefcase },
   { path: "/finance", label: "Finance", icon: PiggyBank },
   { path: "/contributors", label: "Réseau", icon: Map },
+  { path: "/admin", label: "Admin", icon: ClipboardList, adminOnly: true },
 ];
 
 export const DashboardNavbar = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, signOut } = useAuth();
+  const { user, signOut, isAdmin } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  
+  const visibleNavItems = NAV_ITEMS.filter(item => !item.adminOnly || isAdmin);
 
   const handleSignOut = async () => {
     await signOut();
@@ -80,7 +84,7 @@ export const DashboardNavbar = () => {
 
         {/* Center: Navigation (desktop) */}
         <nav className="hidden md:flex items-center gap-1">
-          {NAV_ITEMS.map((item) => {
+          {visibleNavItems.map((item) => {
             const isActive = location.pathname === item.path;
             return (
               <Link
@@ -143,7 +147,7 @@ export const DashboardNavbar = () => {
             <AssociationSwitcher />
           </div>
           <nav className="flex flex-col pb-4">
-            {NAV_ITEMS.map((item) => {
+            {visibleNavItems.map((item) => {
               const isActive = location.pathname === item.path;
               return (
                 <Link
