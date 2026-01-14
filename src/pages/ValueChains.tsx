@@ -135,15 +135,24 @@ export default function ValueChains() {
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, []);
 
-  // Auto-select first chain
+  // Auto-select first chain and sync selected chain with updated data
   useEffect(() => {
-    if (chains.length > 0 && !selectedChain) {
-      const approvedChains = chains.filter(c => c.approval_status !== 'pending');
-      if (approvedChains.length > 0) {
-        setSelectedChain(approvedChains[0]);
+    if (chains.length > 0) {
+      if (selectedChain) {
+        // Sync selected chain with the latest data from chains array
+        const updatedChain = chains.find(c => c.id === selectedChain.id);
+        if (updatedChain && updatedChain !== selectedChain) {
+          setSelectedChain(updatedChain);
+        }
+      } else {
+        // Auto-select first approved chain
+        const approvedChains = chains.filter(c => c.approval_status !== 'pending');
+        if (approvedChains.length > 0) {
+          setSelectedChain(approvedChains[0]);
+        }
       }
     }
-  }, [chains, selectedChain]);
+  }, [chains]);
 
   const handleCreateOrUpdate = async (
     title: string,
