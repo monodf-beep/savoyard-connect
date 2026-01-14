@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { AIAssistant } from "@/components/AIAssistant";
 import { AdminOnboarding } from "@/components/AdminOnboarding";
 import { SectionLeaderOnboarding } from "@/components/SectionLeaderOnboarding";
+import { AssociationProvider } from "@/hooks/useAssociation";
 import { useAuth } from "@/hooks/useAuth";
 import { useOrganizationSettings } from "@/hooks/useOrganizationSettings";
 import { useState, useEffect } from "react";
@@ -17,6 +18,9 @@ import Contributors from "./pages/Contributors";
 import ValueChains from "./pages/ValueChains";
 import Auth from "./pages/Auth";
 import Onboarding from "./pages/Onboarding";
+import OnboardingAsso from "./pages/OnboardingAsso";
+import Signup from "./pages/Signup";
+import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 import Settings from "./pages/Settings";
 import Dashboard from "./pages/Dashboard";
@@ -31,55 +35,48 @@ const AppContent = () => {
   const [showLeaderOnboarding, setShowLeaderOnboarding] = useState(false);
   const location = useLocation();
 
-  // Check if we're on the onboarding page
-  const isOnboardingPage = location.pathname === '/onboarding';
+  // Check if we're on public pages
+  const isPublicPage = ['/', '/signup', '/login', '/onboarding', '/onboarding-asso'].includes(location.pathname);
 
-  // Apply custom colors to design system
+  // Apply custom colors to design system (only for non-landing pages)
   useEffect(() => {
-    if (settings) {
+    if (settings && !['/', '/signup', '/login'].includes(location.pathname)) {
       const root = document.documentElement;
-      // Primary color and its derivatives
       root.style.setProperty('--primary', settings.primary_color);
       root.style.setProperty('--accent', settings.primary_color);
       root.style.setProperty('--ring', settings.primary_color);
       root.style.setProperty('--sidebar-primary', settings.primary_color);
       root.style.setProperty('--sidebar-ring', settings.primary_color);
-      
-      // Secondary color
       root.style.setProperty('--secondary', settings.secondary_color);
     }
-  }, [settings]);
+  }, [settings, location.pathname]);
 
   useEffect(() => {
     if (isAdmin && user) {
       const hasSeenOnboarding = localStorage.getItem('admin-onboarding-completed');
       if (!hasSeenOnboarding) {
-        // Delay to ensure smooth load
         setTimeout(() => setShowAdminOnboarding(true), 500);
       }
     } else if (isSectionLeader && user && !isAdmin) {
       const hasSeenLeaderOnboarding = localStorage.getItem('section-leader-onboarding-completed');
       if (!hasSeenLeaderOnboarding) {
-        // Delay to ensure smooth load
         setTimeout(() => setShowLeaderOnboarding(true), 500);
       }
     }
   }, [isAdmin, isSectionLeader, user]);
 
-  // Expose function to restart onboarding
   useEffect(() => {
-    (window as any).restartAdminOnboarding = () => {
-      setShowAdminOnboarding(true);
-    };
-    (window as any).restartLeaderOnboarding = () => {
-      setShowLeaderOnboarding(true);
-    };
+    (window as any).restartAdminOnboarding = () => setShowAdminOnboarding(true);
+    (window as any).restartLeaderOnboarding = () => setShowLeaderOnboarding(true);
   }, []);
   
   return (
     <>
       <Routes>
         <Route path="/" element={<Landing />} />
+        <Route path="/signup" element={<Signup />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/onboarding-asso" element={<OnboardingAsso />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/organigramme" element={<Index />} />
         <Route path="/jobs" element={<Jobs />} />
@@ -90,17 +87,15 @@ const AppContent = () => {
         <Route path="/settings" element={<Settings />} />
         <Route path="/auth" element={<Auth />} />
         <Route path="/onboarding" element={<Onboarding />} />
-        {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />
       </Routes>
-      {/* Hide AI Assistant on onboarding page */}
-      {isAdmin && !isOnboardingPage && (
+      {isAdmin && !isPublicPage && (
         <>
           <AIAssistant />
           <AdminOnboarding open={showAdminOnboarding} onOpenChange={setShowAdminOnboarding} />
         </>
       )}
-      {isSectionLeader && !isAdmin && !isOnboardingPage && (
+      {isSectionLeader && !isAdmin && !isPublicPage && (
         <SectionLeaderOnboarding open={showLeaderOnboarding} onOpenChange={setShowLeaderOnboarding} />
       )}
     </>
@@ -110,11 +105,13 @@ const AppContent = () => {
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <AppContent />
-      </BrowserRouter>
+      <AssociationProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <AppContent />
+        </BrowserRouter>
+      </AssociationProvider>
     </TooltipProvider>
   </QueryClientProvider>
 );

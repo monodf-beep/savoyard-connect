@@ -118,7 +118,7 @@ const Landing = () => {
             <a href="#reseau" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
               Réseau
             </a>
-            <Link to="/auth" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
+            <Link to="/login" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
               Login
             </Link>
           </nav>
@@ -129,7 +129,7 @@ const Landing = () => {
               className="bg-gradient-to-r from-primary to-secondary text-white hover:opacity-90 transition-all animate-pulse"
               asChild
             >
-              <Link to="/auth">
+              <Link to="/signup">
                 Créer espace
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
@@ -189,7 +189,7 @@ const Landing = () => {
                 className="bg-gradient-to-r from-primary to-secondary text-white mt-4"
                 asChild
               >
-                <Link to="/auth" onClick={() => setMobileMenuOpen(false)}>
+                <Link to="/signup" onClick={() => setMobileMenuOpen(false)}>
                   Créer mon espace GRATUIT
                 </Link>
               </Button>
@@ -230,7 +230,7 @@ const Landing = () => {
                   className="bg-primary hover:bg-primary/90 text-white text-lg px-8"
                   asChild
                 >
-                  <Link to="/auth">
+                  <Link to="/signup">
                     Créer mon espace GRATUIT
                     <ArrowRight className="ml-2 h-5 w-5" />
                   </Link>
@@ -319,7 +319,7 @@ const Landing = () => {
               className="bg-gradient-to-r from-primary to-secondary text-white"
               asChild
             >
-              <Link to="/auth">
+              <Link to="/signup">
                 Commencer étape 1
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Link>
@@ -391,7 +391,7 @@ const Landing = () => {
                     }`}
                     asChild
                   >
-                    <Link to="/auth">
+                    <Link to="/signup">
                       Choisir {plan.name}
                     </Link>
                   </Button>
@@ -451,7 +451,7 @@ const Landing = () => {
               <a href="#tarifs" className="text-sm text-muted-foreground hover:text-primary transition-colors">
                 Tarifs
               </a>
-              <Link to="/auth" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+              <Link to="/login" className="text-sm text-muted-foreground hover:text-primary transition-colors">
                 Login
               </Link>
             </nav>
