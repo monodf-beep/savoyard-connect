@@ -319,6 +319,15 @@ export const AdminOnboarding: React.FC<AdminOnboardingProps> = ({ open, onOpenCh
     setCurrentSlide(0);
   };
 
+  // Handle dialog close (click outside, escape, etc.) - always mark as seen
+  const handleOpenChange = (isOpen: boolean) => {
+    if (!isOpen) {
+      localStorage.setItem('admin-onboarding-completed', 'true');
+      setCurrentSlide(0);
+    }
+    onOpenChange(isOpen);
+  };
+
   useEffect(() => {
     if (open) {
       setCurrentSlide(0);
@@ -329,7 +338,7 @@ export const AdminOnboarding: React.FC<AdminOnboardingProps> = ({ open, onOpenCh
   const isFirstSlide = currentSlide === 0;
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="max-w-2xl max-h-[85vh] overflow-hidden flex flex-col">
         <button
           onClick={handleSkip}
