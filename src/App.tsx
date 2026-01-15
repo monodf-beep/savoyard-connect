@@ -28,6 +28,7 @@ import Dashboard from "./pages/Dashboard";
 import Finance from "./pages/Finance";
 import Admin from "./pages/Admin";
 import Pricing from "./pages/Pricing";
+import SportLanding from "./pages/silos/SportLanding";
 
 const queryClient = new QueryClient();
 
@@ -93,6 +94,8 @@ const AppContent = () => {
         <Route path="/admin" element={<Admin />} />
         <Route path="/tarifs" element={<Pricing />} />
         <Route path="/onboarding" element={<Onboarding />} />
+        {/* Silos thématiques */}
+        <Route path="/silos/sport" element={<SportLanding />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
       {isAdmin && !isPublicPage && (
