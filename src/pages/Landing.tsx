@@ -411,9 +411,6 @@ const Landing = () => {
               <a href="#" className="hover:text-primary transition-colors">{t("footer.privacy")}</a>
               <a href="#" className="hover:text-primary transition-colors">{t("footer.contact")}</a>
             </div>
-
-            {/* Language Toggle */}
-            <LanguageToggle />
           </div>
         </div>
       </footer>
