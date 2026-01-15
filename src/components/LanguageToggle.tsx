@@ -28,8 +28,7 @@ export const LanguageToggle = () => {
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="sm" className="gap-2">
           <span className="text-lg">{currentLanguage.flag}</span>
-          <span className="hidden sm:inline text-sm">{currentLanguage.code.toUpperCase()}</span>
-          <Globe className="h-4 w-4 sm:hidden" />
+          <span className="text-sm">{currentLanguage.code.toUpperCase()}</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="bg-popover">
