@@ -208,4 +208,86 @@ export const fr = {
     fr: "Français",
     it: "Italiano",
   },
+
+  // Silo Sport & Montagne
+  siloSport: {
+    nav: {
+      problems: "Problématiques",
+      services: "Services",
+      testimonials: "Témoignages",
+    },
+    hero: {
+      title: "Trouvez votre terrain de jeu au-delà des frontières",
+      subtitle: "Alliance Sport : le réseau qui connecte clubs et athlètes alpins",
+      cta: {
+        join: "Rejoindre l'Alliance Sport",
+        discover: "Découvrir les services",
+      },
+      stats: {
+        clubs: "Clubs connectés",
+        countries: "Pays alpins",
+        savings: "Économisés/an",
+      },
+    },
+    problems: {
+      title: "Vos défis, nos solutions",
+      subtitle: "Les problématiques que nous résolvons pour les clubs sportifs alpins",
+      items: [
+        {
+          title: "Manque d'adversaires à niveau équivalent ?",
+          description: "Nos algorithmes trouvent vos matchs idéaux dans un rayon de 100km, frontières incluses.",
+        },
+        {
+          title: "Équipements chronométrage hors budget ?",
+          description: "Accédez à la bourse mutualisée : louez des arches pro à -70% du tarif marché.",
+        },
+        {
+          title: "Assurance sports à risque inabordable ?",
+          description: "Tarifs négociés collectivement : jusqu'à -40% sur alpinisme, parapente, ski-alpinisme.",
+        },
+      ],
+    },
+    services: {
+      title: "Services exclusifs Alliance Sport",
+      subtitle: "Des outils pensés pour les clubs sportifs de montagne",
+      items: [
+        {
+          title: "Matchmaking Sportif Intelligent",
+          description: "Algorithme de mise en relation clubs/athlètes par discipline, niveau, localisation.",
+          example: "Ex: Modane Rugby Club ↔ Bardonecchia Rugby XV (23km)",
+        },
+        {
+          title: "Bourse aux Équipements Pro",
+          description: "Chronométrage, sono événementielle, structures gonflables... Location entre clubs.",
+          example: "150+ équipements disponibles | Caution mutualisée",
+        },
+        {
+          title: "Assurance Risque Aggravé",
+          description: "Contrats négociés pour alpinisme, sports aériens, sports mécaniques.",
+          example: "Partenaire : Groupama Montagne | -35% vs marché",
+        },
+      ],
+    },
+    testimonials: {
+      title: "Ils ont rejoint l'Alliance Sport",
+      subtitle: "Découvrez comment nos membres transforment le sport alpin",
+      items: [
+        {
+          club: "Trail des Arcs (Savoie)",
+          quote: "Grâce au matchmaking, on organise désormais 3 trails transfrontaliers/an avec Courmayeur et Susa.",
+          metric: "+40% participants étrangers",
+        },
+        {
+          club: "Ski-Club Valloire",
+          quote: "La bourse équipements nous a permis de louer des arches chrono pro pour 300€ au lieu de 2000€.",
+          metric: "1700€ économisés/saison",
+        },
+      ],
+    },
+    cta: {
+      title: "Rejoignez les 150+ clubs de l'Alliance Sport",
+      button: "Créer mon compte gratuitement",
+      subtext: "Sans engagement • Inscription en 2 minutes",
+    },
+  },
 };
