@@ -17,7 +17,6 @@ import { cn } from "@/lib/utils";
 import {
   Tooltip,
   TooltipContent,
-  TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
@@ -75,13 +74,12 @@ export const HubSidebar = ({ collapsed, onToggle }: HubSidebarProps) => {
   ];
 
   return (
-    <TooltipProvider delayDuration={0}>
-      <aside 
-        className={cn(
-          "fixed left-0 top-0 z-40 h-screen border-r border-border bg-card transition-all duration-300",
-          collapsed ? "w-16" : "w-64"
-        )}
-      >
+    <aside 
+      className={cn(
+        "fixed left-0 top-0 z-40 h-screen border-r border-border bg-card transition-all duration-300",
+        collapsed ? "w-16" : "w-64"
+      )}
+    >
         <div className="flex h-full flex-col">
           {/* Logo */}
           <div className="flex h-16 items-center justify-between border-b border-border px-4">
@@ -177,7 +175,6 @@ export const HubSidebar = ({ collapsed, onToggle }: HubSidebarProps) => {
             </Tooltip>
           </div>
         </div>
-      </aside>
-    </TooltipProvider>
+    </aside>
   );
 };
