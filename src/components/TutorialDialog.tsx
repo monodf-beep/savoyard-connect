@@ -41,7 +41,7 @@ export const TutorialDialog: React.FC<TutorialDialogProps> = ({
           <Info className="h-4 w-4 text-primary" />
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-2xl max-h-[80vh]">
+      <DialogContent className="max-w-2xl max-h-[90vh] sm:max-h-[85vh] h-[calc(100vh-2rem)] sm:h-auto overflow-hidden flex flex-col">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Info className="h-5 w-5 text-primary" />
@@ -50,7 +50,7 @@ export const TutorialDialog: React.FC<TutorialDialogProps> = ({
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
         
-        <ScrollArea className="max-h-[60vh] pr-4">
+        <ScrollArea className="flex-1 min-h-0 pr-4">
           <div className="space-y-6">
             {/* Benefits section */}
             {benefits && benefits.length > 0 && (
