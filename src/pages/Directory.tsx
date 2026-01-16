@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { LanguageToggle } from '@/components/LanguageToggle';
 import { GeometricShapes } from '@/components/GeometricShapes';
@@ -11,6 +11,7 @@ import { DirectoryMap } from '@/components/directory/DirectoryMap';
 import { useDirectory, useUserGeolocation } from '@/hooks/useDirectory';
 import { DirectoryAssociation, GeographicZone } from '@/types/directory';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useAuth } from '@/hooks/useAuth';
 import { 
   Users, 
   Menu, 
@@ -21,6 +22,7 @@ import {
   Filter,
   LayoutGrid,
   Map,
+  LogOut,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -28,6 +30,8 @@ import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 
 const Directory = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
+  const { user, signOut } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [selectedZones, setSelectedZones] = useState<GeographicZone[]>([]);
   const [selectedSilo, setSelectedSilo] = useState('all');
@@ -86,15 +90,29 @@ const Directory = () => {
           {/* Right side */}
           <div className="hidden md:flex items-center gap-4">
             <LanguageToggle />
-            <Button 
-              className="bg-gradient-to-r from-primary to-secondary text-white hover:opacity-90 transition-all text-sm font-semibold uppercase tracking-wide"
-              asChild
-            >
-              <Link to="/signup">
-                {t('hero.cta.start')}
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
-            </Button>
+            {user ? (
+              <div className="flex items-center gap-2">
+                <Button 
+                  variant="outline"
+                  onClick={() => navigate('/dashboard')}
+                >
+                  {t('nav.dashboard')}
+                </Button>
+                <Button variant="ghost" size="sm" onClick={signOut}>
+                  <LogOut className="h-4 w-4" />
+                </Button>
+              </div>
+            ) : (
+              <Button 
+                className="bg-gradient-to-r from-primary to-secondary text-white hover:opacity-90 transition-all text-sm font-semibold uppercase tracking-wide"
+                asChild
+              >
+                <Link to="/signup">
+                  {t('hero.cta.start')}
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+              </Button>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -137,15 +155,43 @@ const Directory = () => {
               >
                 {t('nav.login')}
               </Link>
-              <Button 
-                size="lg"
-                className="bg-gradient-to-r from-primary to-secondary text-white mt-4 uppercase font-semibold w-full max-w-xs"
-                asChild
-              >
-                <Link to="/signup" onClick={() => setMobileMenuOpen(false)}>
-                  {t('hero.cta.start')}
-                </Link>
-              </Button>
+              {user ? (
+                <>
+                  <Button 
+                    size="lg"
+                    variant="outline"
+                    className="w-full max-w-xs"
+                    onClick={() => {
+                      navigate('/dashboard');
+                      setMobileMenuOpen(false);
+                    }}
+                  >
+                    {t('nav.dashboard')}
+                  </Button>
+                  <Button 
+                    size="lg"
+                    variant="ghost"
+                    className="w-full max-w-xs"
+                    onClick={() => {
+                      signOut();
+                      setMobileMenuOpen(false);
+                    }}
+                  >
+                    <LogOut className="h-5 w-5 mr-2" />
+                    {t('nav.logout')}
+                  </Button>
+                </>
+              ) : (
+                <Button 
+                  size="lg"
+                  className="bg-gradient-to-r from-primary to-secondary text-white mt-4 uppercase font-semibold w-full max-w-xs"
+                  asChild
+                >
+                  <Link to="/signup" onClick={() => setMobileMenuOpen(false)}>
+                    {t('hero.cta.start')}
+                  </Link>
+                </Button>
+              )}
             </nav>
           </div>
         )}

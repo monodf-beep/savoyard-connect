@@ -48,22 +48,24 @@ export function DirectoryMap({ associations, userLocation, onMarkerClick }: Dire
     try {
       mapboxgl.accessToken = mapboxToken;
       
+      // Find center based on associations with coordinates, or default to Alpine region
+      const assocWithCoords = associations.filter(a => a.latitude && a.longitude);
+      let centerLng = 6.8;
+      let centerLat = 45.5;
+      
+      if (assocWithCoords.length > 0) {
+        centerLng = assocWithCoords.reduce((sum, a) => sum + (a.longitude || 0), 0) / assocWithCoords.length;
+        centerLat = assocWithCoords.reduce((sum, a) => sum + (a.latitude || 0), 0) / assocWithCoords.length;
+      }
+      
       map.current = new mapboxgl.Map({
         container: mapContainer.current,
         style: 'mapbox://styles/mapbox/light-v11',
-        center: [6.8, 45.5], // Center on Alpine region
+        center: [centerLng, centerLat],
         zoom: 7,
       });
 
       map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
-
-      // Add user location marker if available
-      if (userLocation) {
-        new mapboxgl.Marker({ color: '#0066FF' })
-          .setLngLat([userLocation.lng, userLocation.lat])
-          .setPopup(new mapboxgl.Popup().setHTML('<p class="font-semibold">Votre position</p>'))
-          .addTo(map.current);
-      }
     } catch (error) {
       console.error('Error initializing map:', error);
       setMapError(true);
@@ -75,7 +77,7 @@ export function DirectoryMap({ associations, userLocation, onMarkerClick }: Dire
         map.current = null;
       }
     };
-  }, [mapboxToken, userLocation]);
+  }, [mapboxToken, associations]);
 
   // Update markers when associations change
   useEffect(() => {
