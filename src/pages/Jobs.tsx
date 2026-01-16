@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { JobPosting } from '../types/organigramme';
 import { JobPostingCard } from '../components/JobPostingCard';
 import { JobPostingForm } from '../components/JobPostingForm';
 import { TutorialDialog } from '../components/TutorialDialog';
+import { HubPageLayout } from '@/components/hub/HubPageLayout';
+import { useAuth } from '@/hooks/useAuth';
+import { useAssociation } from '@/hooks/useAssociation';
 import { Button } from '../components/ui/button';
 import { Plus, Briefcase, Settings, Info } from 'lucide-react';
-import { useIsWordPressAdmin } from '../utils/wordpress';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../components/ui/tooltip';
-import { Navbar } from '../components/Navbar';
+import { Tooltip, TooltipContent, TooltipTrigger } from '../components/ui/tooltip';
 
 // Données de démonstration
 const initialJobPostings: JobPosting[] = [
@@ -15,7 +17,7 @@ const initialJobPostings: JobPosting[] = [
     id: 'dev-fullstack-1',
     title: 'Développeur Full-Stack Senior',
     department: 'Tech',
-    description: 'Nous recherchons un développeur expérimenté pour rejoindre notre équipe technique et contribuer au développement de nos applications web.',
+    description: 'Nous recherchons un développeur expérimenté pour rejoindre notre équipe technique.',
     requirements: ['React', 'Node.js', 'TypeScript', 'PostgreSQL', 'AWS'],
     location: 'Paris / Remote',
     type: 'CDI',
@@ -39,7 +41,7 @@ const initialJobPostings: JobPosting[] = [
     id: 'stage-design-1',
     title: 'Stage UX/UI Designer',
     department: 'Design',
-    description: 'Stage de 6 mois pour apprendre et contribuer à la création d\'interfaces utilisateur innovantes.',
+    description: 'Stage de 6 mois pour apprendre et contribuer à la création d\'interfaces utilisateur.',
     requirements: ['Figma', 'Adobe Creative Suite', 'UX Research', 'Prototypage'],
     location: 'Paris',
     type: 'Stage',
@@ -50,9 +52,11 @@ const initialJobPostings: JobPosting[] = [
 ];
 
 const Jobs = () => {
+  const { t } = useTranslation();
+  const { isAdmin: authIsAdmin } = useAuth();
+  const { currentAssociation } = useAssociation();
   const [jobPostings, setJobPostings] = useState<JobPosting[]>(initialJobPostings);
   const [isAdmin, setIsAdmin] = useState(false);
-  const isWPAdmin = useIsWordPressAdmin();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedJobPosting, setSelectedJobPosting] = useState<JobPosting | null>(null);
 
@@ -88,75 +92,73 @@ const Jobs = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navbar />
-      <div className="container mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-3">
-            <Briefcase className="w-8 h-8 text-primary" />
-            <div>
-              <h1 className="text-3xl font-bold">Bénévolat</h1>
-              <p className="text-muted-foreground">
-                {activeJobPostings.length} opportunité{activeJobPostings.length > 1 ? 's' : ''} disponible{activeJobPostings.length > 1 ? 's' : ''}
-              </p>
-            </div>
-            <TutorialDialog
-              title="Gérer le bénévolat"
-              description="Publiez et gérez les opportunités de bénévolat de votre organisation."
-              benefits={[
-                "Centraliser toutes les opportunités de bénévolat au même endroit",
-                "Rendre visibles les besoins de l'association",
-                "Faciliter le processus de candidature avec des liens directs",
-                "Suivre les missions actives et archivées",
-                "Attirer de nouveaux bénévoles vers votre organisation"
-              ]}
-              steps={[
-                {
-                  title: "Activer le mode admin",
-                  description: "Cliquez sur le bouton 'Admin' pour activer les fonctionnalités de gestion des opportunités.",
-                  tips: ["Seuls les administrateurs peuvent créer et modifier les opportunités"]
-                },
-                {
-                  title: "Créer une opportunité",
-                  description: "Cliquez sur 'Ajouter une mission' pour créer une nouvelle opportunité de bénévolat. Renseignez tous les détails importants.",
-                  tips: [
-                    "Soyez précis sur les compétences souhaitées",
-                    "Indiquez clairement le type d'engagement et la disponibilité requise"
-                  ]
-                },
-                {
-                  title: "Ajouter un lien de candidature",
-                  description: "Fournissez l'URL où les candidats peuvent postuler (formulaire externe, email, etc.).",
-                  tips: ["Testez le lien pour vous assurer qu'il fonctionne"]
-                },
-                {
-                  title: "Publier ou désactiver",
-                  description: "Marquez l'opportunité comme active ou inactive selon vos besoins. Les opportunités inactives ne sont pas visibles publiquement.",
-                  tips: ["Désactivez les missions pourvues plutôt que de les supprimer"]
-                }
-              ]}
-            />
+    <HubPageLayout
+      breadcrumb={t('nav.volunteering')}
+      orgName={currentAssociation?.name}
+      orgLogo={currentAssociation?.logo_url || undefined}
+    >
+      {/* Header */}
+      <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center gap-3">
+          <Briefcase className="w-8 h-8 text-primary" />
+          <div>
+            <h1 className="text-2xl md:text-3xl font-bold">{t('nav.volunteering')}</h1>
+            <p className="text-muted-foreground">
+              {activeJobPostings.length} opportunité{activeJobPostings.length > 1 ? 's' : ''} disponible{activeJobPostings.length > 1 ? 's' : ''}
+            </p>
           </div>
+          <TutorialDialog
+            title="Gérer le bénévolat"
+            description="Publiez et gérez les opportunités de bénévolat de votre organisation."
+            benefits={[
+              "Centraliser toutes les opportunités de bénévolat au même endroit",
+              "Rendre visibles les besoins de l'association",
+              "Faciliter le processus de candidature avec des liens directs",
+              "Suivre les missions actives et archivées",
+              "Attirer de nouveaux bénévoles vers votre organisation"
+            ]}
+            steps={[
+              {
+                title: "Activer le mode admin",
+                description: "Cliquez sur le bouton 'Admin' pour activer les fonctionnalités de gestion.",
+                tips: ["Seuls les administrateurs peuvent créer et modifier les opportunités"]
+              },
+              {
+                title: "Créer une opportunité",
+                description: "Cliquez sur 'Ajouter une mission' pour créer une nouvelle opportunité.",
+                tips: ["Soyez précis sur les compétences souhaitées"]
+              },
+              {
+                title: "Ajouter un lien de candidature",
+                description: "Fournissez l'URL où les candidats peuvent postuler.",
+                tips: ["Testez le lien pour vous assurer qu'il fonctionne"]
+              },
+              {
+                title: "Publier ou désactiver",
+                description: "Marquez l'opportunité comme active ou inactive selon vos besoins.",
+                tips: ["Désactivez les missions pourvues plutôt que de les supprimer"]
+              }
+            ]}
+          />
+        </div>
+        
+        <div className="flex items-center gap-2">
+          {isAdmin && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-8 w-8">
+                  <Info className="w-4 h-4 text-primary" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent className="max-w-xs">
+                <p className="font-semibold mb-1">Mode Admin activé</p>
+                <p className="text-sm">• Cliquez sur "Ajouter une mission" pour créer une opportunité</p>
+                <p className="text-sm">• Cliquez sur une carte pour modifier/supprimer</p>
+              </TooltipContent>
+            </Tooltip>
+          )}
           
-          <div className="flex items-center gap-2">
-            {isAdmin && (
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-8 w-8">
-                      <Info className="w-4 h-4 text-primary" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent className="max-w-xs">
-                    <p className="font-semibold mb-1">Mode Admin activé</p>
-                    <p className="text-sm">• Cliquez sur "Ajouter une mission" pour créer une opportunité</p>
-                    <p className="text-sm">• Cliquez sur une carte pour modifier/supprimer</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            )}
-            
+          {authIsAdmin && (
             <Button
               onClick={toggleAdminMode}
               variant={isAdmin ? "default" : "outline"}
@@ -165,51 +167,51 @@ const Jobs = () => {
               <Settings className="w-4 h-4 mr-2" />
               Admin
             </Button>
-            
-            {isAdmin && (
-              <Button onClick={handleAddJobPosting}>
-                <Plus className="w-4 h-4 mr-2" />
-                Ajouter une mission
-              </Button>
-            )}
-          </div>
+          )}
+          
+          {isAdmin && (
+            <Button onClick={handleAddJobPosting}>
+              <Plus className="w-4 h-4 mr-2" />
+              Ajouter une mission
+            </Button>
+          )}
         </div>
-
-        {/* Liste des postes */}
-        {activeJobPostings.length === 0 ? (
-          <div className="text-center py-12">
-            <Briefcase className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-lg font-semibold mb-2">Aucune mission disponible</h3>
-            <p className="text-muted-foreground">
-              Il n'y a actuellement aucune recherche de bénévoles.
-            </p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {activeJobPostings.map((jobPosting) => (
-              <JobPostingCard
-                key={jobPosting.id}
-                jobPosting={jobPosting}
-                isAdmin={isAdmin}
-                onEdit={handleEditJobPosting}
-              />
-            ))}
-          </div>
-        )}
-
-        {/* Formulaire d'ajout/modification */}
-        <JobPostingForm
-          jobPosting={selectedJobPosting}
-          isOpen={isFormOpen}
-          onClose={() => {
-            setIsFormOpen(false);
-            setSelectedJobPosting(null);
-          }}
-          onSave={handleSaveJobPosting}
-          onDelete={handleDeleteJobPosting}
-        />
       </div>
-    </div>
+
+      {/* Liste des postes */}
+      {activeJobPostings.length === 0 ? (
+        <div className="text-center py-12">
+          <Briefcase className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+          <h3 className="text-lg font-semibold mb-2">Aucune mission disponible</h3>
+          <p className="text-muted-foreground">
+            Il n'y a actuellement aucune recherche de bénévoles.
+          </p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {activeJobPostings.map((jobPosting) => (
+            <JobPostingCard
+              key={jobPosting.id}
+              jobPosting={jobPosting}
+              isAdmin={isAdmin}
+              onEdit={handleEditJobPosting}
+            />
+          ))}
+        </div>
+      )}
+
+      {/* Formulaire d'ajout/modification */}
+      <JobPostingForm
+        jobPosting={selectedJobPosting}
+        isOpen={isFormOpen}
+        onClose={() => {
+          setIsFormOpen(false);
+          setSelectedJobPosting(null);
+        }}
+        onSave={handleSaveJobPosting}
+        onDelete={handleDeleteJobPosting}
+      />
+    </HubPageLayout>
   );
 };
 

@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/hooks/useAuth';
+import { useAssociation } from '@/hooks/useAssociation';
 import { useOrganigramme } from '@/hooks/useOrganigramme';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,9 +10,9 @@ import { ProjectForm } from '@/components/ProjectForm';
 import { ProjectGridCard } from '@/components/projects/ProjectGridCard';
 import { ProjectDetailDrawer } from '@/components/projects/ProjectDetailDrawer';
 import { IdeaBox } from '@/components/projects/IdeaBox';
+import { HubPageLayout } from '@/components/hub/HubPageLayout';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Navbar } from '@/components/Navbar';
 import {
   Select,
   SelectContent,
@@ -34,7 +36,6 @@ export interface Project {
   approval_status?: 'pending' | 'approved' | 'rejected';
   created_by?: string;
   approved_by?: string;
-  // Funding fields
   funding_goal?: number;
   funded_amount?: number;
   ha_net_total?: number;
@@ -46,7 +47,9 @@ export interface Project {
 }
 
 const Projects = () => {
+  const { t } = useTranslation();
   const { isAdmin, isSectionLeader, user, loading: authLoading } = useAuth();
+  const { currentAssociation } = useAssociation();
   const { data } = useOrganigramme();
   const { toast } = useToast();
   const [projects, setProjects] = useState<Project[]>([]);
@@ -58,7 +61,6 @@ const Projects = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
 
-  // Fetch projects
   useEffect(() => {
     const fetchProjects = async () => {
       const { data, error } = await supabase
@@ -85,7 +87,6 @@ const Projects = () => {
     fetchProjects();
   }, [toast]);
 
-  // Écouter les événements de succès de l'assistant IA pour rafraîchir automatiquement
   useEffect(() => {
     const handleAISuccess = async () => {
       const { data, error } = await supabase
@@ -191,12 +192,9 @@ const Projects = () => {
     setShowDetail(true);
   };
 
-  // Filter projects
   const filteredProjects = projects.filter(p => {
-    // Only show approved projects to public
     if (p.approval_status !== 'approved' && !isAdmin) return false;
     
-    // Search filter
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
       if (!p.title.toLowerCase().includes(query) && 
@@ -205,7 +203,6 @@ const Projects = () => {
       }
     }
     
-    // Status filter
     if (filterStatus !== 'all' && p.status !== filterStatus) {
       return false;
     }
@@ -215,108 +212,115 @@ const Projects = () => {
 
   if (authLoading || isLoading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <p className="text-muted-foreground">Chargement...</p>
-      </div>
+      <HubPageLayout
+        breadcrumb={t('nav.projects')}
+        orgName={currentAssociation?.name}
+        orgLogo={currentAssociation?.logo_url || undefined}
+      >
+        <div className="flex items-center justify-center min-h-[50vh]">
+          <p className="text-muted-foreground">Chargement...</p>
+        </div>
+      </HubPageLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navbar />
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex flex-col lg:flex-row gap-8">
-          {/* Main Content - Projects */}
-          <div className="flex-1">
-            {/* Header */}
-            <div className="mb-6">
-              <div className="flex items-center justify-between mb-2">
-                <h1 className="text-3xl font-bold">Projets & Idées</h1>
-                {(isAdmin || isSectionLeader) && (
-                  <Button onClick={handleAddProject}>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Nouveau
-                  </Button>
-                )}
-              </div>
-              <p className="text-muted-foreground">
-                Financez les projets et partagez vos idées
-              </p>
+    <HubPageLayout
+      breadcrumb={t('nav.projects')}
+      orgName={currentAssociation?.name}
+      orgLogo={currentAssociation?.logo_url || undefined}
+    >
+      <div className="flex flex-col lg:flex-row gap-8">
+        {/* Main Content - Projects */}
+        <div className="flex-1">
+          {/* Header */}
+          <div className="mb-6">
+            <div className="flex items-center justify-between mb-2">
+              <h1 className="text-2xl md:text-3xl font-bold">{t('nav.projects')} & Idées</h1>
+              {(isAdmin || isSectionLeader) && (
+                <Button onClick={handleAddProject}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Nouveau
+                </Button>
+              )}
             </div>
+            <p className="text-muted-foreground">
+              Financez les projets et partagez vos idées
+            </p>
+          </div>
 
-            {/* Filters */}
-            <div className="flex flex-col sm:flex-row gap-3 mb-6">
-              <Select value={filterStatus} onValueChange={setFilterStatus}>
-                <SelectTrigger className="w-full sm:w-[150px]">
-                  <SelectValue placeholder="Filtrer" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Tous</SelectItem>
-                  <SelectItem value="planned">Planifiés</SelectItem>
-                  <SelectItem value="in_progress">En cours</SelectItem>
-                  <SelectItem value="completed">Terminés</SelectItem>
-                </SelectContent>
-              </Select>
-              
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Rechercher un projet..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10"
+          {/* Filters */}
+          <div className="flex flex-col sm:flex-row gap-3 mb-6">
+            <Select value={filterStatus} onValueChange={setFilterStatus}>
+              <SelectTrigger className="w-full sm:w-[150px]">
+                <SelectValue placeholder="Filtrer" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Tous</SelectItem>
+                <SelectItem value="planned">Planifiés</SelectItem>
+                <SelectItem value="in_progress">En cours</SelectItem>
+                <SelectItem value="completed">Terminés</SelectItem>
+              </SelectContent>
+            </Select>
+            
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Rechercher un projet..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+          </div>
+
+          {/* Projects Grid */}
+          {filteredProjects.length === 0 ? (
+            <div className="text-center py-12 bg-muted/30 rounded-xl">
+              <p className="text-muted-foreground">Aucun projet trouvé</p>
+            </div>
+          ) : (
+            <div className="grid gap-6 sm:grid-cols-2">
+              {filteredProjects.map(project => (
+                <ProjectGridCard
+                  key={project.id}
+                  project={project}
+                  onClick={() => handleProjectClick(project)}
                 />
-              </div>
+              ))}
             </div>
-
-            {/* Projects Grid */}
-            {filteredProjects.length === 0 ? (
-              <div className="text-center py-12 bg-muted/30 rounded-xl">
-                <p className="text-muted-foreground">Aucun projet trouvé</p>
-              </div>
-            ) : (
-              <div className="grid gap-6 sm:grid-cols-2">
-                {filteredProjects.map(project => (
-                  <ProjectGridCard
-                    key={project.id}
-                    project={project}
-                    onClick={() => handleProjectClick(project)}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Sidebar - Idea Box */}
-          <div className="w-full lg:w-[380px] flex-shrink-0">
-            <IdeaBox />
-          </div>
+          )}
         </div>
 
-        {/* Project Detail Drawer */}
-        <ProjectDetailDrawer
-          project={selectedProject}
-          open={showDetail}
-          onOpenChange={setShowDetail}
-        />
-
-        {/* Project Form Dialog */}
-        {showForm && (
-          <ProjectForm
-            project={editingProject}
-            sections={data.sections}
-            open={showForm}
-            onOpenChange={(open) => {
-              setShowForm(open);
-              if (!open) {
-                setEditingProject(undefined);
-              }
-            }}
-            onSave={handleSaveProject}
-          />
-        )}
+        {/* Sidebar - Idea Box */}
+        <div className="w-full lg:w-[380px] flex-shrink-0">
+          <IdeaBox />
+        </div>
       </div>
-    </div>
+
+      {/* Project Detail Drawer */}
+      <ProjectDetailDrawer
+        project={selectedProject}
+        open={showDetail}
+        onOpenChange={setShowDetail}
+      />
+
+      {/* Project Form Dialog */}
+      {showForm && (
+        <ProjectForm
+          project={editingProject}
+          sections={data.sections}
+          open={showForm}
+          onOpenChange={(open) => {
+            setShowForm(open);
+            if (!open) {
+              setEditingProject(undefined);
+            }
+          }}
+          onSave={handleSaveProject}
+        />
+      )}
+    </HubPageLayout>
   );
 };
 
