@@ -20,6 +20,7 @@ const Settings = () => {
 
   return (
     <HubPageLayout
+      breadcrumb={t('nav.settings')}
       title={t('nav.settings')}
       subtitle="Personnalisez votre association"
     >

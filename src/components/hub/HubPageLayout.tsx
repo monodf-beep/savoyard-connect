@@ -6,16 +6,26 @@ import { Sheet, SheetContent } from "@/components/ui/sheet";
 
 interface HubPageLayoutProps {
   children: React.ReactNode;
-  breadcrumb: string;
+  breadcrumb?: string;
+  title?: string;
+  subtitle?: string;
   orgName?: string;
   orgLogo?: string;
+  loading?: boolean;
+  headerActions?: React.ReactNode;
+  fullWidth?: boolean;
 }
 
 export const HubPageLayout = ({ 
   children, 
   breadcrumb,
+  title,
+  subtitle,
   orgName = "Mon Association",
   orgLogo,
+  loading,
+  headerActions,
+  fullWidth,
 }: HubPageLayoutProps) => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -49,15 +59,34 @@ export const HubPageLayout = ({
       >
         {/* Topbar */}
         <HubTopbar 
-          breadcrumb={breadcrumb}
+          breadcrumb={breadcrumb || title || ""}
           onMobileMenuToggle={() => setMobileMenuOpen(true)}
           orgName={orgName}
           orgLogo={orgLogo}
         />
 
         {/* Page Content */}
-        <main className="p-4 md:p-6 lg:p-8">
-          {children}
+        <main className={cn("p-4 md:p-6 lg:p-8", fullWidth && "max-w-none")}>
+          {/* Page Header */}
+          {(title || subtitle || headerActions) && (
+            <div className="mb-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  {title && <h1 className="text-2xl font-bold">{title}</h1>}
+                  {subtitle && <p className="text-muted-foreground">{subtitle}</p>}
+                </div>
+                {headerActions}
+              </div>
+            </div>
+          )}
+          
+          {loading ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            </div>
+          ) : (
+            children
+          )}
         </main>
       </div>
     </div>

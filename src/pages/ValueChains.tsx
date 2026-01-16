@@ -539,7 +539,7 @@ export default function ValueChains() {
         chain={editingChain}
         people={people}
         sections={sections}
-        onSubmit={handleCreateOrUpdate}
+        onSave={handleCreateOrUpdate}
       />
 
       {/* Delete Confirmation */}
