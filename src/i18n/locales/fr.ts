@@ -300,4 +300,112 @@ export const fr = {
     twoDaysAgo: "Il y a 2 jours",
     viewAll: "Voir tout l'historique",
   },
+
+  // Silo Culture
+  siloCulture: {
+    nav: {
+      hub: "Hub Principal",
+      sportSilo: "Silo Sport",
+      login: "Connexion",
+      signup: "Rejoindre",
+    },
+    hero: {
+      title: "Faites résonner la culture sous toutes ses formes",
+      subtitle: "Rejoignez un réseau d'associations culturelles engagées. Collaborez, partagez et créez ensemble des expériences artistiques inoubliables",
+      cta: {
+        join: "Rejoindre le Hub Culture",
+        discover: "Découvrir les avantages",
+      },
+      stats: {
+        associations: "Associations",
+        disciplines: "Disciplines",
+        projects: "Projets co-créés",
+      },
+    },
+    benefits: {
+      title: "Pourquoi rejoindre le Hub Culture ?",
+      subtitle: "Des avantages concrets pour les associations culturelles",
+      creative: {
+        title: "Collaboration Créative",
+        description: "Connectez-vous avec d'autres acteurs culturels pour cocréer des projets innovants et pluridisciplinaires",
+      },
+      visibility: {
+        title: "Visibilité & Rayonnement",
+        description: "Amplifiez votre impact en mutualisant vos audiences et en croisant vos publics",
+      },
+      resources: {
+        title: "Mutualisation des Ressources",
+        description: "Partagez équipements, compétences techniques et savoir-faire entre structures culturelles",
+      },
+    },
+    whoCanJoin: {
+      title: "Qui peut rejoindre ?",
+      subtitle: "Toutes les structures culturelles sont les bienvenues",
+      categories: {
+        festivals: "Festivals",
+        literary: "Associations littéraires",
+        music: "Structures musicales",
+        cinema: "Cinémas associatifs",
+        theater: "Théâtre & Arts vivants",
+        galleries: "Galeries d'art",
+        museums: "Musées & Centres culturels",
+        urbanCulture: "Cultures urbaines",
+        libraries: "Médiathèques",
+        other: "Toute structure culturelle",
+      },
+    },
+    testimonials: {
+      title: "Ils ont rejoint le Hub Culture",
+      subtitle: "Découvrez comment nos membres transforment le paysage culturel",
+      items: [
+        {
+          quote: "Le réseau nous a permis de coproduire un festival pluridisciplinaire avec 4 autres assos. Une aventure collective incroyable !",
+          author: "Sophie",
+          organization: "Collectif Arts Pluriels",
+        },
+        {
+          quote: "Grâce au Hub, nous avons mutualisé notre sono avec une association de musiques actuelles. Économies et échanges de pratiques !",
+          author: "Marco",
+          organization: "Scène Ouverte",
+        },
+        {
+          quote: "Nous avons cocréé une résidence d'artistes avec une compagnie de théâtre rencontrée via la plateforme. Une collaboration inspirante !",
+          author: "Léa",
+          organization: "Espace Culturel Nomade",
+        },
+      ],
+    },
+    howItWorks: {
+      title: "Comment ça marche ?",
+      steps: {
+        step1: {
+          title: "Créez votre profil",
+          description: "Présentez votre association culturelle et vos activités",
+        },
+        step2: {
+          title: "Explorez le réseau",
+          description: "Trouvez des partenaires compatibles avec vos projets",
+        },
+        step3: {
+          title: "Collaborez",
+          description: "Mutualisez vos ressources et co-créez des projets",
+        },
+      },
+    },
+    cta: {
+      title: "Prêt à faire rayonner la culture ensemble ?",
+      button: "Rejoindre le Hub Culture",
+      subtext: "Sans engagement • Inscription en 2 minutes",
+    },
+    footer: {
+      tagline: "Le réseau des associations culturelles européennes",
+      navigation: "Navigation",
+      hubLink: "Hub Principal",
+      sportLink: "Silo Sport & Montagne",
+      support: "Support",
+      legal: "Légal",
+      legalNotice: "Mentions légales",
+      rights: "Tous droits réservés",
+    },
+  },
 };
