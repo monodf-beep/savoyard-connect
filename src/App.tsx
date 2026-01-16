@@ -31,6 +31,7 @@ import Pricing from "./pages/Pricing";
 import SportLanding from "./pages/silos/SportLanding";
 import CultureLanding from "./pages/silos/CultureLanding";
 import Experts from "./pages/Experts";
+import Directory from "./pages/Directory";
 
 const queryClient = new QueryClient();
 
@@ -100,6 +101,7 @@ const AppContent = () => {
         <Route path="/silos/sport" element={<SportLanding />} />
         <Route path="/silos/culture" element={<CultureLanding />} />
         <Route path="/experts" element={<Experts />} />
+        <Route path="/annuaire" element={<Directory />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
       {isAdmin && !isPublicPage && (

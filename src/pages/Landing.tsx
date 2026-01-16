@@ -119,6 +119,9 @@ const Landing = () => {
             <Link to="/" className="text-sm font-medium text-foreground hover:text-primary transition-colors">
               {t("nav.home")}
             </Link>
+            <Link to="/annuaire" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
+              {t("nav.directory")}
+            </Link>
             <a href="#pillars" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
               {t("nav.features")}
             </a>
