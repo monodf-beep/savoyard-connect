@@ -96,10 +96,14 @@ export const it = {
 
   // Footer
   footer: {
-    copyright: "© 2026 Hub Associacion",
+    copyright: "Tutti i diritti riservati.",
     terms: "Termini",
     privacy: "Privacy",
     contact: "Contatti",
+    tagline: "L'Hub centralizzato per le associazioni delle Alpi transfrontaliere.",
+    navigation: "Navigazione",
+    sectors: "I nostri Settori",
+    legal: "Informazioni",
   },
 
   // Auth
