@@ -300,4 +300,112 @@ export const it = {
     twoDaysAgo: "2 giorni fa",
     viewAll: "Visualizza tutta la cronologia",
   },
+
+  // Silo Cultura
+  siloCulture: {
+    nav: {
+      hub: "Hub Principale",
+      sportSilo: "Silo Sport",
+      login: "Accedi",
+      signup: "Iscriviti",
+    },
+    hero: {
+      title: "Fai risuonare la cultura in tutte le sue forme",
+      subtitle: "Unisciti a una rete di associazioni culturali impegnate. Collabora, condividi e crea insieme esperienze artistiche indimenticabili",
+      cta: {
+        join: "Unisciti all'Hub Cultura",
+        discover: "Scopri i vantaggi",
+      },
+      stats: {
+        associations: "Associazioni",
+        disciplines: "Discipline",
+        projects: "Progetti co-creati",
+      },
+    },
+    benefits: {
+      title: "Perché unirsi all'Hub Cultura?",
+      subtitle: "Vantaggi concreti per le associazioni culturali",
+      creative: {
+        title: "Collaborazione Creativa",
+        description: "Connettiti con altri attori culturali per co-creare progetti innovativi e pluridisciplinari",
+      },
+      visibility: {
+        title: "Visibilità & Impatto",
+        description: "Amplifica il tuo impatto condividendo il pubblico e incrociando le audience",
+      },
+      resources: {
+        title: "Condivisione delle Risorse",
+        description: "Condividi attrezzature, competenze tecniche e know-how tra strutture culturali",
+      },
+    },
+    whoCanJoin: {
+      title: "Chi può unirsi?",
+      subtitle: "Tutte le strutture culturali sono benvenute",
+      categories: {
+        festivals: "Festival",
+        literary: "Associazioni letterarie",
+        music: "Strutture musicali",
+        cinema: "Cinema associativi",
+        theater: "Teatro & Arti performative",
+        galleries: "Gallerie d'arte",
+        museums: "Musei & Centri culturali",
+        urbanCulture: "Culture urbane",
+        libraries: "Mediateche",
+        other: "Qualsiasi struttura culturale",
+      },
+    },
+    testimonials: {
+      title: "Si sono uniti all'Hub Cultura",
+      subtitle: "Scopri come i nostri membri trasformano il panorama culturale",
+      items: [
+        {
+          quote: "La rete ci ha permesso di co-produrre un festival pluridisciplinare con 4 altre associazioni. Un'avventura collettiva incredibile!",
+          author: "Sophie",
+          organization: "Collettivo Arti Plurali",
+        },
+        {
+          quote: "Grazie all'Hub, abbiamo condiviso il nostro impianto audio con un'associazione di musica contemporanea. Risparmi e scambio di pratiche!",
+          author: "Marco",
+          organization: "Scena Aperta",
+        },
+        {
+          quote: "Abbiamo co-creato una residenza d'artisti con una compagnia teatrale incontrata tramite la piattaforma. Una collaborazione ispiratrice!",
+          author: "Léa",
+          organization: "Spazio Culturale Nomade",
+        },
+      ],
+    },
+    howItWorks: {
+      title: "Come funziona?",
+      steps: {
+        step1: {
+          title: "Crea il tuo profilo",
+          description: "Presenta la tua associazione culturale e le tue attività",
+        },
+        step2: {
+          title: "Esplora la rete",
+          description: "Trova partner compatibili con i tuoi progetti",
+        },
+        step3: {
+          title: "Collabora",
+          description: "Condividi le risorse e co-crea progetti",
+        },
+      },
+    },
+    cta: {
+      title: "Pronto a far risplendere la cultura insieme?",
+      button: "Unisciti all'Hub Cultura",
+      subtext: "Senza impegno • Iscrizione in 2 minuti",
+    },
+    footer: {
+      tagline: "La rete delle associazioni culturali europee",
+      navigation: "Navigazione",
+      hubLink: "Hub Principale",
+      sportLink: "Silo Sport & Montagna",
+      support: "Supporto",
+      legal: "Legale",
+      legalNotice: "Note legali",
+      rights: "Tutti i diritti riservati",
+    },
+  },
 };
