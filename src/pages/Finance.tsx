@@ -522,7 +522,7 @@ const Finance = () => {
 
         {/* Documents Tab */}
         <TabsContent value="documents">
-          <FinancialDocuments />
+          <FinancialDocuments isAdmin={isAdmin} years={reports?.map(r => r.year) || []} />
         </TabsContent>
 
         {/* Funding Projects Tab */}
@@ -538,7 +538,7 @@ const Finance = () => {
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-2xl font-bold">{stats.activeProjects}</p>
+                    <p className="text-2xl font-bold">{fundingProjects.filter(p => p.status === 'in_progress').length}</p>
                   </CardContent>
                 </Card>
                 <Card>
@@ -549,7 +549,7 @@ const Finance = () => {
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-2xl font-bold">{formatCurrency(stats.totalFunded)}</p>
+                    <p className="text-2xl font-bold">{formatCurrency(stats.totalCollected)}</p>
                   </CardContent>
                 </Card>
                 <Card>
