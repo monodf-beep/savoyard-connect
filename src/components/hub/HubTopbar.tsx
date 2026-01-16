@@ -69,12 +69,35 @@ export const HubTopbar = ({ breadcrumb, onMobileMenuToggle, orgName, orgLogo }: 
         <LanguageToggle />
 
         {/* Notifications */}
-        <Button variant="ghost" size="icon" className="relative">
-          <Bell className="h-5 w-5" />
-          <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center bg-accent text-accent-foreground text-xs">
-            2
-          </Badge>
-        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon" className="relative">
+              <Bell className="h-5 w-5" />
+              <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center bg-accent text-accent-foreground text-xs">
+                2
+              </Badge>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-80 bg-popover">
+            <div className="px-3 py-2 border-b border-border">
+              <p className="font-semibold text-sm">{t("notifications.title")}</p>
+            </div>
+            <div className="max-h-80 overflow-y-auto">
+              <DropdownMenuItem className="flex flex-col items-start gap-1 p-3 cursor-pointer">
+                <p className="text-sm font-medium">{t("notifications.newProject")}</p>
+                <p className="text-xs text-muted-foreground">{t("notifications.yesterday")}</p>
+              </DropdownMenuItem>
+              <DropdownMenuItem className="flex flex-col items-start gap-1 p-3 cursor-pointer">
+                <p className="text-sm font-medium">{t("notifications.reservation")}</p>
+                <p className="text-xs text-muted-foreground">{t("notifications.twoDaysAgo")}</p>
+              </DropdownMenuItem>
+            </div>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem className="justify-center text-primary cursor-pointer">
+              {t("notifications.viewAll")}
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
 
         {/* User/Org Menu */}
         <DropdownMenu>
