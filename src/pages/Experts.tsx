@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
-import { Menu, X, Users, Star } from 'lucide-react';
+import { Menu, X, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { LanguageToggle } from '@/components/LanguageToggle';
 import { ExpertCard } from '@/components/experts/ExpertCard';
 import { ExpertModal } from '@/components/experts/ExpertModal';
+import { PublicFooter } from '@/components/PublicFooter';
 import { expertsData } from '@/data/expertsData';
 import { Expert } from '@/types/experts';
 import { useAuth } from '@/hooks/useAuth';
@@ -43,11 +44,8 @@ const Experts = () => {
               <Link to="/" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                 {t('nav.home')}
               </Link>
-              <Link to="/silos/sport" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                Sport & Montagne
-              </Link>
-              <Link to="/silos/culture" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                Culture
+              <Link to="/annuaire" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                {t('nav.directory')}
               </Link>
               <Link to="/experts" className="text-sm font-medium text-[#1e3a8a] flex items-center gap-1">
                 <Star className="w-4 h-4" />
@@ -108,18 +106,11 @@ const Experts = () => {
                 {t('nav.home')}
               </Link>
               <Link 
-                to="/silos/sport" 
+                to="/annuaire" 
                 className="text-lg font-medium text-foreground py-2"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                Sport & Montagne
-              </Link>
-              <Link 
-                to="/silos/culture" 
-                className="text-lg font-medium text-foreground py-2"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Culture
+                {t('nav.directory')}
               </Link>
               <Link 
                 to="/experts" 
@@ -204,27 +195,7 @@ const Experts = () => {
       )}
 
       {/* Footer */}
-      <footer className="bg-foreground text-background py-8">
-        <div className="container mx-auto px-4 text-center">
-          <div className="flex items-center justify-center gap-2 mb-4">
-            <div className="w-6 h-6 rounded bg-gradient-to-br from-[#1e3a8a] to-[#065f46] flex items-center justify-center">
-              <span className="text-white font-bold text-xs">A</span>
-            </div>
-            <span className="font-bold">Associacion</span>
-          </div>
-          <p className="text-sm text-muted-foreground mb-4">
-            {t('experts.footer.tagline')}
-          </p>
-          <div className="flex justify-center gap-6 text-sm text-muted-foreground">
-            <Link to="/" className="hover:text-background">{t('nav.home')}</Link>
-            <Link to="/tarifs" className="hover:text-background">{t('nav.pricing')}</Link>
-            <a href="mailto:contact@associacion.eu" className="hover:text-background">Contact</a>
-          </div>
-          <p className="text-xs text-muted-foreground mt-6">
-            © {new Date().getFullYear()} Associacion. {t('footer.copyright')}
-          </p>
-        </div>
-      </footer>
+      <PublicFooter />
 
       {/* Expert Modal */}
       <ExpertModal 

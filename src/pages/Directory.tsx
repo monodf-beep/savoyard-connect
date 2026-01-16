@@ -8,6 +8,7 @@ import { DirectoryFilters } from '@/components/directory/DirectoryFilters';
 import { AssociationCard } from '@/components/directory/AssociationCard';
 import { AssociationModal } from '@/components/directory/AssociationModal';
 import { DirectoryMap } from '@/components/directory/DirectoryMap';
+import { PublicFooter } from '@/components/PublicFooter';
 import { useDirectory, useUserGeolocation } from '@/hooks/useDirectory';
 import { DirectoryAssociation, GeographicZone } from '@/types/directory';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -368,25 +369,7 @@ const Directory = () => {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-border bg-muted/30">
-        <div className="container px-4 md:px-8 py-8">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <div className="flex items-center gap-1.5">
-              <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
-                <span className="text-white font-bold text-xs">A</span>
-              </div>
-              <span className="text-sm font-semibold text-muted-foreground">
-                {t('footer.copyright')}
-              </span>
-            </div>
-            <div className="flex items-center gap-6 text-sm text-muted-foreground">
-              <Link to="/" className="hover:text-primary transition-colors">{t('nav.home')}</Link>
-              <Link to="/experts" className="hover:text-primary transition-colors">{t('experts.navTitle')}</Link>
-              <a href="#" className="hover:text-primary transition-colors">{t('footer.contact')}</a>
-            </div>
-          </div>
-        </div>
-      </footer>
+      <PublicFooter />
 
       {/* Association Modal */}
       <AssociationModal
