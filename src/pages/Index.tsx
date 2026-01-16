@@ -1,15 +1,19 @@
 import React, { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Organigramme } from '../components/Organigramme';
-import { Navbar } from '../components/Navbar';
+import { HubPageLayout } from '@/components/hub/HubPageLayout';
 import { TutorialDialog } from '../components/TutorialDialog';
 import { useAuth } from '@/hooks/useAuth';
-import { Info, UserPlus } from 'lucide-react';
+import { useAssociation } from '@/hooks/useAssociation';
+import { UserPlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 
 const Index = () => {
+  const { t } = useTranslation();
   const { isAdmin } = useAuth();
+  const { currentAssociation } = useAssociation();
   const location = useLocation();
   const [orgStats, setOrgStats] = React.useState({ totalMembers: 0, vacantPositionsCount: 0 });
 
@@ -72,20 +76,16 @@ const Index = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navbar 
-        onAddPerson={handleAddPerson}
-        onAddSection={handleAddSection}
-        onAddVacantPosition={handleAddVacantPosition}
-        onImport={handleImport}
-        onNameCorrection={handleNameCorrection}
-      />
-      
-      <div className="container mx-auto px-2 md:px-4 py-4 md:py-6">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
+    <HubPageLayout
+      breadcrumb={t('nav.organigramme')}
+      orgName={currentAssociation?.name}
+      orgLogo={currentAssociation?.logo_url || undefined}
+    >
+      <div className="space-y-4">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
           <div>
             <div className="flex items-center gap-3 mb-2">
-              <h1 className="text-3xl font-bold">Organigramme</h1>
+              <h1 className="text-2xl md:text-3xl font-bold">{t('nav.organigramme')}</h1>
               <TutorialDialog
                 title="Comprendre l'organigramme"
                 description="L'organigramme est l'outil central pour gérer votre organisation."
@@ -99,7 +99,7 @@ const Index = () => {
                 steps={[
                   {
                     title: "Naviguer dans les vues",
-                    description: "Utilisez les boutons Ligne, Tuiles et Membres pour changer de vue. Chaque vue offre une perspective différente sur votre organisation.",
+                    description: "Utilisez les boutons Ligne, Tuiles et Membres pour changer de vue.",
                     tips: [
                       "Vue Ligne : hiérarchie complète",
                       "Vue Tuiles : sections en cartes",
@@ -108,17 +108,17 @@ const Index = () => {
                   },
                   {
                     title: "Ajouter des membres",
-                    description: "Cliquez sur 'Ajouter une personne' dans le menu Organisation. Remplissez les informations (nom, titre, compétences, etc.).",
+                    description: "Cliquez sur 'Ajouter une personne' dans le menu Organisation.",
                     tips: ["Utilisez l'import LinkedIn pour gagner du temps"]
                   },
                   {
                     title: "Créer des sections",
-                    description: "Organisez votre structure avec des sections (Bureau, Commissions, Groupes). Créez des hiérarchies en définissant des parents.",
+                    description: "Organisez votre structure avec des sections.",
                     tips: ["Une bonne structure facilite la navigation"]
                   },
                   {
                     title: "Gérer les postes vacants",
-                    description: "Publiez des postes à pourvoir pour attirer de nouveaux bénévoles. Ils apparaîtront dans l'organigramme et pourront recevoir des candidatures spontanées.",
+                    description: "Publiez des postes à pourvoir pour attirer de nouveaux bénévoles.",
                     tips: ["Soyez précis sur le rôle et les attentes"]
                   }
                 ]}
@@ -144,7 +144,7 @@ const Index = () => {
       </div>
 
       <Organigramme isAdminMode={false} />
-    </div>
+    </HubPageLayout>
   );
 };
 
