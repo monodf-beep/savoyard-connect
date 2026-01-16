@@ -158,8 +158,11 @@ const Landing = () => {
 
         {/* Mobile Menu */}
         {mobileMenuOpen && (
-          <div className="md:hidden fixed inset-x-0 top-16 bottom-0 z-50 bg-background border-t border-border">
-            <nav className="flex flex-col items-center justify-center gap-8 h-full px-6">
+          <div 
+            className="md:hidden fixed inset-x-0 top-16 bottom-0 z-[100] border-t border-border"
+            style={{ backgroundColor: 'hsl(0 0% 100%)' }}
+          >
+            <nav className="flex flex-col items-center justify-center gap-8 h-full px-6 bg-white">
               <Link 
                 to="/" 
                 className="text-2xl font-medium text-foreground"
