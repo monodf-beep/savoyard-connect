@@ -158,8 +158,8 @@ const Landing = () => {
 
         {/* Mobile Menu */}
         {mobileMenuOpen && (
-          <div className="md:hidden fixed inset-0 top-16 z-50 bg-background">
-            <nav className="flex flex-col items-center justify-center gap-8 h-full">
+          <div className="md:hidden fixed inset-x-0 top-16 bottom-0 z-50 bg-background border-t border-border">
+            <nav className="flex flex-col items-center justify-center gap-8 h-full px-6">
               <Link 
                 to="/" 
                 className="text-2xl font-medium text-foreground"
@@ -190,7 +190,7 @@ const Landing = () => {
               </Link>
               <Button 
                 size="lg"
-                className="bg-gradient-to-r from-primary to-secondary text-white mt-4 uppercase font-semibold"
+                className="bg-gradient-to-r from-primary to-secondary text-white mt-4 uppercase font-semibold w-full max-w-xs"
                 asChild
               >
                 <Link to="/signup" onClick={() => setMobileMenuOpen(false)}>
