@@ -458,4 +458,57 @@ export const fr = {
       tagline: "Le réseau des associations européennes",
     },
   },
+
+  // Annuaire / Directory
+  directory: {
+    hero: {
+      badge: "Annuaire B2B transfrontalier",
+      title: "Trouvez des associations partenaires",
+      subtitle: "Explorez notre réseau d'associations alpines. Filtrez par zone géographique, domaine d'activité et trouvez des partenaires à proximité.",
+      locationActive: "Géolocalisation activée",
+    },
+    results: "associations trouvées",
+    noResults: "Aucune association trouvée. Modifiez vos filtres.",
+    filters: {
+      title: "Filtres",
+      searchPlaceholder: "Rechercher une association...",
+      zones: "Zones géographiques",
+      ignoreBorders: "Ignorer les frontières",
+      domain: "Domaine d'activité",
+      allDomains: "Tous",
+      locationActive: "Distance calculée depuis votre position",
+      clearAll: "Effacer les filtres",
+    },
+    viewModes: {
+      grid: "Grille",
+      map: "Carte",
+    },
+    card: {
+      viewProfile: "Voir le profil",
+      crossBorder: "Zone transfrontalière",
+      crossBorderTooltip: "Cette association opère des deux côtés de la frontière. Vérifiez les formalités douanières si nécessaire.",
+    },
+    map: {
+      title: "Carte des associations",
+      unavailable: "La carte n'est pas disponible. Configurez le token Mapbox.",
+    },
+    modal: {
+      contactTitle: "Envoyer un message",
+      messagePlaceholder: "Présentez votre projet ou votre demande de collaboration...",
+      sendMessage: "Envoyer le message",
+      messageSent: "Message envoyé !",
+      messageSuccess: "L'association recevra votre demande de contact.",
+      error: "Erreur",
+      errorDescription: "Impossible d'envoyer le message. Réessayez.",
+      loginRequired: "Connectez-vous pour contacter cette association",
+      createAccount: "Créer un compte",
+      login: "Se connecter",
+      crossBorderNotice: "Zone frontalière - vérifier formalités douanières si besoin",
+    },
+    cta: {
+      title: "Vous êtes une association ?",
+      subtitle: "Rejoignez notre réseau et apparaissez dans l'annuaire pour développer vos collaborations transfrontalières.",
+      button: "Inscrire mon association",
+    },
+  },
 };

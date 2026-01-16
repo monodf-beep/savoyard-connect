@@ -458,4 +458,57 @@ export const it = {
       tagline: "La rete delle associazioni europee",
     },
   },
+
+  // Annuario / Directory
+  directory: {
+    hero: {
+      badge: "Annuario B2B transfrontaliero",
+      title: "Trova associazioni partner",
+      subtitle: "Esplora la nostra rete di associazioni alpine. Filtra per zona geografica, settore di attività e trova partner nelle vicinanze.",
+      locationActive: "Geolocalizzazione attiva",
+    },
+    results: "associazioni trovate",
+    noResults: "Nessuna associazione trovata. Modifica i filtri.",
+    filters: {
+      title: "Filtri",
+      searchPlaceholder: "Cerca un'associazione...",
+      zones: "Zone geografiche",
+      ignoreBorders: "Ignora i confini",
+      domain: "Settore di attività",
+      allDomains: "Tutti",
+      locationActive: "Distanza calcolata dalla tua posizione",
+      clearAll: "Cancella filtri",
+    },
+    viewModes: {
+      grid: "Griglia",
+      map: "Mappa",
+    },
+    card: {
+      viewProfile: "Vedi profilo",
+      crossBorder: "Zona transfrontaliera",
+      crossBorderTooltip: "Questa associazione opera su entrambi i lati del confine. Verifica le formalità doganali se necessario.",
+    },
+    map: {
+      title: "Mappa delle associazioni",
+      unavailable: "La mappa non è disponibile. Configura il token Mapbox.",
+    },
+    modal: {
+      contactTitle: "Invia un messaggio",
+      messagePlaceholder: "Presenta il tuo progetto o la tua richiesta di collaborazione...",
+      sendMessage: "Invia messaggio",
+      messageSent: "Messaggio inviato!",
+      messageSuccess: "L'associazione riceverà la tua richiesta di contatto.",
+      error: "Errore",
+      errorDescription: "Impossibile inviare il messaggio. Riprova.",
+      loginRequired: "Accedi per contattare questa associazione",
+      createAccount: "Crea un account",
+      login: "Accedi",
+      crossBorderNotice: "Zona di frontiera - verificare formalità doganali se necessario",
+    },
+    cta: {
+      title: "Sei un'associazione?",
+      subtitle: "Unisciti alla nostra rete e appari nell'annuario per sviluppare le tue collaborazioni transfrontaliere.",
+      button: "Iscrivere la mia associazione",
+    },
+  },
 };

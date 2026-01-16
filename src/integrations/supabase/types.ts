@@ -126,46 +126,70 @@ export type Database = {
       }
       associations: {
         Row: {
+          city: string | null
           created_at: string
+          description: string | null
           id: string
           instagram_url: string | null
           is_active: boolean | null
+          is_public: boolean | null
+          latitude: number | null
           linkedin_url: string | null
           logo_url: string | null
+          longitude: number | null
           naf_ape: string | null
           name: string
           owner_id: string
+          primary_zone: string | null
           rna: string | null
+          secondary_zone: string | null
+          silo: string | null
           siret: string | null
           statuts_url: string | null
           updated_at: string
         }
         Insert: {
+          city?: string | null
           created_at?: string
+          description?: string | null
           id?: string
           instagram_url?: string | null
           is_active?: boolean | null
+          is_public?: boolean | null
+          latitude?: number | null
           linkedin_url?: string | null
           logo_url?: string | null
+          longitude?: number | null
           naf_ape?: string | null
           name: string
           owner_id: string
+          primary_zone?: string | null
           rna?: string | null
+          secondary_zone?: string | null
+          silo?: string | null
           siret?: string | null
           statuts_url?: string | null
           updated_at?: string
         }
         Update: {
+          city?: string | null
           created_at?: string
+          description?: string | null
           id?: string
           instagram_url?: string | null
           is_active?: boolean | null
+          is_public?: boolean | null
+          latitude?: number | null
           linkedin_url?: string | null
           logo_url?: string | null
+          longitude?: number | null
           naf_ape?: string | null
           name?: string
           owner_id?: string
+          primary_zone?: string | null
           rna?: string | null
+          secondary_zone?: string | null
+          silo?: string | null
           siret?: string | null
           statuts_url?: string | null
           updated_at?: string
@@ -222,6 +246,48 @@ export type Database = {
           value?: Json
         }
         Relationships: []
+      }
+      directory_contacts: {
+        Row: {
+          contact_type: string | null
+          created_at: string | null
+          id: string
+          message: string | null
+          requester_association_id: string | null
+          target_association_id: string
+        }
+        Insert: {
+          contact_type?: string | null
+          created_at?: string | null
+          id?: string
+          message?: string | null
+          requester_association_id?: string | null
+          target_association_id: string
+        }
+        Update: {
+          contact_type?: string | null
+          created_at?: string | null
+          id?: string
+          message?: string | null
+          requester_association_id?: string | null
+          target_association_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "directory_contacts_requester_association_id_fkey"
+            columns: ["requester_association_id"]
+            isOneToOne: false
+            referencedRelation: "associations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "directory_contacts_target_association_id_fkey"
+            columns: ["target_association_id"]
+            isOneToOne: false
+            referencedRelation: "associations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       financial_reports: {
         Row: {
