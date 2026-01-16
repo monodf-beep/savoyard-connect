@@ -290,4 +290,14 @@ export const it = {
       subtext: "Senza impegno • Iscrizione in 2 minuti",
     },
   },
+
+  // Notifications
+  notifications: {
+    title: "Notifiche",
+    newProject: "Nuovo progetto collaborativo disponibile",
+    reservation: "Prenotazione confermata per la tua risorsa",
+    yesterday: "Ieri",
+    twoDaysAgo: "2 giorni fa",
+    viewAll: "Visualizza tutta la cronologia",
+  },
 };
