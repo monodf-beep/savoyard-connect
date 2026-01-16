@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { supabase } from '@/integrations/supabase/client';
-import { Navbar } from '@/components/Navbar';
+import { HubPageLayout } from '@/components/hub/HubPageLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -59,6 +60,7 @@ interface MembershipOption {
 }
 
 export default function Contributors() {
+  const { t } = useTranslation();
   const { isAdmin } = useAuth();
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [yearFilter, setYearFilter] = useState<string>('all');
@@ -112,7 +114,7 @@ export default function Contributors() {
   });
 
   // Fetch HelloAsso members
-  const { data: helloassoMembers = [] } = useQuery({
+  const { data: helloassoMembers = [], isLoading: membersLoading } = useQuery({
     queryKey: ['helloasso-members'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -184,34 +186,21 @@ export default function Contributors() {
   // Get visible donors
   const visibleDonors = helloassoDonors.filter(d => !d.is_hidden);
 
-  return (
-    <div className="min-h-screen bg-background">
-      <Navbar />
-      <div className="p-4 md:p-6 lg:p-8">
-        <div className="max-w-7xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-              <Users className="w-5 h-5 text-primary" />
-            </div>
-            <div>
-              <h1 className="text-xl md:text-2xl font-bold text-foreground">
-                Tableau de Bord Communautaire
-              </h1>
-              <p className="text-sm text-muted-foreground hidden md:block">
-                Suivez la croissance de notre communauté
-              </p>
-            </div>
-          </div>
-          {isAdmin && (
-            <Button variant="outline" size="sm" onClick={() => setSettingsOpen(true)}>
-              <Settings className="w-4 h-4 mr-2" />
-              Paramètres
-            </Button>
-          )}
-        </div>
+  const headerActions = isAdmin ? (
+    <Button variant="outline" size="sm" onClick={() => setSettingsOpen(true)}>
+      <Settings className="w-4 h-4 mr-2" />
+      Paramètres
+    </Button>
+  ) : null;
 
+  return (
+    <HubPageLayout
+      title={t('nav.contributors')}
+      subtitle="Suivez la croissance de notre communauté"
+      loading={membersLoading}
+      headerActions={headerActions}
+    >
+      <div className="space-y-6">
         {/* Force Collective - Progress */}
         <Card className="border-border overflow-hidden">
           <CardHeader className="pb-4 bg-gradient-to-r from-primary/5 to-transparent">
@@ -307,8 +296,6 @@ export default function Contributors() {
                 <>
                   <div className="grid grid-cols-5 gap-2">
                     {filteredMembers.slice(0, 15).map((member) => {
-                      const year = member.membership_date ? new Date(member.membership_date).getFullYear() : null;
-                      
                       return (
                         <div key={member.id} className="flex flex-col items-center text-center">
                           <Avatar className="w-10 h-10 border-2 border-border">
@@ -444,14 +431,16 @@ export default function Contributors() {
                         </AvatarFallback>
                       </Avatar>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-foreground truncate">
+                        <p className="text-sm font-medium truncate">
                           {donor.first_name} {donor.last_name?.[0]}.
                         </p>
                         <p className="text-xs text-muted-foreground">
                           {donor.donation_count} don{donor.donation_count > 1 ? 's' : ''}
                         </p>
                       </div>
-                      <span className="text-sm font-bold text-primary">{donor.total_donated}€</span>
+                      <span className="text-sm font-bold text-primary">
+                        {donor.total_donated}€
+                      </span>
                     </div>
                   ))}
                 </div>
@@ -459,7 +448,7 @@ export default function Contributors() {
                 <div className="text-center py-8">
                   <Trophy className="w-8 h-8 text-muted-foreground/50 mx-auto mb-2" />
                   <p className="text-sm text-muted-foreground">
-                    Synchronisez HelloAsso pour voir les donateurs
+                    Aucun donateur visible
                   </p>
                 </div>
               )}
@@ -467,19 +456,29 @@ export default function Contributors() {
           </Card>
         </div>
 
-        {/* Members Map */}
-        <MembersMap 
-          members={helloassoMembers.filter(m => !m.is_hidden)} 
-          donors={helloassoDonors.filter(d => !d.is_hidden)}
-          learners={learners}
-          volunteers={volunteers}
-          mapboxToken={mapboxToken} 
-        />
-
-        {/* Settings Dialog */}
-        <ContributorSettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} />
-        </div>
+        {/* Map */}
+        {mapboxToken && (
+          <Card className="border-border">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base font-semibold flex items-center gap-2">
+                <MapPin className="w-4 h-4 text-primary" />
+                Carte des contributeurs
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <MembersMap
+                members={helloassoMembers}
+                donors={helloassoDonors}
+                learners={learners}
+                volunteers={volunteers}
+                mapboxToken={mapboxToken}
+              />
+            </CardContent>
+          </Card>
+        )}
       </div>
-    </div>
+
+      <ContributorSettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} />
+    </HubPageLayout>
   );
 }

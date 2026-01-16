@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { Navbar } from '@/components/Navbar';
+import { useTranslation } from 'react-i18next';
+import { HubPageLayout } from '@/components/hub/HubPageLayout';
 import { useValueChains } from '@/hooks/useValueChains';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -62,6 +62,7 @@ import { ValueChain, ValueChainSegment } from '@/types/valueChain';
 import { toast } from 'sonner';
 
 export default function ValueChains() {
+  const { t } = useTranslation();
   const { user, isAdmin, isSectionLeader } = useAuth();
   const isMobile = useIsMobile();
   const {
@@ -126,7 +127,6 @@ export default function ValueChains() {
       if (canvasRef.current?.hasUnsavedChanges()) {
         e.preventDefault();
         e.returnValue = '';
-        // Try to save (may not complete before page unload)
         canvasRef.current.savePositions();
       }
     };
@@ -139,13 +139,11 @@ export default function ValueChains() {
   useEffect(() => {
     if (chains.length > 0) {
       if (selectedChain) {
-        // Sync selected chain with the latest data from chains array
         const updatedChain = chains.find(c => c.id === selectedChain.id);
         if (updatedChain && updatedChain !== selectedChain) {
           setSelectedChain(updatedChain);
         }
       } else {
-        // Auto-select first approved chain
         const approvedChains = chains.filter(c => c.approval_status !== 'pending');
         if (approvedChains.length > 0) {
           setSelectedChain(approvedChains[0]);
@@ -293,25 +291,17 @@ export default function ValueChains() {
   const pendingChains = chains.filter(c => c.approval_status === 'pending');
   const approvedChains = chains.filter(c => c.approval_status !== 'pending');
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex flex-col bg-background">
-        <Navbar />
-        <div className="flex-1 flex items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen flex flex-col bg-background">
-      <Navbar />
-
-      <main className="flex-1 flex overflow-hidden relative">
+    <HubPageLayout
+      title={t('nav.valueChains')}
+      subtitle="Visualisez et organisez les processus opérationnels"
+      loading={loading}
+      fullWidth
+    >
+      <div className="flex h-[calc(100vh-12rem)] overflow-hidden relative -mx-4 md:-mx-6 lg:-mx-8 -mb-8">
         {/* Left Sidebar - Chain List */}
         {!isMobile && sidebarOpen && (
-          <div className="w-72 flex-shrink-0 border-r border-border">
+          <div className="w-72 flex-shrink-0 border-r border-border bg-card">
             <ChainSidebar
               chains={approvedChains}
               selectedChain={selectedChain}
@@ -349,9 +339,9 @@ export default function ValueChains() {
               
               <div>
                 <div className="flex items-center gap-2">
-                  <h1 className="text-lg font-semibold text-foreground">
-                    {selectedChain?.title || 'Chaînes de valeur'}
-                  </h1>
+                  <h2 className="text-lg font-semibold text-foreground">
+                    {selectedChain?.title || 'Sélectionner une chaîne'}
+                  </h2>
                   <TutorialDialog
                     title="Comprendre les chaînes de valeur"
                     description="Les chaînes de valeur permettent de visualiser et organiser les processus opérationnels."
@@ -499,76 +489,66 @@ export default function ValueChains() {
                 setDetailPanelOpen(false);
                 setSelectedSegment(null);
               }}
-              onEdit={() => selectedChain && handleEdit(selectedChain)}
-              isAdmin={isAdmin}
             />
           </div>
         )}
 
-        {/* Right Panel - Segment Details (Mobile Sheet) */}
+        {/* Mobile Segment Details Sheet */}
         {isMobile && (
           <Sheet open={detailPanelOpen} onOpenChange={setDetailPanelOpen}>
-            <SheetContent side="right" className="p-0 w-full sm:max-w-md">
+            <SheetContent side="bottom" className="h-[80vh]">
+              <SheetHeader>
+                <SheetTitle>{selectedSegment?.function_name}</SheetTitle>
+              </SheetHeader>
               <SegmentDetailPanel
                 segment={selectedSegment}
                 onClose={() => {
                   setDetailPanelOpen(false);
                   setSelectedSegment(null);
                 }}
-                onEdit={() => selectedChain && handleEdit(selectedChain)}
+              />
+            </SheetContent>
+          </Sheet>
+        )}
+
+        {/* Mobile Chain Selector Sheet */}
+        {isMobile && (
+          <Sheet>
+            <SheetContent side="left" className="w-[300px] p-0">
+              <ChainSidebar
+                chains={approvedChains}
+                selectedChain={selectedChain}
+                onSelectChain={handleSelectChain}
+                onCreateChain={() => {
+                  setEditingChain(undefined);
+                  setFormOpen(true);
+                }}
+                searchQuery={searchQuery}
+                onSearchChange={setSearchQuery}
                 isAdmin={isAdmin}
               />
             </SheetContent>
           </Sheet>
         )}
-      </main>
+      </div>
 
-      {/* Mobile bottom bar for chain selection */}
-      {isMobile && (
-        <div className="border-t border-border bg-card p-2">
-          <Select
-            value={selectedChain?.id || ''}
-            onValueChange={async (id) => {
-              const chain = approvedChains.find(c => c.id === id);
-              if (chain) await handleSelectChain(chain);
-            }}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Sélectionner une chaîne" />
-            </SelectTrigger>
-            <SelectContent>
-              {approvedChains.map((chain) => (
-                <SelectItem key={chain.id} value={chain.id}>
-                  {chain.title}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      )}
-
-      {/* Create/Edit Form */}
-      {(isAdmin || isSectionLeader) && (
-        <ValueChainForm
-          open={formOpen}
-          onOpenChange={(open) => {
-            setFormOpen(open);
-            if (!open) setEditingChain(undefined);
-          }}
-          chain={editingChain}
-          people={people}
-          sections={sections}
-          onSave={handleCreateOrUpdate}
-        />
-      )}
+      {/* Value Chain Form */}
+      <ValueChainForm
+        open={formOpen}
+        onOpenChange={setFormOpen}
+        chain={editingChain}
+        people={people}
+        sections={sections}
+        onSubmit={handleCreateOrUpdate}
+      />
 
       {/* Delete Confirmation */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Supprimer la chaîne de valeur</AlertDialogTitle>
+            <AlertDialogTitle>Supprimer cette chaîne ?</AlertDialogTitle>
             <AlertDialogDescription>
-              Êtes-vous sûr de vouloir supprimer cette chaîne de valeur ? Cette action est irréversible.
+              Cette action est irréversible. Tous les segments associés seront également supprimés.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -586,55 +566,47 @@ export default function ValueChains() {
           <DialogHeader>
             <DialogTitle>Fusionner deux chaînes</DialogTitle>
             <DialogDescription>
-              Les segments de la chaîne B seront ajoutés à la fin de la chaîne A.
+              Sélectionnez les chaînes à fusionner et donnez un nom à la nouvelle chaîne.
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label>Chaîne A (première)</Label>
+          <div className="space-y-4">
+            <div>
+              <Label>Première chaîne</Label>
               <Select value={mergeChainA} onValueChange={setMergeChainA}>
                 <SelectTrigger>
                   <SelectValue placeholder="Sélectionner..." />
                 </SelectTrigger>
                 <SelectContent>
-                  {approvedChains.map((chain) => (
-                    <SelectItem key={chain.id} value={chain.id}>
-                      {chain.title}
-                    </SelectItem>
+                  {approvedChains.map((c) => (
+                    <SelectItem key={c.id} value={c.id}>{c.title}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-2">
-              <Label>Chaîne B (seconde)</Label>
+            <div>
+              <Label>Deuxième chaîne</Label>
               <Select value={mergeChainB} onValueChange={setMergeChainB}>
                 <SelectTrigger>
                   <SelectValue placeholder="Sélectionner..." />
                 </SelectTrigger>
                 <SelectContent>
-                  {approvedChains
-                    .filter((c) => c.id !== mergeChainA)
-                    .map((chain) => (
-                      <SelectItem key={chain.id} value={chain.id}>
-                        {chain.title}
-                      </SelectItem>
-                    ))}
+                  {approvedChains.filter(c => c.id !== mergeChainA).map((c) => (
+                    <SelectItem key={c.id} value={c.id}>{c.title}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-2">
+            <div>
               <Label>Nom de la nouvelle chaîne</Label>
               <Input
                 value={mergeTitle}
                 onChange={(e) => setMergeTitle(e.target.value)}
-                placeholder="Entrez le nom..."
+                placeholder="Ex: Processus complet"
               />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setMergeDialogOpen(false)}>
-              Annuler
-            </Button>
+            <Button variant="outline" onClick={() => setMergeDialogOpen(false)}>Annuler</Button>
             <Button onClick={handleMerge}>Fusionner</Button>
           </DialogFooter>
         </DialogContent>
@@ -646,75 +618,58 @@ export default function ValueChains() {
           <DialogHeader>
             <DialogTitle>Scinder une chaîne</DialogTitle>
             <DialogDescription>
-              Divisez une chaîne en deux parties distinctes.
+              Séparez une chaîne en deux à un point précis.
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
+          <div className="space-y-4">
+            <div>
               <Label>Chaîne à scinder</Label>
               <Select value={splitChainId} onValueChange={setSplitChainId}>
                 <SelectTrigger>
                   <SelectValue placeholder="Sélectionner..." />
                 </SelectTrigger>
                 <SelectContent>
-                  {approvedChains
-                    .filter((c) => c.segments && c.segments.length >= 2)
-                    .map((chain) => (
-                      <SelectItem key={chain.id} value={chain.id}>
-                        {chain.title} ({chain.segments?.length} segments)
-                      </SelectItem>
-                    ))}
+                  {approvedChains.filter(c => c.segments && c.segments.length >= 2).map((c) => (
+                    <SelectItem key={c.id} value={c.id}>{c.title}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
             {splitChainId && (
-              <div className="space-y-2">
-                <Label>Scinder après le segment n°</Label>
-                <Select
-                  value={splitIndex.toString()}
-                  onValueChange={(v) => setSplitIndex(parseInt(v))}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {chains
-                      .find((c) => c.id === splitChainId)
-                      ?.segments?.slice(0, -1)
-                      .map((_, i) => (
-                        <SelectItem key={i + 1} value={(i + 1).toString()}>
-                          Après segment {i + 1}
-                        </SelectItem>
-                      ))}
-                  </SelectContent>
-                </Select>
+              <div>
+                <Label>Point de scission (après le segment n°)</Label>
+                <Input
+                  type="number"
+                  min={1}
+                  max={(chains.find(c => c.id === splitChainId)?.segments?.length || 2) - 1}
+                  value={splitIndex}
+                  onChange={(e) => setSplitIndex(parseInt(e.target.value) || 1)}
+                />
               </div>
             )}
-            <div className="space-y-2">
-              <Label>Nom de la première chaîne</Label>
+            <div>
+              <Label>Nom de la première partie</Label>
               <Input
                 value={splitTitle1}
                 onChange={(e) => setSplitTitle1(e.target.value)}
-                placeholder="Première partie..."
+                placeholder="Ex: Phase 1"
               />
             </div>
-            <div className="space-y-2">
-              <Label>Nom de la seconde chaîne</Label>
+            <div>
+              <Label>Nom de la seconde partie</Label>
               <Input
                 value={splitTitle2}
                 onChange={(e) => setSplitTitle2(e.target.value)}
-                placeholder="Seconde partie..."
+                placeholder="Ex: Phase 2"
               />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setSplitDialogOpen(false)}>
-              Annuler
-            </Button>
+            <Button variant="outline" onClick={() => setSplitDialogOpen(false)}>Annuler</Button>
             <Button onClick={handleSplit}>Scinder</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </HubPageLayout>
   );
 }

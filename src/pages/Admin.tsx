@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
-import { Navbar } from '@/components/Navbar';
+import { useTranslation } from 'react-i18next';
+import { HubPageLayout } from '@/components/hub/HubPageLayout';
 import { useAuth } from '@/hooks/useAuth';
 import { useAssociation } from '@/hooks/useAssociation';
 import { supabase } from '@/integrations/supabase/client';
@@ -150,6 +151,7 @@ const Column = ({ id, title, icon: Icon, color, tasks, onEditTask, onDeleteTask 
 };
 
 const Admin = () => {
+  const { t } = useTranslation();
   const { isAdmin, loading: authLoading } = useAuth();
   const { currentAssociation } = useAssociation();
   const queryClient = useQueryClient();
@@ -313,101 +315,98 @@ const Admin = () => {
     done: tasks.filter(t => t.status === 'done'),
   };
 
+  const headerActions = (
+    <Button onClick={() => setShowForm(true)}>
+      <Plus className="h-4 w-4 mr-2" />
+      Nouvelle tâche
+    </Button>
+  );
+
   return (
-    <div className="min-h-screen bg-background">
-      <Navbar />
-      <div className="container mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-bold">Suivi administratif</h1>
-            <p className="text-muted-foreground">Gérez vos tâches et échéances</p>
-          </div>
-          <Button onClick={() => setShowForm(true)}>
-            <Plus className="h-4 w-4 mr-2" />
-            Nouvelle tâche
-          </Button>
+    <HubPageLayout
+      title={t('nav.admin')}
+      subtitle="Gérez vos tâches et échéances"
+      loading={isLoading}
+      headerActions={headerActions}
+    >
+      {/* Kanban Board */}
+      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+        <div className="flex gap-6 overflow-x-auto pb-4">
+          {COLUMNS.map(col => (
+            <Column
+              key={col.id}
+              id={col.id}
+              title={col.title}
+              icon={col.icon}
+              color={col.color}
+              tasks={tasksByStatus[col.id as keyof typeof tasksByStatus]}
+              onEditTask={handleEditTask}
+              onDeleteTask={(id) => deleteMutation.mutate(id)}
+            />
+          ))}
         </div>
+      </DndContext>
 
-        {/* Kanban Board */}
-        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-          <div className="flex gap-6 overflow-x-auto pb-4">
-            {COLUMNS.map(col => (
-              <Column
-                key={col.id}
-                id={col.id}
-                title={col.title}
-                icon={col.icon}
-                color={col.color}
-                tasks={tasksByStatus[col.id as keyof typeof tasksByStatus]}
-                onEditTask={handleEditTask}
-                onDeleteTask={(id) => deleteMutation.mutate(id)}
-              />
-            ))}
-          </div>
-        </DndContext>
-
-        {/* Task Form Dialog */}
-        <Dialog open={showForm} onOpenChange={setShowForm}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>{editingTask ? 'Modifier la tâche' : 'Nouvelle tâche'}</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4">
-              <Input
-                placeholder="Titre de la tâche"
-                value={formData.title}
-                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-              />
-              <Textarea
-                placeholder="Description (optionnel)"
-                value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              />
-              <div className="flex gap-4">
-                <div className="flex-1">
-                  <label className="text-sm font-medium mb-2 block">Priorité</label>
-                  <Select value={formData.priority} onValueChange={(v) => setFormData({ ...formData, priority: v as any })}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="low">Basse</SelectItem>
-                      <SelectItem value="medium">Normale</SelectItem>
-                      <SelectItem value="high">Urgente</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="flex-1">
-                  <label className="text-sm font-medium mb-2 block">Échéance</label>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button variant="outline" className="w-full justify-start text-left font-normal">
-                        <CalendarIcon className="mr-2 h-4 w-4" />
-                        {formData.due_date ? format(formData.due_date, 'PPP', { locale: fr }) : 'Sélectionner'}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0">
-                      <Calendar
-                        mode="single"
-                        selected={formData.due_date}
-                        onSelect={(date) => setFormData({ ...formData, due_date: date })}
-                      />
-                    </PopoverContent>
-                  </Popover>
-                </div>
+      {/* Task Form Dialog */}
+      <Dialog open={showForm} onOpenChange={setShowForm}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{editingTask ? 'Modifier la tâche' : 'Nouvelle tâche'}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <Input
+              placeholder="Titre de la tâche"
+              value={formData.title}
+              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+            />
+            <Textarea
+              placeholder="Description (optionnel)"
+              value={formData.description}
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+            />
+            <div className="flex gap-4">
+              <div className="flex-1">
+                <label className="text-sm font-medium mb-2 block">Priorité</label>
+                <Select value={formData.priority} onValueChange={(v) => setFormData({ ...formData, priority: v as any })}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="low">Basse</SelectItem>
+                    <SelectItem value="medium">Normale</SelectItem>
+                    <SelectItem value="high">Urgente</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex-1">
+                <label className="text-sm font-medium mb-2 block">Échéance</label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" className="w-full justify-start text-left font-normal">
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {formData.due_date ? format(formData.due_date, 'PPP', { locale: fr }) : 'Sélectionner'}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0">
+                    <Calendar
+                      mode="single"
+                      selected={formData.due_date}
+                      onSelect={(date) => setFormData({ ...formData, due_date: date })}
+                    />
+                  </PopoverContent>
+                </Popover>
               </div>
             </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={handleCloseForm}>Annuler</Button>
-              <Button onClick={handleSubmit} disabled={saveMutation.isPending}>
-                {editingTask ? 'Enregistrer' : 'Créer'}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      </div>
-    </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={handleCloseForm}>Annuler</Button>
+            <Button onClick={handleSubmit} disabled={saveMutation.isPending}>
+              {editingTask ? 'Enregistrer' : 'Créer'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </HubPageLayout>
   );
 };
 
