@@ -22,7 +22,7 @@ interface HubDashboardLayoutProps {
 }
 
 export const HubDashboardLayout = ({ 
-  orgName = "Mon Association", 
+  orgName, 
   orgLogo,
   isLabeled = false,
   loading = false 
@@ -34,6 +34,10 @@ export const HubDashboardLayout = ({
 
   const dateLocale = i18n.language === "it" ? it : fr;
   const today = format(new Date(), "EEEE d MMMM yyyy", { locale: dateLocale });
+  
+  // Priority: user's first name from metadata, then association name
+  const userFirstName = user?.user_metadata?.first_name || user?.user_metadata?.name?.split(' ')[0];
+  const welcomeName = userFirstName || orgName || t("dashboard.defaultOrg");
 
   if (loading) {
     return (
@@ -103,7 +107,7 @@ export const HubDashboardLayout = ({
           <div className="space-y-1">
             <div className="flex flex-wrap items-center gap-3">
               <h1 className="text-2xl md:text-3xl font-bold text-foreground">
-                {t("dashboard.welcome", { orgName })}
+                {t("dashboard.welcome", { orgName: welcomeName })}
               </h1>
               {isLabeled && (
                 <Badge className="bg-secondary text-secondary-foreground">
