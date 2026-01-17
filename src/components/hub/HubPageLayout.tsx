@@ -81,8 +81,31 @@ export const HubPageLayout = ({
           )}
           
           {loading ? (
-            <div className="flex items-center justify-center py-12">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            <div className="space-y-6">
+              {/* Skeleton loader for page content */}
+              <div className="flex items-center gap-4">
+                <div className="h-10 w-10 rounded-lg bg-muted animate-pulse" />
+                <div className="space-y-2 flex-1">
+                  <div className="h-5 w-52 bg-muted animate-pulse rounded" />
+                  <div className="h-3 w-36 bg-muted/60 animate-pulse rounded" />
+                </div>
+              </div>
+              
+              {/* Cards skeleton */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {[1, 2, 3, 4, 5, 6].map(i => (
+                  <div key={i} className="border border-border rounded-xl p-4 space-y-3 bg-card">
+                    <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 rounded-full bg-muted animate-pulse" />
+                      <div className="space-y-1 flex-1">
+                        <div className="h-4 w-28 bg-muted animate-pulse rounded" />
+                        <div className="h-3 w-20 bg-muted/60 animate-pulse rounded" />
+                      </div>
+                    </div>
+                    <div className="h-16 w-full bg-muted/40 animate-pulse rounded" />
+                  </div>
+                ))}
+              </div>
             </div>
           ) : (
             children

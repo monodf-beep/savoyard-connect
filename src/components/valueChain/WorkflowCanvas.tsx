@@ -19,10 +19,11 @@ import ReactFlow, {
 import 'reactflow/dist/style.css';
 import { ValueChain, ValueChainSegment } from '@/types/valueChain';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Building2, ChevronDown, Flag, Plus, LayoutGrid, GripVertical, Loader2, Save, Undo2 } from 'lucide-react';
+import { Building2, ChevronDown, Flag, Plus, LayoutGrid, GripVertical, Loader2, Save, Undo2, ArrowDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 export interface WorkflowCanvasRef {
   savePositions: () => Promise<void>;
@@ -52,6 +53,7 @@ const snapToGrid = (value: number) => Math.round(value / GRID_SIZE) * GRID_SIZE;
 const WorkflowNode = ({ data, selected, dragging }: NodeProps) => {
   const isStart = data.isStart;
   const isHighlighted = data.isHighlighted;
+  const isMobile = data.isMobile;
   
   return (
     <div 
@@ -64,11 +66,11 @@ const WorkflowNode = ({ data, selected, dragging }: NodeProps) => {
       onMouseEnter={() => data.onHover?.(data.segment?.id, true)}
       onMouseLeave={() => data.onHover?.(data.segment?.id, false)}
     >
-      {/* Input Handle */}
+      {/* Input Handle - Top on mobile, Left on desktop */}
       {!isStart && (
         <Handle
           type="target"
-          position={Position.Left}
+          position={isMobile ? Position.Top : Position.Left}
           className={cn(
             "!w-4 !h-4 !border-2 !border-background transition-all duration-300",
             isHighlighted ? "!bg-primary !scale-125" : "!bg-primary"
@@ -152,10 +154,10 @@ const WorkflowNode = ({ data, selected, dragging }: NodeProps) => {
         </div>
       </div>
       
-      {/* Output Handle */}
+      {/* Output Handle - Bottom on mobile, Right on desktop */}
       <Handle
         type="source"
-        position={Position.Right}
+        position={isMobile ? Position.Bottom : Position.Right}
         className={cn(
           "!w-4 !h-4 !border-2 !border-background transition-all duration-300",
           isHighlighted ? "!bg-primary !scale-125" : "!bg-primary"
@@ -164,7 +166,8 @@ const WorkflowNode = ({ data, selected, dragging }: NodeProps) => {
       
       {/* Connection point decoration */}
       <div className={cn(
-        "absolute -right-2 top-1/2 -translate-y-1/2 w-2 h-2 bg-primary rounded-full transition-opacity",
+        "absolute w-2 h-2 bg-primary rounded-full transition-opacity",
+        isMobile ? "left-1/2 -translate-x-1/2 -bottom-2" : "-right-2 top-1/2 -translate-y-1/2",
         isHighlighted ? "opacity-100" : "opacity-0 group-hover:opacity-100"
       )} />
     </div>
@@ -197,6 +200,7 @@ const nodeTypes = {
 interface WorkflowCanvasInnerProps extends WorkflowCanvasProps {
   onDirtyChange?: (isDirty: boolean) => void;
   innerRef?: React.Ref<WorkflowCanvasRef>;
+  isMobileView?: boolean;
 }
 
 const WorkflowCanvasInner: React.FC<WorkflowCanvasInnerProps> = ({
@@ -208,6 +212,7 @@ const WorkflowCanvasInner: React.FC<WorkflowCanvasInnerProps> = ({
   onPaneClick,
   onDirtyChange,
   innerRef,
+  isMobileView,
 }) => {
   const reactFlowInstance = useReactFlow();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -234,20 +239,25 @@ const WorkflowCanvasInner: React.FC<WorkflowCanvasInnerProps> = ({
       return { nodes, edges: [] };
     }
 
-    const HORIZONTAL_SPACING = 360;
+    // Mobile: vertical layout, Desktop: horizontal layout
+    const HORIZONTAL_SPACING = isMobileView ? 0 : 360;
+    const VERTICAL_SPACING = isMobileView ? 200 : 0;
     const VERTICAL_OFFSET = 100;
+    const MOBILE_CENTER_X = 140; // Center cards on mobile
     
     const nodes: Node[] = chain.segments.map((segment, index) => {
       // Use saved positions if available, otherwise calculate default positions
-      const hasSavedPosition = segment.position_x != null && segment.position_y != null;
-      const yOffset = Math.sin(index * 0.8) * 30;
+      const hasSavedPosition = !isMobileView && segment.position_x != null && segment.position_y != null;
+      const yOffset = isMobileView ? 0 : Math.sin(index * 0.8) * 30;
       
       return {
         id: segment.id,
         type: 'workflow',
         position: hasSavedPosition 
           ? { x: segment.position_x!, y: segment.position_y! }
-          : { x: 100 + (index * HORIZONTAL_SPACING), y: VERTICAL_OFFSET + yOffset },
+          : isMobileView
+            ? { x: MOBILE_CENTER_X, y: VERTICAL_OFFSET + (index * VERTICAL_SPACING) }
+            : { x: 100 + (index * HORIZONTAL_SPACING), y: VERTICAL_OFFSET + yOffset },
         data: {
           label: segment.function_name,
           actors: segment.actors || [],
@@ -258,8 +268,9 @@ const WorkflowCanvasInner: React.FC<WorkflowCanvasInnerProps> = ({
           onClick: onSegmentClick,
           onHover: handleNodeHover,
           isHighlighted: false,
+          isMobile: isMobileView,
         },
-        draggable: true,
+        draggable: !isMobileView,
       };
     });
 
@@ -270,10 +281,9 @@ const WorkflowCanvasInner: React.FC<WorkflowCanvasInnerProps> = ({
       nodes.push({
         id: 'add-new',
         type: 'addNode',
-        position: { 
-          x: lastNode.position.x + HORIZONTAL_SPACING, 
-          y: lastNode.position.y + 40 // Center vertically relative to the last node
-        },
+        position: isMobileView
+          ? { x: lastNode.position.x, y: lastNode.position.y + VERTICAL_SPACING }
+          : { x: lastNode.position.x + HORIZONTAL_SPACING, y: lastNode.position.y + 40 },
         data: { onClick: onAddSegment },
         draggable: false,
       });
@@ -318,7 +328,7 @@ const WorkflowCanvasInner: React.FC<WorkflowCanvasInnerProps> = ({
     }
 
     return { nodes, edges };
-  }, [chain, onSegmentClick, onAddSegment, handleNodeHover]);
+  }, [chain, onSegmentClick, onAddSegment, handleNodeHover, isMobileView]);
 
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
@@ -736,7 +746,10 @@ const WorkflowCanvasInner: React.FC<WorkflowCanvasInnerProps> = ({
   }
 
   return (
-    <div ref={containerRef} className="h-[500px] w-full rounded-xl overflow-hidden bg-muted/30 border border-border relative">
+    <div ref={containerRef} className={cn(
+      "w-full rounded-xl overflow-hidden bg-muted/30 border border-border relative",
+      isMobileView ? "h-[70vh] min-h-[500px]" : "h-[500px]"
+    )}>
       {/* Loading overlay */}
       {isSaving && (
         <div className="absolute inset-0 bg-background/50 backdrop-blur-sm z-50 flex items-center justify-center">
@@ -757,16 +770,17 @@ const WorkflowCanvasInner: React.FC<WorkflowCanvasInnerProps> = ({
         onPaneClick={onPaneClick}
         nodeTypes={nodeTypes}
         connectionLineType={ConnectionLineType.SmoothStep}
-        fitView={!hasSavedViewport}
-        fitViewOptions={{ padding: 0.3 }}
+        fitView={!hasSavedViewport || isMobileView}
+        fitViewOptions={{ padding: isMobileView ? 0.15 : 0.3 }}
         minZoom={0.3}
         maxZoom={2}
+        defaultViewport={isMobileView ? { x: 0, y: 0, zoom: 0.8 } : undefined}
         proOptions={{ hideAttribution: true }}
-        nodesDraggable={true}
+        nodesDraggable={!isMobileView}
         nodesConnectable={false}
         elementsSelectable={true}
         selectNodesOnDrag={false}
-        snapToGrid={true}
+        snapToGrid={!isMobileView}
         snapGrid={[GRID_SIZE, GRID_SIZE]}
         className="transition-all duration-300"
       >
@@ -840,6 +854,7 @@ interface WorkflowCanvasWrapperProps extends WorkflowCanvasProps {
 export const WorkflowCanvas = forwardRef<WorkflowCanvasRef, WorkflowCanvasProps>((props, ref) => {
   const [isDirty, setIsDirty] = useState(false);
   const innerRef = useRef<WorkflowCanvasRef>(null);
+  const isMobile = useIsMobile();
 
   // Forward ref methods
   useImperativeHandle(ref, () => ({
@@ -855,6 +870,7 @@ export const WorkflowCanvas = forwardRef<WorkflowCanvasRef, WorkflowCanvasProps>
         {...props} 
         innerRef={innerRef}
         onDirtyChange={setIsDirty}
+        isMobileView={isMobile}
       />
     </ReactFlowProvider>
   );
