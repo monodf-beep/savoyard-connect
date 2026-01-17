@@ -625,10 +625,40 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
 
   if (loading || authLoading) {
     return (
-      <div className="flex min-h-screen w-full items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Chargement...</p>
+      <div className="flex min-h-[60vh] w-full items-center justify-center p-4">
+        <div className="w-full max-w-3xl space-y-6">
+          {/* Header skeleton */}
+          <div className="flex items-center gap-4 mb-6">
+            <div className="h-10 w-10 rounded-full bg-muted animate-pulse" />
+            <div className="space-y-2 flex-1">
+              <div className="h-5 w-48 bg-muted animate-pulse rounded" />
+              <div className="h-3 w-32 bg-muted/60 animate-pulse rounded" />
+            </div>
+          </div>
+          
+          {/* Section cards skeleton */}
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="border border-border rounded-xl p-4 space-y-4 bg-card">
+              <div className="flex items-center gap-3">
+                <div className="h-8 w-8 rounded bg-muted animate-pulse" />
+                <div className="h-5 w-40 bg-muted animate-pulse rounded" />
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                {[1, 2, 3, 4].map((j) => (
+                  <div key={j} className="flex items-center gap-2 p-2 rounded-lg border border-border/50">
+                    <div className="h-8 w-8 rounded-full bg-muted animate-pulse" />
+                    <div className="space-y-1 flex-1">
+                      <div className="h-3 w-20 bg-muted animate-pulse rounded" />
+                      <div className="h-2 w-16 bg-muted/60 animate-pulse rounded" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+          
+          {/* Loading text */}
+          <p className="text-center text-muted-foreground text-sm">Chargement de l'organigramme...</p>
         </div>
       </div>
     );

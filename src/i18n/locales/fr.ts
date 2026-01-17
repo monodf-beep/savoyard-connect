@@ -153,7 +153,7 @@ export const fr = {
 
   // Dashboard
   dashboard: {
-    welcome: "Bienvenue, {orgName} !",
+    welcome: "Bienvenue, {{orgName}} !",
     labelBadge: "✓ Labellisé Hub Associacion",
     kpi: {
       connections: {
