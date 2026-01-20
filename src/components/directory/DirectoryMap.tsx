@@ -129,7 +129,7 @@ export function DirectoryMap({ associations, userLocation, onMarkerClick }: Dire
   }
 
   return (
-    <Card className={`border-border/50 bg-card overflow-hidden transition-all ${isExpanded ? 'fixed inset-4 z-50' : ''}`}>
+    <Card className={`border-border/50 bg-card overflow-hidden transition-all h-full ${isExpanded ? 'fixed inset-4 z-50' : ''}`}>
       <CardHeader className="p-4 flex flex-row items-center justify-between">
         <div className="flex items-center gap-2">
           <Map className="h-4 w-4 text-primary" />
@@ -144,10 +144,10 @@ export function DirectoryMap({ associations, userLocation, onMarkerClick }: Dire
           {isExpanded ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
         </Button>
       </CardHeader>
-      <CardContent className="p-0">
+      <CardContent className="p-0 flex-1">
         <div
           ref={mapContainer}
-          className={`w-full ${isExpanded ? 'h-[calc(100vh-8rem)]' : 'h-64 md:h-80'}`}
+          className={`w-full ${isExpanded ? 'h-[calc(100vh-8rem)]' : 'h-full min-h-[400px] md:min-h-[500px]'}`}
         />
       </CardContent>
     </Card>
