@@ -437,6 +437,7 @@ export const it = {
     new: "nuovo",
     expand: "Espandi",
     explore: "Esplora",
+    collapse: "Riduci",
   },
 
   // Language
