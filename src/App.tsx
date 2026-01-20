@@ -33,6 +33,7 @@ import CultureLanding from "./pages/silos/CultureLanding";
 import Experts from "./pages/Experts";
 import DirectoryHub from "./pages/DirectoryHub";
 import Opportunites from "./pages/Opportunites";
+import Toolbox from "./pages/Toolbox";
 import Hub from "./pages/Hub";
 import Members from "./pages/Members";
 import Mutualisation from "./pages/Mutualisation";
@@ -108,6 +109,7 @@ const AppContent = () => {
         <Route path="/finance" element={<Finance />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="/admin" element={<Admin />} />
+        <Route path="/toolbox" element={<Toolbox />} />
         <Route path="/tarifs" element={<Pricing />} />
         <Route path="/onboarding" element={<Onboarding />} />
         {/* Silos thématiques */}

@@ -66,6 +66,7 @@ export const fr = {
     returnToHub: "⬅️ Retour au Hub Réseau",
     mutualisation: "Mutualisation",
     accompagnateur: "L'Accompagnateur",
+    toolbox: "Boîte à Outils",
   },
 
   // Accompagnateur Page
