@@ -44,8 +44,11 @@ export const fr = {
     publicIndicator: "Peut être rendu public",
     sections: {
       myAssociation: "Mon Association",
+      myAssociations: "Mes Associations",
       network: "Réseau Associacion",
     },
+    createOrJoin: "Créer / Rejoindre",
+    profile: "Mon Profil",
   },
 
   // Pillars

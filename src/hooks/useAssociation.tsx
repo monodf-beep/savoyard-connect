@@ -2,7 +2,19 @@ import { useState, useEffect, createContext, useContext, ReactNode } from "react
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 
-interface Association {
+// Association role enum matching database
+export type AssociationRole = 'owner' | 'admin' | 'gestionnaire' | 'contributeur' | 'membre';
+
+export interface AssociationMembership {
+  id: string;
+  association_id: string;
+  role: AssociationRole;
+  person_id: string | null;
+  joined_at: string;
+  association: Association;
+}
+
+export interface Association {
   id: string;
   name: string;
   logo_url: string | null;
@@ -13,52 +25,133 @@ interface Association {
   linkedin_url: string | null;
   is_active: boolean;
   created_at: string;
+  city: string | null;
+  description: string | null;
 }
 
 interface AssociationContextType {
-  associations: Association[];
+  associations: AssociationMembership[];
   currentAssociation: Association | null;
+  currentMembership: AssociationMembership | null;
   setCurrentAssociation: (asso: Association) => void;
   isLoading: boolean;
   refetch: () => Promise<void>;
+  isOwnerOrAdmin: boolean;
+  isGestionnaire: boolean;
+  currentRole: AssociationRole | null;
 }
 
 const AssociationContext = createContext<AssociationContextType | undefined>(undefined);
 
 export const AssociationProvider = ({ children }: { children: ReactNode }) => {
   const { user } = useAuth();
-  const [associations, setAssociations] = useState<Association[]>([]);
+  const [associations, setAssociations] = useState<AssociationMembership[]>([]);
   const [currentAssociation, setCurrentAssociationState] = useState<Association | null>(null);
+  const [currentMembership, setCurrentMembership] = useState<AssociationMembership | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchAssociations = async () => {
     if (!user) {
       setAssociations([]);
       setCurrentAssociationState(null);
+      setCurrentMembership(null);
       setIsLoading(false);
       return;
     }
 
     try {
-      const { data, error } = await supabase
-        .from("associations")
-        .select("*")
-        .eq("owner_id", user.id)
-        .order("created_at", { ascending: true });
+      // Fetch memberships with association details
+      const { data: memberships, error } = await supabase
+        .from("association_members")
+        .select(`
+          id,
+          association_id,
+          role,
+          person_id,
+          joined_at,
+          association:associations (
+            id,
+            name,
+            logo_url,
+            siret,
+            rna,
+            naf_ape,
+            instagram_url,
+            linkedin_url,
+            is_active,
+            created_at,
+            city,
+            description
+          )
+        `)
+        .eq("user_id", user.id)
+        .order("joined_at", { ascending: true });
 
-      if (error) throw error;
+      if (error) {
+        // If association_members table doesn't exist or is empty, fallback to legacy query
+        console.log("Falling back to legacy associations query:", error.message);
+        const { data: legacyData, error: legacyError } = await supabase
+          .from("associations")
+          .select("*")
+          .eq("owner_id", user.id)
+          .order("created_at", { ascending: true });
 
-      setAssociations(data || []);
+        if (legacyError) throw legacyError;
+
+        // Convert legacy format to new format
+        const legacyMemberships: AssociationMembership[] = (legacyData || []).map(asso => ({
+          id: asso.id + '_membership',
+          association_id: asso.id,
+          role: 'owner' as AssociationRole,
+          person_id: null,
+          joined_at: asso.created_at,
+          association: asso,
+        }));
+
+        setAssociations(legacyMemberships);
+
+        // Set current association
+        const savedAssoId = localStorage.getItem("currentAssociationId");
+        const savedMembership = legacyMemberships.find((m) => m.association_id === savedAssoId);
+        
+        if (savedMembership) {
+          setCurrentAssociationState(savedMembership.association);
+          setCurrentMembership(savedMembership);
+        } else if (legacyMemberships.length > 0) {
+          setCurrentAssociationState(legacyMemberships[0].association);
+          setCurrentMembership(legacyMemberships[0]);
+          localStorage.setItem("currentAssociationId", legacyMemberships[0].association_id);
+        }
+
+        setIsLoading(false);
+        return;
+      }
+
+      // Transform the data - handle the nested association object
+      const validMemberships: AssociationMembership[] = (memberships || [])
+        .filter((m: any) => m.association)
+        .map((m: any) => ({
+          id: m.id,
+          association_id: m.association_id,
+          role: m.role as AssociationRole,
+          person_id: m.person_id,
+          joined_at: m.joined_at,
+          association: m.association,
+        }));
+
+      setAssociations(validMemberships);
 
       // Set current association from localStorage or first one
       const savedAssoId = localStorage.getItem("currentAssociationId");
-      const savedAsso = data?.find((a) => a.id === savedAssoId);
+      const savedMembership = validMemberships.find((m) => m.association_id === savedAssoId);
       
-      if (savedAsso) {
-        setCurrentAssociationState(savedAsso);
-      } else if (data && data.length > 0) {
-        setCurrentAssociationState(data[0]);
-        localStorage.setItem("currentAssociationId", data[0].id);
+      if (savedMembership) {
+        setCurrentAssociationState(savedMembership.association);
+        setCurrentMembership(savedMembership);
+      } else if (validMemberships.length > 0) {
+        setCurrentAssociationState(validMemberships[0].association);
+        setCurrentMembership(validMemberships[0]);
+        localStorage.setItem("currentAssociationId", validMemberships[0].association_id);
       }
     } catch (error) {
       console.error("Error fetching associations:", error);
@@ -74,16 +167,31 @@ export const AssociationProvider = ({ children }: { children: ReactNode }) => {
   const setCurrentAssociation = (asso: Association) => {
     setCurrentAssociationState(asso);
     localStorage.setItem("currentAssociationId", asso.id);
+    
+    // Update current membership
+    const membership = associations.find(m => m.association_id === asso.id);
+    if (membership) {
+      setCurrentMembership(membership);
+    }
   };
+
+  // Computed role permissions
+  const currentRole = currentMembership?.role || null;
+  const isOwnerOrAdmin = currentRole === 'owner' || currentRole === 'admin';
+  const isGestionnaire = currentRole === 'gestionnaire' || isOwnerOrAdmin;
 
   return (
     <AssociationContext.Provider
       value={{
         associations,
         currentAssociation,
+        currentMembership,
         setCurrentAssociation,
         isLoading,
         refetch: fetchAssociations,
+        isOwnerOrAdmin,
+        isGestionnaire,
+        currentRole,
       }}
     >
       {children}
