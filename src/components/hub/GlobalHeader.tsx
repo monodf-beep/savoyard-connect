@@ -31,7 +31,7 @@ import {
 import { cn } from "@/lib/utils";
 
 interface GlobalHeaderProps {
-  breadcrumb?: string;
+  breadcrumb?: React.ReactNode;
   onMobileMenuToggle: () => void;
 }
 

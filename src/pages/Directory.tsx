@@ -324,7 +324,6 @@ const Directory = () => {
                         key={assoc.id}
                         association={assoc}
                         userLocation={userLocation || null}
-                        onContact={handleContactAssociation}
                       />
                     ))
                   ) : (

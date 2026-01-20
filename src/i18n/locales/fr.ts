@@ -762,6 +762,17 @@ export const fr = {
       login: "Se connecter",
       crossBorderNotice: "Zone frontalière - vérifier formalités douanières si besoin",
     },
+    profile: {
+      backToDirectory: "Retour à l'annuaire",
+      notFound: "Introuvable",
+      notFoundTitle: "Association introuvable",
+      notFoundDescription: "Cette association n'existe pas ou n'est plus visible dans l'annuaire.",
+      about: "À propos",
+      noDescription: "Aucune description disponible.",
+      memberSince: "Membre depuis",
+      socialLinks: "Réseaux sociaux",
+      crossBorderTitle: "Association transfrontalière",
+    },
     cta: {
       title: "Vous êtes une association ?",
       subtitle: "Rejoignez notre réseau et apparaissez dans l'annuaire pour développer vos collaborations transfrontalières.",

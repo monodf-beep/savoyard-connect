@@ -6,7 +6,7 @@ import { Sheet, SheetContent } from "@/components/ui/sheet";
 
 interface HubPageLayoutProps {
   children: React.ReactNode;
-  breadcrumb?: string;
+  breadcrumb?: React.ReactNode;
   title?: string;
   subtitle?: string;
   loading?: boolean;
