@@ -94,6 +94,11 @@ const hubNetworkItems: NavItem[] = [
 // Association ERP navigation items - Refactored structure
 const associationItems: NavItem[] = [
   { 
+    path: "/accompagnateur", 
+    labelKey: "nav.accompagnateur", 
+    icon: Sparkles, 
+  },
+  { 
     path: "/dashboard", 
     labelKey: "nav.dashboard", 
     icon: LayoutDashboard, 
