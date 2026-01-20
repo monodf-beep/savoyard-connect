@@ -295,7 +295,7 @@ export const GlobalHeader = ({ breadcrumb, onMobileMenuToggle }: GlobalHeaderPro
               <ChevronDown className="h-4 w-4 opacity-50 hidden md:block" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-56 bg-popover">
+          <DropdownMenuContent align="end" className="w-64 bg-popover">
             <div className="px-3 py-2">
               <p className="font-medium text-sm">{userFullName}</p>
               <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
@@ -310,40 +310,43 @@ export const GlobalHeader = ({ breadcrumb, onMobileMenuToggle }: GlobalHeaderPro
               </Link>
             </DropdownMenuItem>
 
-            {/* Mes Associations Sub-menu */}
-            <DropdownMenuSub>
-              <DropdownMenuSubTrigger className="flex items-center gap-2">
-                <Building2 className="h-4 w-4" />
+            <DropdownMenuSeparator />
+
+            {/* Mes Associations Header */}
+            <div className="px-2 py-1.5">
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                 {t("nav.sections.myAssociations")}
-                <Badge variant="secondary" className="ml-auto text-[10px] px-1.5">
-                  {associations.length}
-                </Badge>
-              </DropdownMenuSubTrigger>
-              <DropdownMenuSubContent className="w-56 bg-popover">
-                {associations.map((membership) => (
-                  <DropdownMenuItem 
-                    key={membership.id}
-                    className="flex items-center gap-2 cursor-pointer"
-                    onClick={() => handleContextSelect('association', membership)}
-                  >
-                    <Avatar className="h-6 w-6">
-                      <AvatarImage src={membership.association.logo_url || undefined} />
-                      <AvatarFallback className="bg-secondary/20 text-secondary text-[8px]">
-                        {getInitials(membership.association.name)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <span className="flex-1 truncate">{membership.association.name}</span>
-                    {currentAssociation?.id === membership.association_id && (
-                      <Check className="h-3 w-3 text-primary" />
-                    )}
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuSubContent>
-            </DropdownMenuSub>
+                {associations.length > 1 && (
+                  <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
+                    {associations.length}
+                  </Badge>
+                )}
+              </p>
+            </div>
+
+            {/* Associations List - Direct display */}
+            {associations.map((membership) => (
+              <DropdownMenuItem 
+                key={membership.id}
+                className="flex items-center gap-3 p-2 cursor-pointer"
+                onClick={() => handleContextSelect('association', membership)}
+              >
+                <Avatar className="h-7 w-7">
+                  <AvatarImage src={membership.association.logo_url || undefined} />
+                  <AvatarFallback className="bg-secondary/20 text-secondary text-[9px]">
+                    {getInitials(membership.association.name)}
+                  </AvatarFallback>
+                </Avatar>
+                <span className="flex-1 truncate text-sm">{membership.association.name}</span>
+                {currentAssociation?.id === membership.association_id && (
+                  <Check className="h-4 w-4 text-primary flex-shrink-0" />
+                )}
+              </DropdownMenuItem>
+            ))}
 
             {/* Créer une Asso */}
             <DropdownMenuItem asChild className="cursor-pointer">
-              <Link to="/onboarding-asso" className="flex items-center gap-2">
+              <Link to="/onboarding-asso" className="flex items-center gap-2 text-muted-foreground">
                 <Plus className="h-4 w-4" />
                 {t("nav.createAssociation")}
               </Link>
