@@ -130,8 +130,14 @@ const associationItems: NavItem[] = [
   { 
     path: "/projects", 
     labelKey: "nav.internalProjects", 
-    icon: Kanban, 
+    icon: FolderKanban, 
     canBePublic: true,
+  },
+  { 
+    path: "/admin", 
+    labelKey: "nav.taskManagement", 
+    icon: Kanban, 
+    gestionnaireOnly: true,
   },
   { 
     path: "/settings", 
