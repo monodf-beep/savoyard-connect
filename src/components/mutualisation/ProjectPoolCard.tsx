@@ -3,9 +3,10 @@ import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { MapPin, Users, Calendar, Euro } from "lucide-react";
+import { MapPin, Users, Calendar, Euro, Lock, Sparkles } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
+import { useNavigate } from "react-router-dom";
 
 interface ProjectPoolCardProps {
   id: string;
@@ -19,6 +20,7 @@ interface ProjectPoolCardProps {
   contributors: number;
   deadline: string;
   onParticipate: () => void;
+  locked?: boolean;
 }
 
 export function ProjectPoolCard({
@@ -32,8 +34,10 @@ export function ProjectPoolCard({
   contributors,
   deadline,
   onParticipate,
+  locked = false,
 }: ProjectPoolCardProps) {
   const { t } = useTranslation();
+  const navigate = useNavigate();
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("fr-FR", {
@@ -121,9 +125,26 @@ export function ProjectPoolCard({
       </CardContent>
 
       <CardFooter className="pt-0">
-        <Button variant="secondary" className="w-full" onClick={onParticipate}>
-          {t("mutualisation.contribute", "Contribuer financièrement")}
-        </Button>
+        {locked ? (
+          <div className="w-full space-y-2">
+            <Button variant="secondary" className="w-full gap-2 opacity-60" disabled>
+              <Lock className="h-4 w-4" />
+              {t("mutualisation.contribute", "Contribuer financièrement")}
+            </Button>
+            <button
+              onClick={() => navigate("/adhesion-reseau")}
+              className="w-full text-xs text-center text-muted-foreground hover:text-primary transition-colors group flex items-center justify-center gap-1"
+            >
+              <Lock className="h-3 w-3" />
+              {t("membership.lockedMessage", "Réservé aux membres Cotisants")}
+              <Sparkles className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+            </button>
+          </div>
+        ) : (
+          <Button variant="secondary" className="w-full" onClick={onParticipate}>
+            {t("mutualisation.contribute", "Contribuer financièrement")}
+          </Button>
+        )}
       </CardFooter>
     </Card>
   );

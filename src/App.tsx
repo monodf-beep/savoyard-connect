@@ -37,6 +37,8 @@ import Hub from "./pages/Hub";
 import Members from "./pages/Members";
 import Mutualisation from "./pages/Mutualisation";
 import Accompagnateur from "./pages/Accompagnateur";
+import AdhesionReseau from "./pages/AdhesionReseau";
+import { MembershipProvider } from "./hooks/useMembership";
 
 const queryClient = new QueryClient();
 
@@ -93,6 +95,7 @@ const AppContent = () => {
         <Route path="/onboarding-asso" element={<OnboardingAsso />} />
         <Route path="/hub" element={<Hub />} />
         <Route path="/mutualisation" element={<Mutualisation />} />
+        <Route path="/adhesion-reseau" element={<AdhesionReseau />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/accompagnateur" element={<Accompagnateur />} />
         <Route path="/members" element={<Members />} />
@@ -131,11 +134,13 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <AssociationProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <AppContent />
-        </BrowserRouter>
+        <MembershipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <AppContent />
+          </BrowserRouter>
+        </MembershipProvider>
       </AssociationProvider>
     </TooltipProvider>
   </QueryClientProvider>

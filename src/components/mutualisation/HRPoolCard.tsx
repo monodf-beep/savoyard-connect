@@ -3,7 +3,8 @@ import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { MapPin, Clock, Users } from "lucide-react";
+import { MapPin, Clock, Users, Lock, Sparkles } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 interface HRPoolCardProps {
   id: string;
@@ -16,6 +17,7 @@ interface HRPoolCardProps {
   associations: string[];
   hourlyRate: number;
   onParticipate: () => void;
+  locked?: boolean;
 }
 
 export function HRPoolCard({
@@ -27,8 +29,10 @@ export function HRPoolCard({
   percentage,
   associations,
   onParticipate,
+  locked = false,
 }: HRPoolCardProps) {
   const { t } = useTranslation();
+  const navigate = useNavigate();
 
   // Calculate stroke dasharray for circular progress
   const radius = 45;
@@ -135,9 +139,26 @@ export function HRPoolCard({
       </CardContent>
 
       <CardFooter className="pt-0">
-        <Button className="w-full" onClick={onParticipate}>
-          {t("mutualisation.reserveHours", "Réserver des heures")}
-        </Button>
+        {locked ? (
+          <div className="w-full space-y-2">
+            <Button className="w-full gap-2 opacity-60" disabled>
+              <Lock className="h-4 w-4" />
+              {t("mutualisation.reserveHours", "Réserver des heures")}
+            </Button>
+            <button
+              onClick={() => navigate("/adhesion-reseau")}
+              className="w-full text-xs text-center text-muted-foreground hover:text-primary transition-colors group flex items-center justify-center gap-1"
+            >
+              <Lock className="h-3 w-3" />
+              {t("membership.lockedMessage", "Réservé aux membres Cotisants")}
+              <Sparkles className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+            </button>
+          </div>
+        ) : (
+          <Button className="w-full" onClick={onParticipate}>
+            {t("mutualisation.reserveHours", "Réserver des heures")}
+          </Button>
+        )}
       </CardFooter>
     </Card>
   );
