@@ -63,7 +63,15 @@ export const it = {
   hub: {
     welcome: {
       title: "Benvenuto nell'Hub Rete",
+      titlePersonalized: "Benvenuto nella rete, {{name}}.",
       subtitle: "Esplora le risorse collaborative e connettiti con altre associazioni",
+    },
+    myAssociations: {
+      title: "Le Mie Associazioni",
+      subtitle: "Gestisci le tue organizzazioni",
+      manage: "Gestisci",
+      create: "Crea il mio account associazione",
+      empty: "Non hai ancora un'associazione",
     },
     stats: {
       associations: "Associazioni",
@@ -85,12 +93,15 @@ export const it = {
     },
     comingSoon: {
       title: "Prossimamente",
+      subtitle: "Funzionalità in sviluppo",
     },
     activity: {
       title: "Attività recente della rete",
       subtitle: "Le ultime notizie dalla comunità",
       newAssociation: "Una nuova associazione si è unita alla rete",
+      newAssociationName: "{{name}} si è unita alla rete",
       newProject: "Nuovo progetto collaborativo lanciato",
+      newProjectName: "Progetto: {{name}}",
       newPartnership: "Nuova partnership stabilita",
       today: "Oggi",
       yesterday: "Ieri",
