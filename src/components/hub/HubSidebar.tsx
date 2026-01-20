@@ -18,8 +18,6 @@ import {
   Package,
   Globe,
   Home,
-  Dribbble,
-  Palette,
   UserCheck,
   ArrowLeft,
   Kanban,
@@ -70,16 +68,6 @@ const hubNetworkItems: NavItem[] = [
     icon: FolderKanban, 
     disabled: true,
     tooltip: "nav.comingSoon",
-  },
-  { 
-    path: "/silos/sport", 
-    labelKey: "nav.siloSport", 
-    icon: Dribbble, 
-  },
-  { 
-    path: "/silos/culture", 
-    labelKey: "nav.siloCulture", 
-    icon: Palette, 
   },
   { 
     path: "/opportunites", 
