@@ -1,4 +1,4 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/hooks/useAuth";
 import { useAssociation } from "@/hooks/useAssociation";
@@ -8,22 +8,21 @@ import {
   Users, 
   FolderKanban, 
   Briefcase,
-  GitBranch,
   PiggyBank,
-  Map,
   Settings, 
-  ClipboardList,
   ChevronLeft,
   ChevronRight,
   Building2,
   GraduationCap,
   Sparkles,
   Package,
-  BookOpen,
   Globe,
   Home,
   Dribbble,
   Palette,
+  UserCheck,
+  ArrowLeft,
+  Kanban,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -98,7 +97,7 @@ const hubNetworkItems: NavItem[] = [
   },
 ];
 
-// Association ERP navigation items
+// Association ERP navigation items - Refactored structure
 const associationItems: NavItem[] = [
   { 
     path: "/dashboard", 
@@ -106,27 +105,9 @@ const associationItems: NavItem[] = [
     icon: LayoutDashboard, 
   },
   { 
-    path: "/organigramme", 
-    labelKey: "nav.organigramme", 
-    icon: Users, 
-    canBePublic: true,
-  },
-  { 
-    path: "/projects", 
-    labelKey: "nav.projects", 
-    icon: FolderKanban, 
-    canBePublic: true,
-  },
-  { 
-    path: "/jobs", 
-    labelKey: "nav.volunteering", 
-    icon: Briefcase, 
-    canBePublic: true,
-  },
-  { 
-    path: "/value-chains", 
-    labelKey: "nav.valueChains", 
-    icon: GitBranch,
+    path: "/members", 
+    labelKey: "nav.membersSubscriptions", 
+    icon: UserCheck,
     gestionnaireOnly: true,
   },
   { 
@@ -136,10 +117,22 @@ const associationItems: NavItem[] = [
     canBePublic: true,
   },
   { 
-    path: "/contributors", 
-    labelKey: "nav.contributors", 
-    icon: Map,
-    gestionnaireOnly: true,
+    path: "/organigramme", 
+    labelKey: "nav.hrVolunteering", 
+    icon: Users, 
+    canBePublic: true,
+  },
+  { 
+    path: "/jobs", 
+    labelKey: "nav.volunteering", 
+    icon: Briefcase, 
+    canBePublic: true,
+  },
+  { 
+    path: "/projects", 
+    labelKey: "nav.internalProjects", 
+    icon: Kanban, 
+    canBePublic: true,
   },
   { 
     path: "/settings", 
@@ -147,19 +140,14 @@ const associationItems: NavItem[] = [
     icon: Settings, 
     adminOnly: true,
   },
-  { 
-    path: "/admin", 
-    labelKey: "nav.admin", 
-    icon: ClipboardList, 
-    adminOnly: true,
-  },
 ];
 
 export const HubSidebar = ({ collapsed, onToggle }: HubSidebarProps) => {
   const { t } = useTranslation();
   const location = useLocation();
+  const navigate = useNavigate();
   const { isAdmin } = useAuth();
-  const { currentContext, isOwnerOrAdmin, isGestionnaire } = useAssociation();
+  const { currentContext, isOwnerOrAdmin, isGestionnaire, selectHubContext } = useAssociation();
 
   // Get navigation items based on context
   const getNavigationItems = (): NavItem[] => {
@@ -176,6 +164,11 @@ export const HubSidebar = ({ collapsed, onToggle }: HubSidebarProps) => {
   };
 
   const navigationItems = getNavigationItems();
+
+  const handleReturnToHub = () => {
+    selectHubContext();
+    navigate('/hub');
+  };
 
   const renderNavItem = (item: NavItem) => {
     const isActive = location.pathname === item.path;
@@ -249,6 +242,32 @@ export const HubSidebar = ({ collapsed, onToggle }: HubSidebarProps) => {
             {navigationItems.map(renderNavItem)}
           </div>
         </nav>
+
+        {/* Return to Hub Button - Only in association context */}
+        {currentContext === 'association' && (
+          <div className="px-3 py-2 border-t border-border">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={cn(
+                    "w-full bg-secondary/10 border-secondary/30 text-secondary hover:bg-secondary/20 hover:text-secondary",
+                    collapsed ? "px-2" : "justify-start gap-2"
+                  )}
+                  onClick={handleReturnToHub}
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                  {!collapsed && t("nav.returnToHub")}
+                </Button>
+              </TooltipTrigger>
+              {collapsed && (
+                <TooltipContent side="right" className="bg-popover">
+                  <p>{t("nav.returnToHub")}</p>
+                </TooltipContent>
+              )}
+            </Tooltip>
+          </div>
+        )}
 
         {/* Public indicator legend */}
         {!collapsed && currentContext === 'association' && (

@@ -57,6 +57,11 @@ export const it = {
     siloCulture: "Silo Cultura",
     selectContext: "Seleziona uno spazio",
     createAssociation: "Crea un'Asso",
+    // New navigation keys for association ERP
+    membersSubscriptions: "Membri & Iscrizioni",
+    hrVolunteering: "HR & Volontariato",
+    internalProjects: "Progetti Interni",
+    returnToHub: "⬅️ Torna all'Hub Rete",
   },
 
   // Hub Network Page
@@ -267,6 +272,44 @@ export const it = {
         resourceAdded: "Risorsa aggiunta",
       },
       completeProfile: "Completa il mio profilo",
+    },
+  },
+
+  // Members & Subscriptions
+  members: {
+    title: "Membri & Iscrizioni",
+    subtitle: "Gestisci le iscrizioni e le quote della tua associazione",
+    import: "Importa",
+    export: "Esporta",
+    addMember: "Aggiungi membro",
+    searchPlaceholder: "Cerca per nome o email...",
+    filterByStatus: "Filtra per stato",
+    listTitle: "Lista dei membri",
+    membersCount: "membri",
+    noResults: "Nessun membro trovato",
+    stats: {
+      total: "Totale membri",
+      active: "Quote in regola",
+      expiring: "In scadenza",
+      expired: "Quote scadute",
+    },
+    status: {
+      active: "In regola",
+      expiring: "In scadenza",
+      expired: "Scaduto",
+    },
+    filters: {
+      all: "Tutti gli stati",
+      active: "In regola",
+      expiring: "In scadenza",
+      expired: "Scaduto",
+    },
+    table: {
+      name: "Nome",
+      type: "Tipo iscrizione",
+      status: "Stato quota",
+      endDate: "Data fine",
+      actions: "Azioni",
     },
   },
 

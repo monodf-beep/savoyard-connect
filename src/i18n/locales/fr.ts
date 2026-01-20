@@ -57,6 +57,11 @@ export const fr = {
     siloCulture: "Silo Culture",
     selectContext: "Sélectionner un espace",
     createAssociation: "Créer une Asso",
+    // New navigation keys for association ERP
+    membersSubscriptions: "Membres & Adhésions",
+    hrVolunteering: "RH & Bénévolat",
+    internalProjects: "Projets Internes",
+    returnToHub: "⬅️ Retour au Hub Réseau",
   },
 
   // Hub Network Page
@@ -267,6 +272,44 @@ export const fr = {
         resourceAdded: "Ressource ajoutée",
       },
       completeProfile: "Compléter mon profil",
+    },
+  },
+
+  // Members & Subscriptions
+  members: {
+    title: "Membres & Adhésions",
+    subtitle: "Gérez les adhésions et cotisations de votre association",
+    import: "Importer",
+    export: "Exporter",
+    addMember: "Ajouter un membre",
+    searchPlaceholder: "Rechercher par nom ou email...",
+    filterByStatus: "Filtrer par statut",
+    listTitle: "Liste des membres",
+    membersCount: "membres",
+    noResults: "Aucun membre trouvé",
+    stats: {
+      total: "Total membres",
+      active: "Cotisations à jour",
+      expiring: "Expire bientôt",
+      expired: "Cotisations expirées",
+    },
+    status: {
+      active: "À jour",
+      expiring: "Expire bientôt",
+      expired: "Expiré",
+    },
+    filters: {
+      all: "Tous les statuts",
+      active: "À jour",
+      expiring: "Expire bientôt",
+      expired: "Expiré",
+    },
+    table: {
+      name: "Nom",
+      type: "Type d'adhésion",
+      status: "Statut cotisation",
+      endDate: "Date de fin",
+      actions: "Actions",
     },
   },
 
