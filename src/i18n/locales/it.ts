@@ -66,6 +66,7 @@ export const it = {
     returnToHub: "⬅️ Torna all'Hub Rete",
     mutualisation: "Mutualizzazione",
     accompagnateur: "L'Accompagnatore",
+    toolbox: "Cassetta degli Attrezzi",
   },
 
   // Accompagnateur Page

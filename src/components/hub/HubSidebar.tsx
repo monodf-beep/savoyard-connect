@@ -151,6 +151,11 @@ const associationItems: NavItem[] = [
     gestionnaireOnly: true,
   },
   { 
+    path: "/toolbox", 
+    labelKey: "nav.toolbox", 
+    icon: Briefcase,
+  },
+  { 
     path: "/settings", 
     labelKey: "nav.settings", 
     icon: Settings, 
