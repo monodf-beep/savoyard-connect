@@ -1,13 +1,16 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
 import { HubPageLayout } from "@/components/hub/HubPageLayout";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Users, Briefcase, Plus, Rocket } from "lucide-react";
+import { Users, Briefcase, Plus, Rocket, Lock, Sparkles } from "lucide-react";
 import { HRPoolCard } from "@/components/mutualisation/HRPoolCard";
 import { ProjectPoolCard } from "@/components/mutualisation/ProjectPoolCard";
 import { ParticipationModal } from "@/components/mutualisation/ParticipationModal";
+import { useMembership } from "@/hooks/useMembership";
+import { UpgradeCTA } from "@/components/membership/LockedFeatureButton";
 
 // Mock data for HR pools
 const hrPools = [
@@ -98,9 +101,13 @@ interface SelectedPool {
 
 export default function Mutualisation() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
+  const { canAccessMutualisation } = useMembership();
   const [activeTab, setActiveTab] = useState("hr");
   const [showNewCollectDialog, setShowNewCollectDialog] = useState(false);
   const [selectedPool, setSelectedPool] = useState<SelectedPool | null>(null);
+  
+  const isLocked = !canAccessMutualisation;
 
   const handleParticipate = (type: PoolType, id: string) => {
     if (type === "hr") {
@@ -177,26 +184,30 @@ export default function Mutualisation() {
           </TabsList>
 
           {/* HR Pools Tab */}
-          <TabsContent value="hr" className="mt-0">
+          <TabsContent value="hr" className="mt-0 space-y-6">
+            {isLocked && <UpgradeCTA />}
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {hrPools.map((pool) => (
                 <HRPoolCard
                   key={pool.id}
                   {...pool}
                   onParticipate={() => handleParticipate("hr", pool.id)}
+                  locked={isLocked}
                 />
               ))}
             </div>
           </TabsContent>
 
           {/* Projects Tab */}
-          <TabsContent value="projects" className="mt-0">
+          <TabsContent value="projects" className="mt-0 space-y-6">
+            {isLocked && <UpgradeCTA />}
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {projectPools.map((pool) => (
                 <ProjectPoolCard
                   key={pool.id}
                   {...pool}
                   onParticipate={() => handleParticipate("project", pool.id)}
+                  locked={isLocked}
                 />
               ))}
             </div>

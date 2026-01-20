@@ -135,6 +135,40 @@ export const it = {
     successProject: "Il tuo contributo è stato registrato!",
   },
 
+  // Membership / Paywall
+  membership: {
+    title: "Adesione Rete",
+    badge: "Economia Collaborativa",
+    heroTitle: "Unisciti alla rete, mutualizza i tuoi mezzi",
+    heroSubtitle: "Diventando membro contribuente, accedi agli impieghi condivisi, alle tariffe negoziate e alle opportunità di finanziamento.",
+    lockedMessage: "Riservato ai membri Contribuenti",
+    premiumOnly: "Premium",
+    upgrade: "Diventa membro",
+    upgradeTitle: "Funzionalità riservata ai membri",
+    upgradeDesc: "Mutualizza per risparmiare! Accedi agli impieghi condivisi, tariffe esperti e opportunità.",
+    seeOffers: "Vedi le offerte",
+    currentPlan: "Piano attuale",
+    recommended: "Consigliato",
+    freePlan: { title: "Account Gratuito", description: "Gestione interna della tua associazione" },
+    memberPlan: { title: "Account Membro", description: "Accesso completo alla mutualizzazione" },
+    features: {
+      internalManagement: "Gestione interna", orgChart: "Organigramma", projectKanban: "Progetti Kanban",
+      financeTracking: "Monitoraggio finanziario", b2bDirectory: "Directory B2B", sharedEmployment: "Impieghi condivisi",
+      coFundedProjects: "Progetti cofinanziati", expertDiscounts: "Tariffe esperti -20%",
+      grantAlerts: "Avvisi sovvenzioni", prioritySupport: "Supporto prioritario",
+    },
+    currentlyActive: "Attualmente attivo", downgrade: "Torna al gratuito", alreadyMember: "Sei membro", subscribe: "Diventa membro",
+    calculator: { title: "Calcola la tua quota", description: "Basata sull'1% del tuo budget annuale (min. 50€, max. 500€)",
+      budgetLabel: "Budget annuale della tua associazione", calculate: "Calcola", yourContribution: "La tua quota annuale",
+      savingsHint: "Cioè meno di {{monthly}}€/mese per accedere a tutti i servizi mutualizzati" },
+    benefits: { sharedJobs: { title: "Impieghi Condivisi", description: "Dividi i costi salariali con altre associazioni" },
+      discounts: { title: "Tariffe Negoziate", description: "-20% sugli esperti partner della rete" },
+      funding: { title: "Opportunità", description: "Avvisi sovvenzioni e bandi mirati" } },
+    invalidBudget: "Inserisci un budget valido", subscribeSuccess: "Benvenuto tra i membri contribuenti!",
+    subscribeSuccessDesc: "Ora hai accesso a tutte le funzionalità di mutualizzazione.",
+    questions: "Domande sull'adesione?", contactUs: "Contattaci",
+  },
+
   // Hub Network Page
   hub: {
     welcome: {

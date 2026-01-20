@@ -135,6 +135,64 @@ export const fr = {
     successProject: "Votre contribution a été enregistrée !",
   },
 
+  // Membership / Paywall
+  membership: {
+    title: "Adhésion Réseau",
+    badge: "Économie Collaborative",
+    heroTitle: "Rejoignez le réseau, mutualisez vos moyens",
+    heroSubtitle: "En devenant membre cotisant, accédez aux emplois partagés, aux tarifs négociés et aux opportunités de financement.",
+    lockedMessage: "Réservé aux membres Cotisants",
+    premiumOnly: "Premium",
+    upgrade: "Devenir membre",
+    upgradeTitle: "Fonctionnalité réservée aux membres",
+    upgradeDesc: "Mutualisez pour économiser ! Accédez aux emplois partagés, tarifs experts et opportunités.",
+    seeOffers: "Voir les offres",
+    currentPlan: "Plan actuel",
+    recommended: "Recommandé",
+    freePlan: {
+      title: "Compte Gratuit",
+      description: "Gestion interne de votre association",
+    },
+    memberPlan: {
+      title: "Compte Membre",
+      description: "Accès complet à la mutualisation",
+    },
+    features: {
+      internalManagement: "Gestion interne",
+      orgChart: "Organigramme",
+      projectKanban: "Projets Kanban",
+      financeTracking: "Suivi financier",
+      b2bDirectory: "Annuaire B2B",
+      sharedEmployment: "Emplois partagés",
+      coFundedProjects: "Projets cofinancés",
+      expertDiscounts: "Tarifs experts -20%",
+      grantAlerts: "Alertes subventions",
+      prioritySupport: "Support prioritaire",
+    },
+    currentlyActive: "Actuellement actif",
+    downgrade: "Revenir au gratuit",
+    alreadyMember: "Vous êtes membre",
+    subscribe: "Devenir membre",
+    calculator: {
+      title: "Calculez votre cotisation",
+      description: "Basée sur 1% de votre budget annuel (min. 50€, max. 500€)",
+      budgetLabel: "Budget annuel de votre association",
+      calculate: "Calculer",
+      yourContribution: "Votre cotisation annuelle",
+      savingsHint: "Soit moins de {{monthly}}€/mois pour accéder à tous les services mutualisés",
+    },
+    benefits: {
+      sharedJobs: { title: "Emplois Partagés", description: "Divisez les coûts salariaux avec d'autres associations" },
+      discounts: { title: "Tarifs Négociés", description: "-20% sur les experts partenaires du réseau" },
+      funding: { title: "Opportunités", description: "Alertes subventions et appels à projets ciblés" },
+    },
+    invalidBudget: "Veuillez entrer un budget valide",
+    subscribeSuccess: "Bienvenue parmi les membres cotisants !",
+    subscribeSuccessDesc: "Vous avez maintenant accès à toutes les fonctionnalités de mutualisation.",
+    questions: "Des questions sur l'adhésion ?",
+    contactUs: "Contactez-nous",
+  },
+
   // Hub Network Page
   hub: {
     welcome: {
