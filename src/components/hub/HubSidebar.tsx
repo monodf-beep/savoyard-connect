@@ -196,8 +196,8 @@ export const HubSidebar = ({ collapsed, onToggle }: HubSidebarProps) => {
     if (item.isSeparator) {
       if (collapsed) return null;
       return (
-        <div key={item.labelKey} className="pt-4 pb-2">
-          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground px-3">
+        <div key={item.labelKey} className="pt-3 pb-1">
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground px-2">
             {t(item.labelKey)}
           </p>
         </div>
@@ -211,19 +211,19 @@ export const HubSidebar = ({ collapsed, onToggle }: HubSidebarProps) => {
       <Link
         to={item.disabled ? "#" : item.path}
         className={cn(
-          "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all",
+          "flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-sm font-medium transition-all",
           isActive && !item.disabled
             ? "bg-primary/10 text-primary"
             : item.disabled
             ? "text-muted-foreground/50 cursor-not-allowed"
             : "text-muted-foreground hover:bg-muted hover:text-foreground",
-          collapsed && "justify-center px-2"
+          collapsed && "justify-center px-2 py-2"
         )}
         onClick={(e) => item.disabled && e.preventDefault()}
       >
-        <Icon className={cn("h-5 w-5 flex-shrink-0", item.disabled && "opacity-50")} />
+        <Icon className={cn("h-4 w-4 flex-shrink-0", item.disabled && "opacity-50")} />
         {!collapsed && (
-          <span className={cn("flex-1", item.disabled && "opacity-50")}>
+          <span className={cn("flex-1 text-[13px]", item.disabled && "opacity-50")}>
             {t(item.labelKey)}
           </span>
         )}
@@ -256,76 +256,56 @@ export const HubSidebar = ({ collapsed, onToggle }: HubSidebarProps) => {
     <aside 
       className={cn(
         "fixed left-0 top-16 z-40 h-[calc(100vh-4rem)] border-r border-border bg-card transition-all duration-300",
-        collapsed ? "w-16" : "w-64"
+        collapsed ? "w-14" : "w-56"
       )}
     >
       <div className="flex h-full flex-col">
-        {/* Context Indicator */}
+        {/* Context Indicator - Compact */}
         {!collapsed && (
-          <div className="px-4 py-3 border-b border-border">
-            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          <div className="px-3 py-2 border-b border-border">
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
               {currentContext === 'hub' ? t("nav.hubNetwork") : t("nav.sections.myAssociation")}
             </p>
           </div>
         )}
 
-        {/* Navigation */}
-        <nav className="flex-1 overflow-y-auto p-3">
-          <div className="space-y-1">
+        {/* Navigation - Compact padding */}
+        <nav className="flex-1 overflow-y-auto px-2 py-2">
+          <div className="space-y-0.5">
             {navigationItems.map(renderNavItem)}
           </div>
         </nav>
 
-        {/* Return to Hub Button - Only in association context */}
-        {currentContext === 'association' && (
-          <div className="px-3 py-2 border-t border-border">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="outline"
-                  className={cn(
-                    "w-full bg-secondary/10 border-secondary/30 text-secondary hover:bg-secondary/20 hover:text-secondary",
-                    collapsed ? "px-2" : "justify-start gap-2"
-                  )}
-                  onClick={handleReturnToHub}
-                >
-                  <ArrowLeft className="h-4 w-4" />
-                  {!collapsed && t("nav.returnToHub")}
-                </Button>
-              </TooltipTrigger>
-              {collapsed && (
-                <TooltipContent side="right" className="bg-popover">
-                  <p>{t("nav.returnToHub")}</p>
-                </TooltipContent>
-              )}
-            </Tooltip>
-          </div>
-        )}
-
-        {/* Public indicator legend */}
+        {/* Public indicator legend - Compact */}
         {!collapsed && currentContext === 'association' && (
-          <div className="px-4 py-2 border-t border-border">
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <Globe className="h-3 w-3 text-secondary" />
+          <div className="px-3 py-1.5 border-t border-border">
+            <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
+              <Globe className="h-2.5 w-2.5 text-secondary" />
               <span>{t("nav.publicIndicator")}</span>
             </div>
           </div>
         )}
 
-        {/* Collapse Toggle */}
-        <div className="border-t border-border p-3">
+        {/* Collapse Toggle - Compact */}
+        <div className="border-t border-border p-2">
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
                 variant="ghost"
-                size="icon"
-                className="w-full h-9"
+                size="sm"
+                className={cn(
+                  "h-7 text-muted-foreground hover:text-foreground",
+                  collapsed ? "w-full justify-center" : "w-full justify-start gap-2 px-2"
+                )}
                 onClick={onToggle}
               >
                 {collapsed ? (
                   <ChevronRight className="h-4 w-4" />
                 ) : (
-                  <ChevronLeft className="h-4 w-4" />
+                  <>
+                    <ChevronLeft className="h-4 w-4" />
+                    <span className="text-xs">{t("common.collapse")}</span>
+                  </>
                 )}
               </Button>
             </TooltipTrigger>

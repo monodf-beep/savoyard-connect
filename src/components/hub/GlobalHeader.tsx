@@ -17,6 +17,7 @@ import {
   Plus,
   Check,
   Settings,
+  ArrowLeft,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -165,23 +166,41 @@ export const GlobalHeader = ({ breadcrumb, onMobileMenuToggle }: GlobalHeaderPro
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="w-72 bg-popover">
-            {/* Hub Network Option */}
-            <DropdownMenuItem 
-              className={cn(
-                "flex items-center gap-3 p-3 cursor-pointer",
-                currentContext === 'hub' && "bg-primary/10"
-              )}
-              onClick={() => handleContextSelect('hub')}
-            >
-              <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
-                <Globe className="h-4 w-4 text-white" />
-              </div>
-              <div className="flex-1">
-                <p className="font-medium">🌍 {t("nav.hubNetwork")}</p>
-                <p className="text-xs text-muted-foreground">{t("nav.hubNetworkDesc")}</p>
-              </div>
-              {currentContext === 'hub' && <Check className="h-4 w-4 text-primary" />}
-            </DropdownMenuItem>
+            {/* Return to Hub - Prominent when in association context */}
+            {currentContext === 'association' && (
+              <>
+                <DropdownMenuItem 
+                  className="flex items-center gap-3 p-3 cursor-pointer bg-secondary/10 hover:bg-secondary/20 font-semibold text-secondary"
+                  onClick={() => handleContextSelect('hub')}
+                >
+                  <div className="h-8 w-8 rounded-lg bg-secondary/20 flex items-center justify-center">
+                    <ArrowLeft className="h-4 w-4 text-secondary" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-semibold">⬅️ {t("nav.returnToHub")}</p>
+                    <p className="text-xs text-muted-foreground font-normal">{t("nav.hubNetworkDesc")}</p>
+                  </div>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+              </>
+            )}
+
+            {/* Hub Network Option - Normal display when already in hub */}
+            {currentContext === 'hub' && (
+              <DropdownMenuItem 
+                className="flex items-center gap-3 p-3 cursor-pointer bg-primary/10"
+                onClick={() => handleContextSelect('hub')}
+              >
+                <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
+                  <Globe className="h-4 w-4 text-white" />
+                </div>
+                <div className="flex-1">
+                  <p className="font-medium">🌍 {t("nav.hubNetwork")}</p>
+                  <p className="text-xs text-muted-foreground">{t("nav.hubNetworkDesc")}</p>
+                </div>
+                <Check className="h-4 w-4 text-primary" />
+              </DropdownMenuItem>
+            )}
 
             <DropdownMenuSeparator />
 

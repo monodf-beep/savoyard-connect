@@ -461,6 +461,7 @@ export const fr = {
     new: "nouveau",
     expand: "Développer",
     explore: "Explorer",
+    collapse: "Réduire",
   },
 
   // Language
