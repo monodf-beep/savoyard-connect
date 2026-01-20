@@ -53,8 +53,9 @@ export const fr = {
     hubNetworkDesc: "Espace collaboratif inter-associations",
     hubHome: "Accueil Hub",
     projectsNetwork: "Projets Réseau",
-    siloSport: "Silo Sport",
-    siloCulture: "Silo Culture",
+    siloSport: "Sport & Montagne",
+    siloCulture: "Racines & Culture",
+    silosSection: "Marchés",
     selectContext: "Sélectionner un espace",
     createAssociation: "Créer une Asso",
     // New navigation keys for association ERP
@@ -63,7 +64,7 @@ export const fr = {
     internalProjects: "Projets Internes",
     taskManagement: "Gestion des tâches",
     returnToHub: "⬅️ Retour au Hub Réseau",
-    mutualisation: "Espace Mutualisation",
+    mutualisation: "Mutualisation",
     accompagnateur: "L'Accompagnateur",
   },
 

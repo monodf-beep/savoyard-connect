@@ -31,8 +31,8 @@ import Pricing from "./pages/Pricing";
 import SportLanding from "./pages/silos/SportLanding";
 import CultureLanding from "./pages/silos/CultureLanding";
 import Experts from "./pages/Experts";
-import Directory from "./pages/Directory";
 import DirectoryHub from "./pages/DirectoryHub";
+import Opportunites from "./pages/Opportunites";
 import Hub from "./pages/Hub";
 import Members from "./pages/Members";
 import Mutualisation from "./pages/Mutualisation";
@@ -116,7 +116,7 @@ const AppContent = () => {
         <Route path="/experts" element={<Experts />} />
         <Route path="/annuaire" element={<DirectoryHub />} />
         <Route path="/annuaire/:id" element={<AssociationProfile />} />
-        <Route path="/annuaire-public" element={<Directory />} />
+        <Route path="/opportunites" element={<Opportunites />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
       {isAdmin && !isPublicPage && (

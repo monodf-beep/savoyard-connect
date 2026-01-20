@@ -15,13 +15,16 @@ import {
   Building2,
   GraduationCap,
   Sparkles,
-  Package,
   Globe,
   Home,
   UserCheck,
   ArrowLeft,
   Kanban,
   Handshake,
+  GitBranch,
+  Mountain,
+  Palette,
+  TrendingUp,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -44,6 +47,7 @@ interface NavItem {
   canBePublic?: boolean;
   adminOnly?: boolean;
   gestionnaireOnly?: boolean;
+  isSeparator?: boolean;
 }
 
 // Hub Network navigation items
@@ -69,25 +73,26 @@ const hubNetworkItems: NavItem[] = [
     icon: Handshake, 
   },
   { 
-    path: "/projects-network", 
-    labelKey: "nav.projectsNetwork", 
-    icon: FolderKanban, 
-    disabled: true,
-    tooltip: "nav.comingSoon",
-  },
-  { 
     path: "/opportunites", 
     labelKey: "nav.opportunities", 
-    icon: Sparkles, 
-    disabled: true,
-    tooltip: "nav.comingSoon",
+    icon: TrendingUp, 
+  },
+  // Separator for Silos
+  { 
+    path: "", 
+    labelKey: "nav.silosSection", 
+    icon: Globe, 
+    isSeparator: true,
   },
   { 
-    path: "/ressources", 
-    labelKey: "nav.resourcesShared", 
-    icon: Package, 
-    disabled: true,
-    tooltip: "nav.comingSoon",
+    path: "/silos/sport", 
+    labelKey: "nav.siloSport", 
+    icon: Mountain, 
+  },
+  { 
+    path: "/silos/culture", 
+    labelKey: "nav.siloCulture", 
+    icon: Palette, 
   },
 ];
 
@@ -119,6 +124,12 @@ const associationItems: NavItem[] = [
     path: "/organigramme", 
     labelKey: "nav.hrVolunteering", 
     icon: Users, 
+    canBePublic: true,
+  },
+  { 
+    path: "/value-chains", 
+    labelKey: "nav.valueChains", 
+    icon: GitBranch, 
     canBePublic: true,
   },
   { 
@@ -176,6 +187,18 @@ export const HubSidebar = ({ collapsed, onToggle }: HubSidebarProps) => {
   };
 
   const renderNavItem = (item: NavItem) => {
+    // Handle separator items
+    if (item.isSeparator) {
+      if (collapsed) return null;
+      return (
+        <div key={item.labelKey} className="pt-4 pb-2">
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground px-3">
+            {t(item.labelKey)}
+          </p>
+        </div>
+      );
+    }
+
     const isActive = location.pathname === item.path;
     const Icon = item.icon;
     
