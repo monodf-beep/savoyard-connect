@@ -94,8 +94,6 @@ const Jobs = () => {
   return (
     <HubPageLayout
       breadcrumb={t('nav.volunteering')}
-      orgName={currentAssociation?.name}
-      orgLogo={currentAssociation?.logo_url || undefined}
     >
       {/* Header */}
       <div className="flex items-center justify-between mb-8">

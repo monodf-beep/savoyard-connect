@@ -49,6 +49,53 @@ export const it = {
     },
     createOrJoin: "Crea / Unisciti",
     profile: "Il Mio Profilo",
+    hubNetwork: "Hub Rete",
+    hubNetworkDesc: "Spazio collaborativo inter-associazioni",
+    hubHome: "Home Hub",
+    projectsNetwork: "Progetti Rete",
+    siloSport: "Silo Sport",
+    siloCulture: "Silo Cultura",
+    selectContext: "Seleziona uno spazio",
+    createAssociation: "Crea un'Asso",
+  },
+
+  // Hub Network Page
+  hub: {
+    welcome: {
+      title: "Benvenuto nell'Hub Rete",
+      subtitle: "Esplora le risorse collaborative e connettiti con altre associazioni",
+    },
+    stats: {
+      associations: "Associazioni",
+      countries: "Paesi",
+      projects: "Progetti collaborativi",
+      members: "Membri attivi",
+    },
+    explore: {
+      title: "Esplora la rete",
+    },
+    links: {
+      directory: "Trova partner compatibili per geografia e settore",
+      experts: "Professionisti per accompagnare la tua associazione",
+      siloSport: "La rete dei club sportivi alpini",
+      siloCulture: "La rete delle associazioni culturali",
+      projectsNetwork: "Progetti collaborativi inter-associazioni",
+      opportunities: "Sovvenzioni, bandi e aiuti",
+      resources: "Attrezzature e competenze condivise",
+    },
+    comingSoon: {
+      title: "Prossimamente",
+    },
+    activity: {
+      title: "Attività recente della rete",
+      subtitle: "Le ultime notizie dalla comunità",
+      newAssociation: "Una nuova associazione si è unita alla rete",
+      newProject: "Nuovo progetto collaborativo lanciato",
+      newPartnership: "Nuova partnership stabilita",
+      today: "Oggi",
+      yesterday: "Ieri",
+      twoDaysAgo: "2 giorni fa",
+    },
   },
 
   // Pillars
@@ -226,6 +273,8 @@ export const it = {
     previous: "Indietro",
     thisMonth: "questo mese",
     new: "nuovo",
+    expand: "Espandi",
+    explore: "Esplora",
   },
 
   // Language

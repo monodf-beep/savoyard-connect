@@ -32,6 +32,7 @@ import SportLanding from "./pages/silos/SportLanding";
 import CultureLanding from "./pages/silos/CultureLanding";
 import Experts from "./pages/Experts";
 import Directory from "./pages/Directory";
+import Hub from "./pages/Hub";
 
 const queryClient = new QueryClient();
 
@@ -86,6 +87,7 @@ const AppContent = () => {
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/onboarding-asso" element={<OnboardingAsso />} />
+        <Route path="/hub" element={<Hub />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/organigramme" element={<Index />} />
         <Route path="/jobs" element={<Jobs />} />
