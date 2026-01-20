@@ -82,6 +82,107 @@ export type Database = {
         }
         Relationships: []
       }
+      association_invitations: {
+        Row: {
+          accepted_at: string | null
+          association_id: string
+          created_at: string
+          email: string
+          expires_at: string
+          id: string
+          invited_by: string
+          role: Database["public"]["Enums"]["association_role"]
+          status: string
+          token: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          association_id: string
+          created_at?: string
+          email: string
+          expires_at?: string
+          id?: string
+          invited_by: string
+          role?: Database["public"]["Enums"]["association_role"]
+          status?: string
+          token: string
+        }
+        Update: {
+          accepted_at?: string | null
+          association_id?: string
+          created_at?: string
+          email?: string
+          expires_at?: string
+          id?: string
+          invited_by?: string
+          role?: Database["public"]["Enums"]["association_role"]
+          status?: string
+          token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "association_invitations_association_id_fkey"
+            columns: ["association_id"]
+            isOneToOne: false
+            referencedRelation: "associations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      association_members: {
+        Row: {
+          association_id: string
+          created_at: string
+          id: string
+          invited_at: string | null
+          invited_by: string | null
+          joined_at: string | null
+          person_id: string | null
+          role: Database["public"]["Enums"]["association_role"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          association_id: string
+          created_at?: string
+          id?: string
+          invited_at?: string | null
+          invited_by?: string | null
+          joined_at?: string | null
+          person_id?: string | null
+          role?: Database["public"]["Enums"]["association_role"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          association_id?: string
+          created_at?: string
+          id?: string
+          invited_at?: string | null
+          invited_by?: string | null
+          joined_at?: string | null
+          person_id?: string | null
+          role?: Database["public"]["Enums"]["association_role"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "association_members_association_id_fkey"
+            columns: ["association_id"]
+            isOneToOne: false
+            referencedRelation: "associations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "association_members_person_id_fkey"
+            columns: ["person_id"]
+            isOneToOne: false
+            referencedRelation: "people"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       association_messages: {
         Row: {
           created_at: string
@@ -794,6 +895,7 @@ export type Database = {
           specialite: string | null
           title: string | null
           updated_at: string | null
+          user_id: string | null
         }
         Insert: {
           adresse?: string | null
@@ -816,6 +918,7 @@ export type Database = {
           specialite?: string | null
           title?: string | null
           updated_at?: string | null
+          user_id?: string | null
         }
         Update: {
           adresse?: string | null
@@ -838,6 +941,7 @@ export type Database = {
           specialite?: string | null
           title?: string | null
           updated_at?: string | null
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -1396,6 +1500,7 @@ export type Database = {
           specialite: string | null
           title: string | null
           updated_at: string | null
+          user_id: string | null
         }[]
         SetofOptions: {
           from: "*"
@@ -1429,11 +1534,27 @@ export type Database = {
           section_id: string
         }[]
       }
+      has_association_role: {
+        Args: {
+          _association_id: string
+          _role: Database["public"]["Enums"]["association_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
+        Returns: boolean
+      }
+      is_association_admin: {
+        Args: { _association_id: string; _user_id: string }
+        Returns: boolean
+      }
+      is_association_member: {
+        Args: { _association_id: string; _user_id: string }
         Returns: boolean
       }
       is_section_leader: {
@@ -1457,6 +1578,12 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "user" | "section_leader"
+      association_role:
+        | "owner"
+        | "admin"
+        | "gestionnaire"
+        | "contributeur"
+        | "membre"
       project_status: "planned" | "in_progress" | "completed"
     }
     CompositeTypes: {
@@ -1586,6 +1713,13 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "user", "section_leader"],
+      association_role: [
+        "owner",
+        "admin",
+        "gestionnaire",
+        "contributeur",
+        "membre",
+      ],
       project_status: ["planned", "in_progress", "completed"],
     },
   },
