@@ -214,8 +214,6 @@ const Projects = () => {
     return (
       <HubPageLayout
         breadcrumb={t('nav.projects')}
-        orgName={currentAssociation?.name}
-        orgLogo={currentAssociation?.logo_url || undefined}
       >
         <div className="flex items-center justify-center min-h-[50vh]">
           <p className="text-muted-foreground">Chargement...</p>
@@ -227,8 +225,6 @@ const Projects = () => {
   return (
     <HubPageLayout
       breadcrumb={t('nav.projects')}
-      orgName={currentAssociation?.name}
-      orgLogo={currentAssociation?.logo_url || undefined}
     >
       <div className="flex flex-col lg:flex-row gap-8">
         {/* Main Content - Projects */}

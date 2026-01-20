@@ -78,8 +78,6 @@ const Index = () => {
   return (
     <HubPageLayout
       breadcrumb={t('nav.organigramme')}
-      orgName={currentAssociation?.name}
-      orgLogo={currentAssociation?.logo_url || undefined}
     >
       <div className="space-y-4">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">

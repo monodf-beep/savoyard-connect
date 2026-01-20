@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/hooks/useAuth";
 import { HubSidebar } from "./HubSidebar";
-import { HubTopbar } from "./HubTopbar";
+import { GlobalHeader } from "./GlobalHeader";
 import { HubKPICards } from "./HubKPICards";
 import { HubActivityTimeline } from "./HubActivityTimeline";
 import { HubQuickActions } from "./HubQuickActions";
@@ -67,42 +67,39 @@ export const HubDashboardLayout = ({
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Desktop Sidebar */}
-      <div className="hidden md:block">
-        <HubSidebar 
-          collapsed={sidebarCollapsed} 
-          onToggle={() => setSidebarCollapsed(!sidebarCollapsed)} 
-        />
-      </div>
+    <div className="min-h-screen bg-background flex flex-col">
+      {/* Global Header */}
+      <GlobalHeader 
+        breadcrumb={t("nav.dashboard")}
+        onMobileMenuToggle={() => setMobileMenuOpen(true)}
+      />
 
-      {/* Mobile Sidebar */}
-      <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-        <SheetContent side="left" className="p-0 w-64">
+      <div className="flex flex-1">
+        {/* Desktop Sidebar */}
+        <div className="hidden md:block">
           <HubSidebar 
-            collapsed={false} 
-            onToggle={() => setMobileMenuOpen(false)} 
+            collapsed={sidebarCollapsed} 
+            onToggle={() => setSidebarCollapsed(!sidebarCollapsed)} 
           />
-        </SheetContent>
-      </Sheet>
+        </div>
 
-      {/* Main Content */}
-      <div 
-        className={cn(
-          "transition-all duration-300",
-          sidebarCollapsed ? "md:ml-16" : "md:ml-64"
-        )}
-      >
-        {/* Topbar */}
-        <HubTopbar 
-          breadcrumb={t("nav.dashboard")}
-          onMobileMenuToggle={() => setMobileMenuOpen(true)}
-          orgName={orgName}
-          orgLogo={orgLogo}
-        />
+        {/* Mobile Sidebar */}
+        <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+          <SheetContent side="left" className="p-0 w-64">
+            <HubSidebar 
+              collapsed={false} 
+              onToggle={() => setMobileMenuOpen(false)} 
+            />
+          </SheetContent>
+        </Sheet>
 
-        {/* Page Content */}
-        <main className="p-4 md:p-6 lg:p-8 space-y-6">
+        {/* Main Content */}
+        <main 
+          className={cn(
+            "flex-1 transition-all duration-300 p-4 md:p-6 lg:p-8 space-y-6",
+            sidebarCollapsed ? "md:ml-16" : "md:ml-64"
+          )}
+        >
           {/* Welcome Header */}
           <div className="space-y-1">
             <div className="flex flex-wrap items-center gap-3">
