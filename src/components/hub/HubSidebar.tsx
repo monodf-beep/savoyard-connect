@@ -36,6 +36,7 @@ import {
 interface HubSidebarProps {
   collapsed: boolean;
   onToggle: () => void;
+  isMobile?: boolean;
 }
 
 interface NavItem {
@@ -163,12 +164,15 @@ const associationItems: NavItem[] = [
   },
 ];
 
-export const HubSidebar = ({ collapsed, onToggle }: HubSidebarProps) => {
+export const HubSidebar = ({ collapsed, onToggle, isMobile = false }: HubSidebarProps) => {
   const { t } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
   const { isAdmin } = useAuth();
   const { currentContext, isOwnerOrAdmin, isGestionnaire, selectHubContext } = useAssociation();
+
+  // On mobile, always show expanded view
+  const isCollapsed = isMobile ? false : collapsed;
 
   // Get navigation items based on context
   const getNavigationItems = (): NavItem[] => {
@@ -194,7 +198,7 @@ export const HubSidebar = ({ collapsed, onToggle }: HubSidebarProps) => {
   const renderNavItem = (item: NavItem) => {
     // Handle separator items
     if (item.isSeparator) {
-      if (collapsed) return null;
+      if (isCollapsed) return null;
       return (
         <div key={item.labelKey} className="pt-3 pb-1">
           <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground px-2">
@@ -211,35 +215,39 @@ export const HubSidebar = ({ collapsed, onToggle }: HubSidebarProps) => {
       <Link
         to={item.disabled ? "#" : item.path}
         className={cn(
-          "flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-sm font-medium transition-all",
+          "flex items-center gap-2.5 rounded-md px-2.5 py-2 text-sm font-medium transition-all",
           isActive && !item.disabled
             ? "bg-primary/10 text-primary"
             : item.disabled
             ? "text-muted-foreground/50 cursor-not-allowed"
             : "text-muted-foreground hover:bg-muted hover:text-foreground",
-          collapsed && "justify-center px-2 py-2"
+          isCollapsed && "justify-center px-2 py-2"
         )}
-        onClick={(e) => item.disabled && e.preventDefault()}
+        onClick={(e) => {
+          if (item.disabled) e.preventDefault();
+          // Close mobile menu on navigation
+          if (isMobile) onToggle();
+        }}
       >
         <Icon className={cn("h-4 w-4 flex-shrink-0", item.disabled && "opacity-50")} />
-        {!collapsed && (
+        {!isCollapsed && (
           <span className={cn("flex-1 text-[13px]", item.disabled && "opacity-50")}>
             {t(item.labelKey)}
           </span>
         )}
-        {!collapsed && item.canBePublic && (
+        {!isCollapsed && item.canBePublic && (
           <Globe className="h-3 w-3 text-secondary opacity-60" />
         )}
       </Link>
     );
 
-    if (collapsed || item.disabled) {
+    if (isCollapsed || item.disabled) {
       return (
         <Tooltip key={item.path + item.labelKey}>
           <TooltipTrigger asChild>
             {linkContent}
           </TooltipTrigger>
-          <TooltipContent side="right" className="bg-popover">
+          <TooltipContent side="right" className="bg-popover border border-border shadow-lg">
             <p className="flex items-center gap-2">
               {item.disabled ? t(item.tooltip || "nav.comingSoon") : t(item.labelKey)}
               {item.canBePublic && <Globe className="h-3 w-3 text-secondary" />}
@@ -252,16 +260,38 @@ export const HubSidebar = ({ collapsed, onToggle }: HubSidebarProps) => {
     return <div key={item.path + item.labelKey}>{linkContent}</div>;
   };
 
+  // Mobile view - just render navigation without wrapper
+  if (isMobile) {
+    return (
+      <div className="py-2 px-2">
+        <div className="space-y-0.5">
+          {navigationItems.map(renderNavItem)}
+        </div>
+        
+        {/* Public indicator legend */}
+        {currentContext === 'association' && (
+          <div className="mt-4 px-2 py-2 border-t border-border">
+            <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
+              <Globe className="h-2.5 w-2.5 text-secondary" />
+              <span>{t("nav.publicIndicator")}</span>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // Desktop view
   return (
     <aside 
       className={cn(
         "fixed left-0 top-16 z-40 h-[calc(100vh-4rem)] border-r border-border bg-card transition-all duration-300",
-        collapsed ? "w-14" : "w-56"
+        isCollapsed ? "w-14" : "w-56"
       )}
     >
       <div className="flex h-full flex-col">
         {/* Context Indicator - Compact */}
-        {!collapsed && (
+        {!isCollapsed && (
           <div className="px-3 py-2 border-b border-border">
             <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
               {currentContext === 'hub' ? t("nav.hubNetwork") : t("nav.sections.myAssociation")}
@@ -277,7 +307,7 @@ export const HubSidebar = ({ collapsed, onToggle }: HubSidebarProps) => {
         </nav>
 
         {/* Public indicator legend - Compact */}
-        {!collapsed && currentContext === 'association' && (
+        {!isCollapsed && currentContext === 'association' && (
           <div className="px-3 py-1.5 border-t border-border">
             <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
               <Globe className="h-2.5 w-2.5 text-secondary" />
@@ -295,11 +325,11 @@ export const HubSidebar = ({ collapsed, onToggle }: HubSidebarProps) => {
                 size="sm"
                 className={cn(
                   "h-7 text-muted-foreground hover:text-foreground",
-                  collapsed ? "w-full justify-center" : "w-full justify-start gap-2 px-2"
+                  isCollapsed ? "w-full justify-center" : "w-full justify-start gap-2 px-2"
                 )}
                 onClick={onToggle}
               >
-                {collapsed ? (
+                {isCollapsed ? (
                   <ChevronRight className="h-4 w-4" />
                 ) : (
                   <>
@@ -309,8 +339,8 @@ export const HubSidebar = ({ collapsed, onToggle }: HubSidebarProps) => {
                 )}
               </Button>
             </TooltipTrigger>
-            {collapsed && (
-              <TooltipContent side="right" className="bg-popover">
+            {isCollapsed && (
+              <TooltipContent side="right" className="bg-popover border border-border shadow-lg">
                 <p>{t("common.expand")}</p>
               </TooltipContent>
             )}
