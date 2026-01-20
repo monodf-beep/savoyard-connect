@@ -63,6 +63,37 @@ export const fr = {
     internalProjects: "Projets Internes",
     returnToHub: "⬅️ Retour au Hub Réseau",
     mutualisation: "Espace Mutualisation",
+    accompagnateur: "L'Accompagnateur",
+  },
+
+  // Accompagnateur Page
+  accompagnateur: {
+    title: "L'Accompagnateur",
+    assistantName: "L'Accompagnateur",
+    badge: "IA",
+    greeting: "Bonjour ! Quel défi souhaitez-vous relever aujourd'hui ?",
+    selectChallenge: "Sélectionnez votre thématique",
+    selectOption: "Choisissez votre réponse",
+    diagnosticComplete: "Parfait ! J'ai préparé votre plan d'action personnalisé.",
+    scrollForPlan: "👇 Découvrez votre ordonnance ci-dessous",
+    restart: "Recommencer",
+    ordonnanceTitle: "Votre Plan d'Action Personnalisé",
+    ordonnanceSubtitle: "Basé sur votre diagnostic, voici nos recommandations",
+    categories: {
+      treasury: "Trésorerie",
+      communication: "Communication",
+      volunteers: "Bénévoles",
+      admin: "Administratif",
+    },
+    cardLabels: {
+      immediate: "Action Immédiate",
+      expert: "Expert Recommandé",
+      resource: "Auto-Formation",
+    },
+    addedToKanban: "Tâche ajoutée à votre Kanban !",
+    rdvRequested: "Demande de RDV envoyée !",
+    guideOpening: "Ouverture du guide...",
+    needMoreHelp: "Besoin d'un accompagnement plus poussé ?",
   },
 
   // Mutualisation Page
