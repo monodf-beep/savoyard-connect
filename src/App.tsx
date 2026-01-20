@@ -40,6 +40,15 @@ import Mutualisation from "./pages/Mutualisation";
 import Accompagnateur from "./pages/Accompagnateur";
 import AdhesionReseau from "./pages/AdhesionReseau";
 import AssociationProfile from "./pages/AssociationProfile";
+import Profile from "./pages/Profile";
+import NetworkProjects from "./pages/NetworkProjects";
+import Contact from "./pages/Contact";
+import FAQ from "./pages/FAQ";
+import LegalMentions from "./pages/LegalMentions";
+import TermsOfService from "./pages/TermsOfService";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import Blog from "./pages/Blog";
+import BlogPost from "./pages/BlogPost";
 import { MembershipProvider } from "./hooks/useMembership";
 
 const queryClient = new QueryClient();
@@ -119,6 +128,15 @@ const AppContent = () => {
         <Route path="/annuaire" element={<DirectoryHub />} />
         <Route path="/annuaire/:id" element={<AssociationProfile />} />
         <Route path="/opportunites" element={<Opportunites />} />
+        <Route path="/profil" element={<Profile />} />
+        <Route path="/projets-reseau" element={<NetworkProjects />} />
+        <Route path="/contact" element={<Contact />} />
+        <Route path="/faq" element={<FAQ />} />
+        <Route path="/mentions-legales" element={<LegalMentions />} />
+        <Route path="/cgu" element={<TermsOfService />} />
+        <Route path="/confidentialite" element={<PrivacyPolicy />} />
+        <Route path="/blog" element={<Blog />} />
+        <Route path="/blog/:slug" element={<BlogPost />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
       {isAdmin && !isPublicPage && (

@@ -76,19 +76,24 @@ export const PublicFooter = () => {
             <h4 className="font-semibold text-foreground mb-4">{t('footer.legal')}</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li>
-                <a href="#" className="hover:text-primary transition-colors">
+                <Link to="/cgu" className="hover:text-primary transition-colors">
                   {t('footer.terms')}
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#" className="hover:text-primary transition-colors">
+                <Link to="/confidentialite" className="hover:text-primary transition-colors">
                   {t('footer.privacy')}
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="mailto:contact@associacion.eu" className="hover:text-primary transition-colors">
+                <Link to="/mentions-legales" className="hover:text-primary transition-colors">
+                  {t('footer.legalMentions')}
+                </Link>
+              </li>
+              <li>
+                <Link to="/contact" className="hover:text-primary transition-colors">
                   {t('footer.contact')}
-                </a>
+                </Link>
               </li>
             </ul>
           </div>

@@ -768,4 +768,99 @@ export const it = {
       button: "Iscrivere la mia associazione",
     },
   },
+
+  // Profile
+  profile: {
+    title: "Il Mio Profilo",
+    subtitle: "Gestisci le tue informazioni personali",
+    breadcrumb: "Profilo",
+    saved: "Profilo salvato",
+    saveError: "Errore durante il salvataggio",
+    memberSince: "Membro dal",
+    personalInfo: "Informazioni personali",
+    personalInfoDesc: "I tuoi dati di contatto",
+    firstName: "Nome",
+    firstNamePlaceholder: "Il tuo nome",
+    lastName: "Cognome",
+    lastNamePlaceholder: "Il tuo cognome",
+    phone: "Telefono",
+    phonePlaceholder: "+39 123 456 7890",
+    region: "Regione",
+    regionPlaceholder: "Valle d'Aosta",
+    myAssociations: "Le mie associazioni",
+    myAssociationsDesc: "Le associazioni di cui fai parte",
+    noAssociations: "Non sei membro di nessuna associazione",
+    addAssociation: "Aggiungi un'associazione",
+    preferences: "Preferenze",
+    preferencesDesc: "Personalizza la tua esperienza",
+    preferencesComingSoon: "Le preferenze saranno disponibili presto",
+    security: "Sicurezza",
+    securityDesc: "Gestisci la sicurezza del tuo account",
+    changePassword: "Cambia password",
+    save: "Salva modifiche",
+  },
+
+  // Network projects
+  networkProjects: {
+    title: "Progetti Rete",
+    subtitle: "Scopri i progetti collaborativi della rete",
+    breadcrumb: "Progetti Rete",
+    searchPlaceholder: "Cerca un progetto...",
+    filterStatus: "Filtra per stato",
+    allStatuses: "Tutti gli stati",
+    noDescription: "Nessuna descrizione",
+    funding: "Finanziamento",
+    noProjects: "Nessun progetto",
+    noProjectsDesc: "I progetti collaborativi appariranno qui",
+    stats: { totalProjects: "Progetti totali", inProgress: "In corso", totalFunding: "Finanziamento totale" },
+    status: { planned: "Pianificato", inProgress: "In corso", completed: "Completato", cancelled: "Annullato" },
+    cta: { title: "Hai un'idea di progetto?", description: "Proponi un progetto collaborativo.", button: "Proponi un progetto", comingSoon: "Prossimamente" },
+  },
+
+  // Contact
+  contact: {
+    title: "Contattaci",
+    subtitle: "Una domanda? Non esitare a scriverci.",
+    form: { title: "Inviaci un messaggio", name: "Nome", namePlaceholder: "Mario Rossi", email: "Email", emailPlaceholder: "mario@esempio.com", subject: "Oggetto", subjectPlaceholder: "Seleziona", subjects: { general: "Domanda generale", support: "Supporto", partnership: "Partnership", other: "Altro" }, message: "Messaggio", messagePlaceholder: "Descrivi la tua richiesta...", submit: "Invia", success: "Messaggio inviato!", error: "Errore" },
+    direct: { title: "Contatto diretto", description: "Per richieste urgenti:" },
+    faq: { title: "FAQ rapide", q1: "Come unirsi?", a1: "Crea un account gratuito.", q2: "È a pagamento?", a2: "Versione gratuita disponibile.", q3: "Come contattare un'associazione?", a3: "Usa l'annuario.", viewAll: "Vedi tutte le FAQ" },
+  },
+
+  // FAQ
+  faq: {
+    title: "Domande Frequenti",
+    subtitle: "Trova rapidamente le risposte",
+    searchPlaceholder: "Cerca...",
+    allCategories: "Tutte",
+    noResults: "Nessun risultato",
+    stillNeedHelp: "Non hai trovato la risposta?",
+    contactUs: "Il nostro team è qui per aiutarti.",
+    contactButton: "Contattaci",
+    categories: { general: "Generale", membership: "Iscrizione", features: "Funzionalità", support: "Supporto" },
+    items: { whatIs: { q: "Cos'è Associacion?", a: "Una piattaforma per associazioni europee." }, howItWorks: { q: "Come funziona?", a: "Crea account, iscrivi la tua associazione, accedi agli strumenti." }, whoCanJoin: { q: "Chi può unirsi?", a: "Tutte le associazioni europee." }, pricing: { q: "Quanto costa?", a: "Iscrizione base gratuita." }, howToJoin: { q: "Come iscriversi?", a: "Clicca su Crea account." }, cancel: { q: "Posso annullare?", a: "Sì, in qualsiasi momento." }, helloasso: { q: "Come sincronizzare HelloAsso?", a: "Nelle impostazioni, sezione Integrazioni." }, dataPrivacy: { q: "I miei dati sono protetti?", a: "Sì, rispettiamo il GDPR." }, multiAssociation: { q: "Posso gestire più associazioni?", a: "Sì." }, contactSupport: { q: "Come contattare il supporto?", a: "Via email." }, reportBug: { q: "Come segnalare un bug?", a: "Via email con screenshot." } },
+  },
+
+  // Legal
+  legal: {
+    lastUpdated: "Ultimo aggiornamento",
+    mentions: { title: "Note Legali", editor: { title: "Editore", content: "Associacion - Associazione." }, director: { title: "Direttore", content: "Il presidente." }, hosting: { title: "Hosting", content: "Lovable (Supabase)." }, intellectual: { title: "Proprietà intellettuale", content: "Tutti i contenuti sono protetti." }, contact: { title: "Contatto" } },
+    terms: { title: "Condizioni d'Uso", object: { title: "Oggetto", content: "Le presenti CGU regolano l'uso della piattaforma." }, registration: { title: "Registrazione", content: "Aperta a tutte le associazioni." }, services: { title: "Servizi", content: "Strumenti di gestione, annuario B2B, mutualizzazione." }, responsibilities: { title: "Responsabilità", content: "L'utente è responsabile delle informazioni pubblicate." }, intellectual: { title: "Proprietà intellettuale", content: "I contenuti restano proprietà degli utenti." }, termination: { title: "Risoluzione", content: "L'utente può eliminare il suo account." }, jurisdiction: { title: "Giurisdizione", content: "Tribunali francesi." } },
+    privacy: { title: "Privacy Policy", collection: { title: "Dati raccolti", content: "Nome, email, dati associazione." }, purpose: { title: "Finalità", content: "Fornire il servizio." }, storage: { title: "Conservazione", content: "Durante l'iscrizione + 3 anni." }, rights: { title: "I tuoi diritti (GDPR)", content: "Hai i seguenti diritti:", access: "Accesso", rectification: "Rettifica", erasure: "Cancellazione", portability: "Portabilità", opposition: "Opposizione" }, cookies: { title: "Cookie", content: "Usiamo cookie essenziali." }, contact: { title: "Contatto DPO", content: "Email:" } },
+  },
+
+  // Blog
+  blog: {
+    title: "Notizie della rete",
+    subtitle: "Resta informato",
+    allCategories: "Tutte",
+    readMore: "Leggi di più",
+    anonymous: "Anonimo",
+    noPosts: "Nessun articolo",
+    noPostsDesc: "Gli articoli saranno disponibili presto",
+    notFound: "Articolo non trovato",
+    notFoundDesc: "Questo articolo non esiste.",
+    backToList: "Torna agli articoli",
+    categories: { news: "Notizie", tutorials: "Tutorial", testimonials: "Testimonianze" },
+    placeholder: { post1: { title: "Benvenuto su Associacion!", excerpt: "Scopri come la nostra piattaforma può aiutarti." }, post2: { title: "Come creare la tua associazione", excerpt: "Guida pratica." }, post3: { title: "Testimonianza: Club Alpino", excerpt: "Esperienza di un'associazione sportiva." } },
+  },
 };
