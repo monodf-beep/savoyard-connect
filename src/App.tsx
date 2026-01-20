@@ -34,6 +34,7 @@ import Experts from "./pages/Experts";
 import Directory from "./pages/Directory";
 import DirectoryHub from "./pages/DirectoryHub";
 import Hub from "./pages/Hub";
+import Members from "./pages/Members";
 
 const queryClient = new QueryClient();
 
@@ -90,6 +91,7 @@ const AppContent = () => {
         <Route path="/onboarding-asso" element={<OnboardingAsso />} />
         <Route path="/hub" element={<Hub />} />
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/members" element={<Members />} />
         <Route path="/organigramme" element={<Index />} />
         <Route path="/jobs" element={<Jobs />} />
         <Route path="/projects" element={<Projects />} />
