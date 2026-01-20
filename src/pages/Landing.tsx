@@ -159,62 +159,65 @@ const Landing = () => {
             </button>
           </div>
         </div>
-
-        {/* Mobile Menu - Full screen overlay */}
-        {mobileMenuOpen && (
-          <div className="md:hidden fixed inset-0 top-16 z-[9999] bg-background border-t border-border overflow-y-auto">
-            <nav className="flex flex-col items-center gap-6 py-12 px-6">
-              <Link 
-                to="/" 
-                className="text-xl font-semibold text-foreground hover:text-primary transition-colors"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                {t("nav.home")}
-              </Link>
-              <Link 
-                to="/annuaire" 
-                className="text-xl font-semibold text-muted-foreground hover:text-primary transition-colors"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                {t("nav.directory")}
-              </Link>
-              <a 
-                href="#pillars" 
-                className="text-xl font-semibold text-muted-foreground hover:text-primary transition-colors"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                {t("nav.features")}
-              </a>
-              <a 
-                href="#pricing" 
-                className="text-xl font-semibold text-muted-foreground hover:text-primary transition-colors"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                {t("nav.pricing")}
-              </a>
-              <Link 
-                to="/login" 
-                className="text-xl font-semibold text-muted-foreground hover:text-primary transition-colors"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                {t("nav.login")}
-              </Link>
-              <div className="w-full max-w-xs mt-6 space-y-4">
-                <Button 
-                  size="lg"
-                  className="w-full bg-gradient-to-r from-primary to-secondary text-white uppercase font-semibold"
-                  asChild
-                >
-                  <Link to="/signup" onClick={() => setMobileMenuOpen(false)}>
-                    {t("hero.cta.start")}
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Link>
-                </Button>
-              </div>
-            </nav>
-          </div>
-        )}
       </header>
+
+      {/* Mobile Menu - Full screen overlay - OUTSIDE header */}
+      {mobileMenuOpen && (
+        <div 
+          className="md:hidden fixed inset-0 z-[9999] bg-background"
+          style={{ top: '64px' }}
+        >
+          <nav className="flex flex-col items-center gap-6 py-12 px-6 bg-background h-full">
+            <Link 
+              to="/" 
+              className="text-xl font-semibold text-foreground hover:text-primary transition-colors"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              {t("nav.home")}
+            </Link>
+            <Link 
+              to="/annuaire" 
+              className="text-xl font-semibold text-muted-foreground hover:text-primary transition-colors"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              {t("nav.directory")}
+            </Link>
+            <a 
+              href="#pillars" 
+              className="text-xl font-semibold text-muted-foreground hover:text-primary transition-colors"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              {t("nav.features")}
+            </a>
+            <a 
+              href="#pricing" 
+              className="text-xl font-semibold text-muted-foreground hover:text-primary transition-colors"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              {t("nav.pricing")}
+            </a>
+            <Link 
+              to="/login" 
+              className="text-xl font-semibold text-muted-foreground hover:text-primary transition-colors"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              {t("nav.login")}
+            </Link>
+            <div className="w-full max-w-xs mt-6 space-y-4">
+              <Button 
+                size="lg"
+                className="w-full bg-gradient-to-r from-primary to-secondary text-white uppercase font-semibold"
+                asChild
+              >
+                <Link to="/signup" onClick={() => setMobileMenuOpen(false)}>
+                  {t("hero.cta.start")}
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+              </Button>
+            </div>
+          </nav>
+        </div>
+      )}
 
       {/* Hero Section */}
       <section className="relative overflow-hidden min-h-[80vh] flex items-center">
