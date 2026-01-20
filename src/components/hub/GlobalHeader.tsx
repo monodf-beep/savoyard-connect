@@ -263,25 +263,27 @@ export const GlobalHeader = ({ breadcrumb, onMobileMenuToggle }: GlobalHeaderPro
       </div>
 
       {/* Right Section: Actions */}
-      <div className="flex items-center gap-2 md:gap-4">
-        {/* Language Toggle */}
-        <LanguageToggle />
+      <div className="flex items-center gap-1 md:gap-3">
+        {/* Language Toggle - Hidden on very small screens */}
+        <div className="hidden sm:block">
+          <LanguageToggle />
+        </div>
 
         {/* Notifications */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="relative">
+            <Button variant="ghost" size="icon" className="relative h-9 w-9">
               <Bell className="h-5 w-5" />
-              <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center bg-accent text-accent-foreground text-xs">
+              <Badge className="absolute -top-1 -right-1 h-4 w-4 p-0 flex items-center justify-center bg-accent text-accent-foreground text-[10px]">
                 2
               </Badge>
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-80 bg-popover">
+          <DropdownMenuContent align="end" className="w-72 md:w-80 bg-popover border border-border shadow-lg">
             <div className="px-3 py-2 border-b border-border">
               <p className="font-semibold text-sm">{t("notifications.title")}</p>
             </div>
-            <div className="max-h-80 overflow-y-auto">
+            <div className="max-h-64 overflow-y-auto">
               <DropdownMenuItem className="flex flex-col items-start gap-1 p-3 cursor-pointer">
                 <p className="text-sm font-medium">{t("notifications.newProject")}</p>
                 <p className="text-xs text-muted-foreground">{t("notifications.yesterday")}</p>
@@ -301,20 +303,20 @@ export const GlobalHeader = ({ breadcrumb, onMobileMenuToggle }: GlobalHeaderPro
         {/* User Menu */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="gap-2 px-2">
-              <Avatar className="h-8 w-8 border-2 border-primary/20">
+            <Button variant="ghost" className="gap-1 md:gap-2 px-1.5 md:px-2 h-9">
+              <Avatar className="h-7 w-7 md:h-8 md:w-8 border-2 border-primary/20">
                 <AvatarImage src={user?.user_metadata?.avatar_url} />
                 <AvatarFallback className="bg-primary/10 text-primary font-semibold text-xs">
                   {getInitials(userFirstName)}
                 </AvatarFallback>
               </Avatar>
-              <span className="hidden md:block text-sm font-medium max-w-[120px] truncate">
+              <span className="hidden md:block text-sm font-medium max-w-[100px] truncate">
                 {userFullName}
               </span>
-              <ChevronDown className="h-4 w-4 opacity-50 hidden md:block" />
+              <ChevronDown className="h-3 w-3 md:h-4 md:w-4 opacity-50" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-64 bg-popover">
+          <DropdownMenuContent align="end" className="w-60 md:w-64 bg-popover border border-border shadow-lg">
             <div className="px-3 py-2">
               <p className="font-medium text-sm">{userFullName}</p>
               <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
@@ -328,6 +330,11 @@ export const GlobalHeader = ({ breadcrumb, onMobileMenuToggle }: GlobalHeaderPro
                 {t("nav.profile")}
               </Link>
             </DropdownMenuItem>
+
+            {/* Language Toggle for mobile */}
+            <div className="sm:hidden px-2 py-1.5">
+              <LanguageToggle />
+            </div>
 
             <DropdownMenuSeparator />
 
@@ -347,12 +354,12 @@ export const GlobalHeader = ({ breadcrumb, onMobileMenuToggle }: GlobalHeaderPro
             {associations.map((membership) => (
               <DropdownMenuItem 
                 key={membership.id}
-                className="flex items-center gap-3 p-2 cursor-pointer"
+                className="flex items-center gap-2 p-2 cursor-pointer"
                 onClick={() => handleContextSelect('association', membership)}
               >
-                <Avatar className="h-7 w-7">
+                <Avatar className="h-6 w-6">
                   <AvatarImage src={membership.association.logo_url || undefined} />
-                  <AvatarFallback className="bg-secondary/20 text-secondary text-[9px]">
+                  <AvatarFallback className="bg-secondary/20 text-secondary text-[8px]">
                     {getInitials(membership.association.name)}
                   </AvatarFallback>
                 </Avatar>

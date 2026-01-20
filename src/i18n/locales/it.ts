@@ -67,6 +67,7 @@ export const it = {
     mutualisation: "Mutualizzazione",
     accompagnateur: "L'Accompagnatore",
     toolbox: "Cassetta degli Attrezzi",
+    currentContext: "Spazio attuale",
   },
 
   // Accompagnateur Page
