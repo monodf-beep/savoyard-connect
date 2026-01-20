@@ -303,6 +303,7 @@ export const fr = {
     navigation: "Navigation",
     sectors: "Nos Filières",
     legal: "Informations",
+    legalMentions: "Mentions légales",
   },
 
   // Auth
@@ -792,4 +793,296 @@ export const fr = {
       button: "Inscrire mon association",
     },
   },
+
+  // Profile page
+  profile: {
+    title: "Mon Profil",
+    subtitle: "Gérez vos informations personnelles et vos préférences",
+    breadcrumb: "Profil",
+    saved: "Profil enregistré avec succès",
+    saveError: "Erreur lors de l'enregistrement",
+    memberSince: "Membre depuis",
+    personalInfo: "Informations personnelles",
+    personalInfoDesc: "Vos informations de contact et de localisation",
+    firstName: "Prénom",
+    firstNamePlaceholder: "Votre prénom",
+    lastName: "Nom",
+    lastNamePlaceholder: "Votre nom",
+    phone: "Téléphone",
+    phonePlaceholder: "+33 6 12 34 56 78",
+    region: "Région",
+    regionPlaceholder: "Auvergne-Rhône-Alpes",
+    myAssociations: "Mes associations",
+    myAssociationsDesc: "Les associations dont vous êtes membre",
+    noAssociations: "Vous n'êtes membre d'aucune association pour le moment",
+    addAssociation: "Ajouter une association",
+    preferences: "Préférences",
+    preferencesDesc: "Personnalisez votre expérience",
+    preferencesComingSoon: "Les préférences de notification seront bientôt disponibles",
+    emailNotifications: "Notifications par email",
+    emailNotificationsDesc: "Recevez des notifications sur les nouveautés du réseau",
+    security: "Sécurité",
+    securityDesc: "Gérez la sécurité de votre compte",
+    changePassword: "Changer de mot de passe",
+    save: "Enregistrer les modifications",
+  },
+
+  // Network projects page
+  networkProjects: {
+    title: "Projets Réseau",
+    subtitle: "Découvrez les projets collaboratifs portés par le réseau",
+    breadcrumb: "Projets Réseau",
+    searchPlaceholder: "Rechercher un projet...",
+    filterStatus: "Filtrer par statut",
+    allStatuses: "Tous les statuts",
+    noDescription: "Aucune description disponible",
+    funding: "Financement",
+    noProjects: "Aucun projet pour le moment",
+    noProjectsDesc: "Les projets collaboratifs du réseau apparaîtront ici",
+    stats: {
+      totalProjects: "Projets au total",
+      inProgress: "En cours",
+      totalFunding: "Financement total",
+    },
+    status: {
+      planned: "Planifié",
+      inProgress: "En cours",
+      completed: "Terminé",
+      cancelled: "Annulé",
+    },
+    cta: {
+      title: "Vous avez une idée de projet ?",
+      description: "Proposez un projet collaboratif à la communauté et trouvez des partenaires pour le réaliser ensemble.",
+      button: "Proposer un projet",
+      comingSoon: "Bientôt disponible",
+    },
+  },
+
+  // Contact page
+  contact: {
+    title: "Contactez-nous",
+    subtitle: "Une question ? Une suggestion ? N'hésitez pas à nous écrire.",
+    form: {
+      title: "Envoyez-nous un message",
+      name: "Nom complet",
+      namePlaceholder: "Jean Dupont",
+      email: "Email",
+      emailPlaceholder: "jean@exemple.com",
+      subject: "Sujet",
+      subjectPlaceholder: "Sélectionnez un sujet",
+      subjects: {
+        general: "Question générale",
+        support: "Support technique",
+        partnership: "Partenariat",
+        other: "Autre",
+      },
+      message: "Message",
+      messagePlaceholder: "Décrivez votre demande...",
+      submit: "Envoyer le message",
+      success: "Message envoyé avec succès !",
+      error: "Erreur lors de l'envoi du message",
+    },
+    direct: {
+      title: "Contact direct",
+      description: "Pour les demandes urgentes, vous pouvez nous écrire directement :",
+    },
+    faq: {
+      title: "Questions fréquentes",
+      q1: "Comment rejoindre le réseau ?",
+      a1: "Créez un compte gratuit et inscrivez votre association en quelques minutes.",
+      q2: "Le service est-il payant ?",
+      a2: "Une version gratuite est disponible. Des fonctionnalités premium sont proposées pour les associations ayant des besoins avancés.",
+      q3: "Comment contacter une association du réseau ?",
+      a3: "Connectez-vous et utilisez l'annuaire pour envoyer un message directement à l'association.",
+      viewAll: "Voir toutes les questions",
+    },
+  },
+
+  // FAQ page
+  faq: {
+    title: "Foire Aux Questions",
+    subtitle: "Trouvez rapidement les réponses à vos questions",
+    searchPlaceholder: "Rechercher une question...",
+    allCategories: "Toutes les catégories",
+    noResults: "Aucun résultat trouvé",
+    stillNeedHelp: "Vous n'avez pas trouvé votre réponse ?",
+    contactUs: "Notre équipe est là pour vous aider.",
+    contactButton: "Nous contacter",
+    categories: {
+      general: "Général",
+      membership: "Adhésion",
+      features: "Fonctionnalités",
+      support: "Support",
+    },
+    items: {
+      whatIs: {
+        q: "C'est quoi Associacion ?",
+        a: "Associacion est une plateforme collaborative dédiée aux associations européennes, principalement dans les zones alpines transfrontalières. Elle permet de connecter les associations, mutualiser les ressources et développer des projets communs.",
+      },
+      howItWorks: {
+        q: "Comment fonctionne la plateforme ?",
+        a: "Créez votre compte, inscrivez votre association, et accédez immédiatement à l'annuaire B2B, aux opportunités de financement, et aux outils de gestion internes.",
+      },
+      whoCanJoin: {
+        q: "Qui peut rejoindre le réseau ?",
+        a: "Toutes les associations loi 1901 (France) ou équivalent européen peuvent rejoindre le réseau, quel que soit leur domaine d'activité.",
+      },
+      pricing: {
+        q: "Combien ça coûte ?",
+        a: "L'inscription de base est gratuite. Des formules premium sont disponibles pour les associations souhaitant des fonctionnalités avancées comme la gestion RH ou les outils de financement participatif.",
+      },
+      howToJoin: {
+        q: "Comment inscrire mon association ?",
+        a: "Cliquez sur 'Créer mon compte', renseignez vos informations personnelles, puis suivez le processus d'onboarding pour créer le profil de votre association.",
+      },
+      cancel: {
+        q: "Puis-je annuler mon abonnement ?",
+        a: "Oui, vous pouvez annuler à tout moment depuis les paramètres de votre compte. Vos données restent accessibles pendant 30 jours après l'annulation.",
+      },
+      helloasso: {
+        q: "Comment synchroniser HelloAsso ?",
+        a: "Rendez-vous dans les paramètres de votre association, section 'Intégrations', et suivez les instructions pour connecter votre compte HelloAsso.",
+      },
+      dataPrivacy: {
+        q: "Mes données sont-elles protégées ?",
+        a: "Oui, nous respectons le RGPD. Vos données sont hébergées en Europe et ne sont jamais partagées avec des tiers sans votre consentement.",
+      },
+      multiAssociation: {
+        q: "Puis-je gérer plusieurs associations ?",
+        a: "Oui, un même compte utilisateur peut être membre de plusieurs associations avec des rôles différents (admin, gestionnaire, membre).",
+      },
+      contactSupport: {
+        q: "Comment contacter le support ?",
+        a: "Utilisez le formulaire de contact ou envoyez un email à contact@associacion.eu. Nous répondons généralement sous 24h.",
+      },
+      reportBug: {
+        q: "Comment signaler un bug ?",
+        a: "Envoyez-nous un email à contact@associacion.eu avec une description détaillée du problème et des captures d'écran si possible.",
+      },
+    },
+  },
+
+  // Legal pages
+  legal: {
+    lastUpdated: "Dernière mise à jour",
+    mentions: {
+      title: "Mentions Légales",
+      editor: {
+        title: "Éditeur du site",
+        content: "Associacion - Association loi 1901. Siège social : Annecy, France.",
+      },
+      director: {
+        title: "Directeur de la publication",
+        content: "Le directeur de la publication est le président de l'association Associacion.",
+      },
+      hosting: {
+        title: "Hébergement",
+        content: "Ce site est hébergé par Lovable (Supabase) - Infrastructure cloud européenne sécurisée.",
+      },
+      intellectual: {
+        title: "Propriété intellectuelle",
+        content: "L'ensemble du contenu de ce site (textes, images, logos) est protégé par le droit d'auteur. Toute reproduction sans autorisation préalable est interdite.",
+      },
+      contact: {
+        title: "Contact",
+      },
+    },
+    terms: {
+      title: "Conditions Générales d'Utilisation",
+      object: {
+        title: "Objet",
+        content: "Les présentes CGU régissent l'utilisation de la plateforme Associacion, un service de mise en relation et de gestion pour associations.",
+      },
+      registration: {
+        title: "Inscription",
+        content: "L'inscription est ouverte à toute personne majeure représentant une association légalement constituée. Les informations fournies doivent être exactes et à jour.",
+      },
+      services: {
+        title: "Services proposés",
+        content: "La plateforme propose des outils de gestion associative, un annuaire B2B, des fonctionnalités de mutualisation de ressources, et un accès aux opportunités de financement.",
+      },
+      responsibilities: {
+        title: "Responsabilités",
+        content: "L'utilisateur est responsable de l'exactitude des informations publiées et du respect des lois en vigueur. Associacion décline toute responsabilité en cas d'utilisation frauduleuse.",
+      },
+      intellectual: {
+        title: "Propriété intellectuelle",
+        content: "Les contenus publiés par les utilisateurs restent leur propriété. L'utilisateur accorde à Associacion une licence d'utilisation pour afficher ces contenus sur la plateforme.",
+      },
+      termination: {
+        title: "Résiliation",
+        content: "L'utilisateur peut supprimer son compte à tout moment. Associacion se réserve le droit de suspendre un compte en cas de violation des présentes CGU.",
+      },
+      jurisdiction: {
+        title: "Juridiction compétente",
+        content: "Tout litige relatif à l'utilisation de la plateforme sera soumis aux tribunaux français compétents.",
+      },
+    },
+    privacy: {
+      title: "Politique de Confidentialité",
+      collection: {
+        title: "Données collectées",
+        content: "Nous collectons les données nécessaires au fonctionnement du service : nom, email, informations sur votre association, données de connexion.",
+      },
+      purpose: {
+        title: "Finalités",
+        content: "Vos données sont utilisées pour : fournir le service, améliorer l'expérience utilisateur, communiquer sur les nouveautés, et assurer la sécurité de la plateforme.",
+      },
+      storage: {
+        title: "Conservation",
+        content: "Vos données sont conservées pendant la durée de votre inscription, puis 3 ans après la suppression de votre compte pour des raisons légales.",
+      },
+      rights: {
+        title: "Vos droits (RGPD)",
+        content: "Conformément au RGPD, vous disposez des droits suivants :",
+        access: "Droit d'accès à vos données personnelles",
+        rectification: "Droit de rectification des données inexactes",
+        erasure: "Droit à l'effacement (droit à l'oubli)",
+        portability: "Droit à la portabilité de vos données",
+        opposition: "Droit d'opposition au traitement",
+      },
+      cookies: {
+        title: "Cookies",
+        content: "Nous utilisons des cookies essentiels au fonctionnement du site et des cookies analytiques pour améliorer nos services. Vous pouvez les désactiver dans les paramètres de votre navigateur.",
+      },
+      contact: {
+        title: "Contact DPO",
+        content: "Pour exercer vos droits, contactez notre délégué à la protection des données :",
+      },
+    },
+  },
+
+  // Blog
+  blog: {
+    title: "Actualités du réseau",
+    subtitle: "Restez informé des dernières nouvelles et conseils pour les associations",
+    allCategories: "Toutes les catégories",
+    readMore: "Lire la suite",
+    anonymous: "Anonyme",
+    noPosts: "Aucun article pour le moment",
+    noPostsDesc: "Les articles seront bientôt disponibles",
+    notFound: "Article introuvable",
+    notFoundDesc: "Cet article n'existe pas ou a été supprimé.",
+    backToList: "Retour aux articles",
+    categories: {
+      news: "Actualités",
+      tutorials: "Tutoriels",
+      testimonials: "Témoignages",
+    },
+    placeholder: {
+      post1: {
+        title: "Bienvenue sur Associacion !",
+        excerpt: "Découvrez comment notre plateforme peut aider votre association à se développer et à collaborer avec d'autres structures.",
+      },
+      post2: {
+        title: "Comment créer votre association en 5 étapes",
+        excerpt: "Guide pratique pour démarrer votre association et l'inscrire sur la plateforme Associacion.",
+      },
+      post3: {
+        title: "Témoignage : Le Club Alpin rejoint le réseau",
+        excerpt: "Retour d'expérience d'une association sportive qui a trouvé de nouveaux partenaires grâce au réseau.",
+      },
+    },
+  },
+
 };

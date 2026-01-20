@@ -206,11 +206,11 @@ const NetworkProjects = () => {
                       <div className="flex justify-between text-sm">
                         <span className="text-muted-foreground">{t("networkProjects.funding")}</span>
                         <span className="font-medium text-foreground">
-                          {(project.funding_current || 0).toLocaleString()}€ / {project.funding_goal.toLocaleString()}€
+                          {(project.funded_amount || 0).toLocaleString()}€ / {project.funding_goal.toLocaleString()}€
                         </span>
                       </div>
                       <Progress
-                        value={((project.funding_current || 0) / project.funding_goal) * 100}
+                        value={((project.funded_amount || 0) / project.funding_goal) * 100}
                         className="h-2"
                       />
                     </div>

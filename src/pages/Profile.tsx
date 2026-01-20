@@ -286,18 +286,9 @@ const Profile = () => {
             <CardDescription>{t("profile.preferencesDesc")}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label>{t("profile.emailNotifications")}</Label>
-                <p className="text-sm text-muted-foreground">
-                  {t("profile.emailNotificationsDesc")}
-                </p>
-              </div>
-              <Switch
-                checked={notificationEmail}
-                onCheckedChange={setNotificationEmail}
-              />
-            </div>
+            <p className="text-sm text-muted-foreground">
+              {t("profile.preferencesComingSoon")}
+            </p>
           </CardContent>
         </Card>
 
