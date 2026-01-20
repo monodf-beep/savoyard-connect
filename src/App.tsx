@@ -35,6 +35,7 @@ import Directory from "./pages/Directory";
 import DirectoryHub from "./pages/DirectoryHub";
 import Hub from "./pages/Hub";
 import Members from "./pages/Members";
+import Mutualisation from "./pages/Mutualisation";
 
 const queryClient = new QueryClient();
 
@@ -90,6 +91,7 @@ const AppContent = () => {
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/onboarding-asso" element={<OnboardingAsso />} />
         <Route path="/hub" element={<Hub />} />
+        <Route path="/mutualisation" element={<Mutualisation />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/members" element={<Members />} />
         <Route path="/organigramme" element={<Index />} />

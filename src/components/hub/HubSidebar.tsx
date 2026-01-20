@@ -21,6 +21,7 @@ import {
   UserCheck,
   ArrowLeft,
   Kanban,
+  Handshake,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -61,6 +62,11 @@ const hubNetworkItems: NavItem[] = [
     path: "/experts", 
     labelKey: "nav.experts", 
     icon: GraduationCap, 
+  },
+  { 
+    path: "/mutualisation", 
+    labelKey: "nav.mutualisation", 
+    icon: Handshake, 
   },
   { 
     path: "/projects-network", 
