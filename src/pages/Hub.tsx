@@ -251,44 +251,43 @@ const Hub = () => {
         </div>
       </div>
 
-      {/* Coming Soon */}
+      {/* Featured Links - Silos */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Sparkles className="h-5 w-5" />
-            {t("hub.comingSoon.title")}
+            {t("hub.silos.title", "Nos marchés thématiques")}
           </CardTitle>
-          <CardDescription>{t("hub.comingSoon.subtitle")}</CardDescription>
+          <CardDescription>{t("hub.silos.subtitle", "Découvrez les offres adaptées à votre secteur")}</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/30 opacity-60">
-              <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center">
-                <FolderKanban className="h-5 w-5 text-muted-foreground" />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Link 
+              to="/silos/sport" 
+              className="flex items-center gap-4 p-4 rounded-xl bg-gradient-to-r from-blue-500/10 to-green-500/10 border border-blue-500/20 hover:border-blue-500/40 transition-all group"
+            >
+              <div className="w-12 h-12 rounded-xl bg-blue-500/20 flex items-center justify-center">
+                <Dribbble className="h-6 w-6 text-blue-600" />
               </div>
-              <div>
-                <p className="font-medium text-sm">{t("nav.projectsNetwork")}</p>
-                <Badge variant="secondary" className="text-xs">{t("nav.comingSoon")}</Badge>
+              <div className="flex-1">
+                <p className="font-semibold text-foreground group-hover:text-blue-600 transition-colors">{t("nav.siloSport")}</p>
+                <p className="text-sm text-muted-foreground">{t("hub.silos.sport", "Clubs sportifs & associations de montagne")}</p>
               </div>
-            </div>
-            <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/30 opacity-60">
-              <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center">
-                <Sparkles className="h-5 w-5 text-muted-foreground" />
+              <ArrowRight className="h-5 w-5 text-muted-foreground group-hover:text-blue-600 group-hover:translate-x-1 transition-all" />
+            </Link>
+            <Link 
+              to="/silos/culture" 
+              className="flex items-center gap-4 p-4 rounded-xl bg-gradient-to-r from-orange-500/10 to-red-500/10 border border-orange-500/20 hover:border-orange-500/40 transition-all group"
+            >
+              <div className="w-12 h-12 rounded-xl bg-orange-500/20 flex items-center justify-center">
+                <Palette className="h-6 w-6 text-orange-600" />
               </div>
-              <div>
-                <p className="font-medium text-sm">{t("nav.opportunities")}</p>
-                <Badge variant="secondary" className="text-xs">{t("nav.comingSoon")}</Badge>
+              <div className="flex-1">
+                <p className="font-semibold text-foreground group-hover:text-orange-600 transition-colors">{t("nav.siloCulture")}</p>
+                <p className="text-sm text-muted-foreground">{t("hub.silos.culture", "Festivals, théâtres & patrimoine culturel")}</p>
               </div>
-            </div>
-            <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/30 opacity-60">
-              <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center">
-                <Globe className="h-5 w-5 text-muted-foreground" />
-              </div>
-              <div>
-                <p className="font-medium text-sm">{t("nav.resourcesShared")}</p>
-                <Badge variant="secondary" className="text-xs">{t("nav.comingSoon")}</Badge>
-              </div>
-            </div>
+              <ArrowRight className="h-5 w-5 text-muted-foreground group-hover:text-orange-600 group-hover:translate-x-1 transition-all" />
+            </Link>
           </div>
         </CardContent>
       </Card>
