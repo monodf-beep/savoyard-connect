@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -9,7 +10,6 @@ import {
   Linkedin, 
   Instagram,
   Globe,
-  AlertTriangle,
 } from 'lucide-react';
 import { DirectoryAssociation, GEOGRAPHIC_ZONES, SILO_INFO, SiloType, calculateDistance } from '@/types/directory';
 import {
@@ -21,10 +21,9 @@ import {
 interface AssociationCardProps {
   association: DirectoryAssociation;
   userLocation?: { lat: number; lng: number } | null;
-  onContact?: (association: DirectoryAssociation) => void;
 }
 
-export function AssociationCard({ association, userLocation, onContact }: AssociationCardProps) {
+export function AssociationCard({ association, userLocation }: AssociationCardProps) {
   const { t, i18n } = useTranslation();
   const lang = i18n.language === 'it' ? 'it' : 'fr';
 
@@ -156,11 +155,13 @@ export function AssociationCard({ association, userLocation, onContact }: Associ
           <Button
             size="sm"
             variant="outline"
-            onClick={() => onContact?.(association)}
+            asChild
             className="text-xs"
           >
-            {t('directory.card.viewProfile')}
-            <ExternalLink className="h-3.5 w-3.5 ml-1.5" />
+            <Link to={`/annuaire/${association.id}`}>
+              {t('directory.card.viewProfile')}
+              <ExternalLink className="h-3.5 w-3.5 ml-1.5" />
+            </Link>
           </Button>
         </div>
       </CardContent>

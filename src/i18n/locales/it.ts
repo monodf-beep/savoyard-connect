@@ -738,6 +738,17 @@ export const it = {
       login: "Accedi",
       crossBorderNotice: "Zona di frontiera - verificare formalità doganali se necessario",
     },
+    profile: {
+      backToDirectory: "Torna all'annuario",
+      notFound: "Non trovato",
+      notFoundTitle: "Associazione non trovata",
+      notFoundDescription: "Questa associazione non esiste o non è più visibile nell'annuario.",
+      about: "Chi siamo",
+      noDescription: "Nessuna descrizione disponibile.",
+      memberSince: "Membro dal",
+      socialLinks: "Social network",
+      crossBorderTitle: "Associazione transfrontaliera",
+    },
     cta: {
       title: "Sei un'associazione?",
       subtitle: "Unisciti alla nostra rete e appari nell'annuario per sviluppare le tue collaborazioni transfrontaliere.",

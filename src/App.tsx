@@ -38,6 +38,7 @@ import Members from "./pages/Members";
 import Mutualisation from "./pages/Mutualisation";
 import Accompagnateur from "./pages/Accompagnateur";
 import AdhesionReseau from "./pages/AdhesionReseau";
+import AssociationProfile from "./pages/AssociationProfile";
 import { MembershipProvider } from "./hooks/useMembership";
 
 const queryClient = new QueryClient();
@@ -114,6 +115,7 @@ const AppContent = () => {
         <Route path="/silos/culture" element={<CultureLanding />} />
         <Route path="/experts" element={<Experts />} />
         <Route path="/annuaire" element={<DirectoryHub />} />
+        <Route path="/annuaire/:id" element={<AssociationProfile />} />
         <Route path="/annuaire-public" element={<Directory />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
