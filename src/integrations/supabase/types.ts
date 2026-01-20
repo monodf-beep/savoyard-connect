@@ -228,6 +228,7 @@ export type Database = {
       associations: {
         Row: {
           city: string | null
+          cover_image_url: string | null
           created_at: string
           description: string | null
           id: string
@@ -242,15 +243,19 @@ export type Database = {
           name: string
           owner_id: string
           primary_zone: string | null
+          public_email: string | null
           rna: string | null
           secondary_zone: string | null
+          show_organigramme: boolean | null
           silo: string | null
           siret: string | null
           statuts_url: string | null
           updated_at: string
+          website_url: string | null
         }
         Insert: {
           city?: string | null
+          cover_image_url?: string | null
           created_at?: string
           description?: string | null
           id?: string
@@ -265,15 +270,19 @@ export type Database = {
           name: string
           owner_id: string
           primary_zone?: string | null
+          public_email?: string | null
           rna?: string | null
           secondary_zone?: string | null
+          show_organigramme?: boolean | null
           silo?: string | null
           siret?: string | null
           statuts_url?: string | null
           updated_at?: string
+          website_url?: string | null
         }
         Update: {
           city?: string | null
+          cover_image_url?: string | null
           created_at?: string
           description?: string | null
           id?: string
@@ -288,12 +297,15 @@ export type Database = {
           name?: string
           owner_id?: string
           primary_zone?: string | null
+          public_email?: string | null
           rna?: string | null
           secondary_zone?: string | null
+          show_organigramme?: boolean | null
           silo?: string | null
           siret?: string | null
           statuts_url?: string | null
           updated_at?: string
+          website_url?: string | null
         }
         Relationships: []
       }
