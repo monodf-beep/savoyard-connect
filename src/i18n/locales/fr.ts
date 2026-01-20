@@ -61,6 +61,7 @@ export const fr = {
     membersSubscriptions: "Membres & Adhésions",
     hrVolunteering: "RH & Bénévolat",
     internalProjects: "Projets Internes",
+    taskManagement: "Gestion des tâches",
     returnToHub: "⬅️ Retour au Hub Réseau",
     mutualisation: "Espace Mutualisation",
     accompagnateur: "L'Accompagnateur",

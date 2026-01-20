@@ -61,6 +61,7 @@ export const it = {
     membersSubscriptions: "Membri & Iscrizioni",
     hrVolunteering: "HR & Volontariato",
     internalProjects: "Progetti Interni",
+    taskManagement: "Gestione attività",
     returnToHub: "⬅️ Torna all'Hub Rete",
     mutualisation: "Spazio Mutualizzazione",
     accompagnateur: "L'Accompagnatore",
