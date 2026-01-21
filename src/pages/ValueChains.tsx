@@ -24,7 +24,10 @@ import {
   PanelLeftClose,
   PanelLeft,
   Info,
+  LayoutGrid,
+  Workflow,
 } from 'lucide-react';
+import { KanbanChainDisplay } from '@/components/valueChain/KanbanChainDisplay';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -88,6 +91,7 @@ export default function ValueChains() {
   const [searchQuery, setSearchQuery] = useState('');
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [detailPanelOpen, setDetailPanelOpen] = useState(false);
+  const [viewMode, setViewMode] = useState<'workflow' | 'kanban'>('workflow');
 
   // Form states
   const [formOpen, setFormOpen] = useState(false);
@@ -373,6 +377,26 @@ export default function ValueChains() {
             </div>
 
             <div className="flex items-center gap-2">
+              {/* View mode toggle */}
+              <div className="flex items-center bg-muted rounded-md p-0.5">
+                <Button
+                  variant={viewMode === 'workflow' ? 'secondary' : 'ghost'}
+                  size="sm"
+                  className="h-7 px-2"
+                  onClick={() => setViewMode('workflow')}
+                >
+                  <Workflow className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant={viewMode === 'kanban' ? 'secondary' : 'ghost'}
+                  size="sm"
+                  className="h-7 px-2"
+                  onClick={() => setViewMode('kanban')}
+                >
+                  <LayoutGrid className="h-4 w-4" />
+                </Button>
+              </div>
+
               {isAdmin && selectedChain && (
                 <>
                   <Button
@@ -458,18 +482,30 @@ export default function ValueChains() {
                 )}
               </Card>
             ) : selectedChain ? (
-              <WorkflowCanvas
-                ref={canvasRef}
-                chain={selectedChain}
-                onSegmentClick={handleSegmentClick}
-                onAddSegment={isAdmin ? handleAddSegment : undefined}
-                onSegmentsReorder={isAdmin ? (segmentIds) => reorderSegments(selectedChain.id, segmentIds) : undefined}
-                onSavePositions={isAdmin ? (positions, viewport) => saveSegmentPositions(positions, viewport, selectedChain.id) : undefined}
-                onPaneClick={() => {
-                  setDetailPanelOpen(false);
-                  setSelectedSegment(null);
-                }}
-              />
+              viewMode === 'workflow' ? (
+                <WorkflowCanvas
+                  ref={canvasRef}
+                  chain={selectedChain}
+                  onSegmentClick={handleSegmentClick}
+                  onAddSegment={isAdmin ? handleAddSegment : undefined}
+                  onSegmentsReorder={isAdmin ? (segmentIds) => reorderSegments(selectedChain.id, segmentIds) : undefined}
+                  onSavePositions={isAdmin ? (positions, viewport) => saveSegmentPositions(positions, viewport, selectedChain.id) : undefined}
+                  onPaneClick={() => {
+                    setDetailPanelOpen(false);
+                    setSelectedSegment(null);
+                  }}
+                />
+              ) : (
+                <KanbanChainDisplay
+                  chain={selectedChain}
+                  onSegmentClick={(segmentId) => {
+                    const segment = selectedChain.segments?.find(s => s.id === segmentId);
+                    if (segment) {
+                      handleSegmentClick(segment);
+                    }
+                  }}
+                />
+              )
             ) : (
               <Card className="h-full flex flex-col items-center justify-center p-8 text-center">
                 <p className="text-muted-foreground">
