@@ -13,7 +13,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Plus, Trash2, GripVertical, X, Building2 } from 'lucide-react';
+import { Plus, Trash2, ChevronUp, ChevronDown, X, Building2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -199,15 +199,24 @@ export const ValueChainForm: React.FC<ValueChainFormProps> = ({
               {segments.map((segment, index) => (
                   <div key={index} className="border border-border rounded-lg p-4 space-y-3">
                     <div className="flex items-start gap-2">
-                      <div className="flex flex-col gap-1 pt-2">
+                      <div className="flex flex-col gap-0.5 pt-1">
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-6 w-6"
+                          className="h-7 w-7 md:h-6 md:w-6"
                           onClick={() => moveSegment(index, 'up')}
                           disabled={index === 0}
                         >
-                          <GripVertical className="h-4 w-4" />
+                          <ChevronUp className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7 md:h-6 md:w-6"
+                          onClick={() => moveSegment(index, 'down')}
+                          disabled={index === segments.length - 1}
+                        >
+                          <ChevronDown className="h-4 w-4" />
                         </Button>
                       </div>
 
