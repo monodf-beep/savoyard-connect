@@ -25,6 +25,7 @@ import {
   Mountain,
   Palette,
   TrendingUp,
+  Rocket,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -72,6 +73,11 @@ const hubNetworkItems: NavItem[] = [
     path: "/mutualisation", 
     labelKey: "nav.mutualisation", 
     icon: Handshake, 
+  },
+  { 
+    path: "/projets-reseau", 
+    labelKey: "nav.networkProjects", 
+    icon: Rocket, 
   },
   { 
     path: "/opportunites", 
