@@ -49,6 +49,16 @@ export const PublicFooter = () => {
                   {t('nav.pricing')}
                 </Link>
               </li>
+              <li>
+                <Link to="/faq" className="hover:text-primary transition-colors">
+                  {t('footer.faq')}
+                </Link>
+              </li>
+              <li>
+                <Link to="/blog" className="hover:text-primary transition-colors">
+                  {t('footer.blog')}
+                </Link>
+              </li>
             </ul>
           </div>
 
