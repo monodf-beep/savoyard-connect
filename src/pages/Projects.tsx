@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Plus, Search } from 'lucide-react';
 import { ProjectForm } from '@/components/ProjectForm';
+import { SimpleProjectForm } from '@/components/projects/SimpleProjectForm';
 import { ProjectGridCard } from '@/components/projects/ProjectGridCard';
 import { ProjectDetailDrawer } from '@/components/projects/ProjectDetailDrawer';
 import { IdeaBox } from '@/components/projects/IdeaBox';
@@ -60,6 +61,7 @@ const Projects = () => {
   const [showDetail, setShowDetail] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
+  const [showSimpleForm, setShowSimpleForm] = useState(false);
 
   useEffect(() => {
     const fetchProjects = async () => {
@@ -183,8 +185,56 @@ const Projects = () => {
   };
 
   const handleAddProject = () => {
-    setEditingProject(undefined);
-    setShowForm(true);
+    // Section leaders use simplified form, admins use full form
+    if (isSectionLeader && !isAdmin) {
+      setShowSimpleForm(true);
+    } else {
+      setEditingProject(undefined);
+      setShowForm(true);
+    }
+  };
+
+  const handleSimpleProjectSave = async (projectData: {
+    title: string;
+    description: string;
+    section_id: string;
+    status: 'planned' | 'in_progress' | 'completed';
+  }) => {
+    try {
+      const { data: newData, error } = await supabase
+        .from('projects')
+        .insert([{
+          ...projectData,
+          created_by: user?.id,
+          approval_status: 'pending',
+        }])
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      setProjects([
+        {
+          ...newData,
+          documents: [],
+          approval_status: 'pending',
+        } as Project,
+        ...projects,
+      ]);
+      
+      toast({
+        title: 'Succès',
+        description: 'Projet créé et en attente d\'approbation',
+      });
+    } catch (error: any) {
+      console.error('Error creating project:', error);
+      toast({
+        title: 'Erreur',
+        description: error?.message || "Impossible de créer le projet",
+        variant: 'destructive',
+      });
+      throw error;
+    }
   };
 
   const handleProjectClick = (project: Project) => {
@@ -316,6 +366,14 @@ const Projects = () => {
           onSave={handleSaveProject}
         />
       )}
+
+      {/* Simple Project Form for Section Leaders */}
+      <SimpleProjectForm
+        open={showSimpleForm}
+        onOpenChange={setShowSimpleForm}
+        onSave={handleSimpleProjectSave}
+        sections={data.sections.map(s => ({ id: s.id, title: s.title }))}
+      />
     </HubPageLayout>
   );
 };
