@@ -325,7 +325,7 @@ export const GlobalHeader = ({ breadcrumb, onMobileMenuToggle }: GlobalHeaderPro
             
             {/* Mon Profil */}
             <DropdownMenuItem asChild className="cursor-pointer">
-              <Link to="/profile" className="flex items-center gap-2">
+              <Link to="/profil" className="flex items-center gap-2">
                 <User className="h-4 w-4" />
                 {t("nav.profile")}
               </Link>
