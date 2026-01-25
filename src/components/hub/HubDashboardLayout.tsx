@@ -5,20 +5,33 @@ import { useAuth } from "@/hooks/useAuth";
 import { useAssociation } from "@/hooks/useAssociation";
 import { HubSidebar } from "./HubSidebar";
 import { GlobalHeader } from "./GlobalHeader";
-import { HubKPICards } from "./HubKPICards";
-import { HubActivityTimeline } from "./HubActivityTimeline";
-import { HubQuickActions } from "./HubQuickActions";
-import { HubOnboardingCard } from "./HubOnboardingCard";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { fr, it } from "date-fns/locale";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Globe, ArrowLeft, ChevronRight } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
+import { 
+  Globe, 
+  ArrowLeft, 
+  ChevronRight, 
+  Users, 
+  FolderKanban, 
+  Euro, 
+  TrendingUp,
+  Zap,
+  Settings,
+  FileText,
+  Calendar,
+  CheckCircle2,
+  Clock,
+  ArrowRight,
+} from "lucide-react";
 
 interface HubDashboardLayoutProps {
   orgName?: string;
@@ -72,32 +85,47 @@ export const HubDashboardLayout = ({
     return (
       <div className="min-h-screen bg-background">
         <div className="flex">
-          {/* Sidebar Skeleton */}
           <div className="hidden md:block w-56 h-screen border-r border-border">
             <Skeleton className="h-full w-full" />
           </div>
-          
-          {/* Main Content Skeleton */}
           <div className="flex-1 p-6 space-y-6">
             <Skeleton className="h-8 w-48" />
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {[1, 2, 3, 4].map(i => (
-                <Skeleton key={i} className="h-32 w-full" />
+                <Skeleton key={i} className="h-24 w-full" />
               ))}
             </div>
-            <div className="grid md:grid-cols-2 gap-6">
-              <Skeleton className="h-64 w-full" />
-              <Skeleton className="h-64 w-full" />
-            </div>
+            <Skeleton className="h-64 w-full" />
           </div>
         </div>
       </div>
     );
   }
 
+  // KPI Data
+  const kpis = [
+    { icon: Users, value: 12, label: t("dashboard.kpi.connections.label"), trend: "+3", color: "text-primary", bg: "bg-primary/10" },
+    { icon: FolderKanban, value: 5, label: t("dashboard.kpi.projects.label"), trend: "+1", color: "text-secondary", bg: "bg-secondary/10" },
+    { icon: Euro, value: "2,450€", label: t("dashboard.kpi.savings.label"), trend: "+340€", color: "text-green-600", bg: "bg-green-500/10" },
+    { icon: TrendingUp, value: "78%", label: t("dashboard.kpi.completion", "Complétion"), trend: "+5%", color: "text-orange-500", bg: "bg-orange-500/10" },
+  ];
+
+  // Quick Actions
+  const quickActions = [
+    { icon: FileText, label: t("dashboard.quickActions.addDocument", "Ajouter un document"), href: "/projets" },
+    { icon: Users, label: t("dashboard.quickActions.manageMembers", "Gérer les membres"), href: "/membres" },
+    { icon: Settings, label: t("dashboard.quickActions.settings", "Paramètres"), href: "/settings" },
+  ];
+
+  // Sample tasks
+  const tasks = [
+    { title: "Mettre à jour l'organigramme", status: "pending", dueDate: "Aujourd'hui" },
+    { title: "Valider le rapport financier", status: "pending", dueDate: "Demain" },
+    { title: "Répondre aux candidatures", status: "completed", dueDate: "Hier" },
+  ];
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      {/* Global Header */}
       <GlobalHeader 
         breadcrumb={t("nav.dashboard")}
         onMobileMenuToggle={() => setMobileMenuOpen(true)}
@@ -112,13 +140,12 @@ export const HubDashboardLayout = ({
           />
         </div>
 
-        {/* Mobile Sidebar - Enhanced with context switcher */}
+        {/* Mobile Sidebar */}
         <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
           <SheetContent 
             side="left" 
             className="p-0 w-72 flex flex-col bg-background border-r border-border"
           >
-            {/* Mobile Sheet Header */}
             <div className="flex items-center justify-between h-14 px-4 border-b border-border bg-background">
               <Link to="/hub" className="flex items-center gap-2" onClick={() => setMobileMenuOpen(false)}>
                 <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
@@ -128,13 +155,11 @@ export const HubDashboardLayout = ({
               </Link>
             </div>
 
-            {/* Context Switcher for Mobile */}
             <div className="px-3 py-3 border-b border-border bg-muted/30">
               <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">
                 {t("nav.currentContext")}
               </p>
               
-              {/* Current Context Display */}
               <div className={cn(
                 "flex items-center gap-3 p-2.5 rounded-lg mb-2",
                 currentContext === 'hub' ? "bg-primary/10" : "bg-secondary/10"
@@ -159,7 +184,6 @@ export const HubDashboardLayout = ({
                 )}
               </div>
 
-              {/* Return to Hub Button (when in association) */}
               {currentContext === 'association' && (
                 <Button
                   variant="outline"
@@ -172,7 +196,6 @@ export const HubDashboardLayout = ({
                 </Button>
               )}
 
-              {/* Quick Association Switcher */}
               {associations.length > 0 && (
                 <div className="mt-3">
                   <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">
@@ -205,7 +228,6 @@ export const HubDashboardLayout = ({
               )}
             </div>
 
-            {/* Navigation */}
             <ScrollArea className="flex-1">
               <HubSidebar 
                 collapsed={false} 
@@ -223,37 +245,146 @@ export const HubDashboardLayout = ({
             sidebarCollapsed ? "md:ml-14" : "md:ml-56"
           )}
         >
-          {/* Welcome Header */}
-          <div className="space-y-1">
-            <div className="flex flex-wrap items-center gap-3">
-              <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-foreground">
-                {t("dashboard.welcome", { orgName: welcomeName })}
-              </h1>
-              {isLabeled && (
-                <Badge className="bg-secondary text-secondary-foreground">
-                  {t("dashboard.labelBadge")}
-                </Badge>
-              )}
+          {/* Welcome Header - Simplified */}
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="flex flex-wrap items-center gap-3">
+                <h1 className="text-2xl md:text-3xl font-bold text-foreground">
+                  {t("dashboard.welcome", { orgName: welcomeName })}
+                </h1>
+                {isLabeled && (
+                  <Badge className="bg-secondary text-secondary-foreground">
+                    {t("dashboard.labelBadge")}
+                  </Badge>
+                )}
+              </div>
+              <p className="text-sm text-muted-foreground capitalize mt-1">{today}</p>
             </div>
-            <p className="text-sm text-muted-foreground capitalize">{today}</p>
+            {orgLogo && (
+              <Avatar className="h-12 w-12 border-2 border-border hidden sm:flex">
+                <AvatarImage src={orgLogo} />
+                <AvatarFallback className="bg-primary/10 text-primary">
+                  {orgName?.substring(0, 2).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+            )}
           </div>
 
-          {/* KPI Cards */}
-          <HubKPICards />
-
-          {/* Two Column Layout */}
-          <div className="grid lg:grid-cols-2 gap-6">
-            {/* Left Column */}
-            <div className="space-y-6">
-              <HubActivityTimeline />
-            </div>
-
-            {/* Right Column */}
-            <div className="space-y-6">
-              <HubQuickActions />
-              <HubOnboardingCard accountCreatedAt={new Date()} />
-            </div>
+          {/* KPI Cards - Compact */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            {kpis.map((kpi, index) => (
+              <Card key={index} className="border-border/50">
+                <CardContent className="p-4">
+                  <div className="flex items-start justify-between">
+                    <div className={cn("p-2 rounded-lg", kpi.bg)}>
+                      <kpi.icon className={cn("h-4 w-4", kpi.color)} />
+                    </div>
+                    <Badge variant="secondary" className="text-[10px] bg-green-500/10 text-green-600">
+                      <TrendingUp className="h-2.5 w-2.5 mr-0.5" />
+                      {kpi.trend}
+                    </Badge>
+                  </div>
+                  <p className="text-2xl font-bold mt-3">{kpi.value}</p>
+                  <p className="text-xs text-muted-foreground">{kpi.label}</p>
+                </CardContent>
+              </Card>
+            ))}
           </div>
+
+          {/* Main Grid */}
+          <div className="grid lg:grid-cols-3 gap-6">
+            {/* Tasks / Todo */}
+            <Card className="lg:col-span-2">
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <Clock className="h-5 w-5 text-primary" />
+                    {t("dashboard.tasks.title", "Tâches à faire")}
+                  </CardTitle>
+                  <Button variant="ghost" size="sm" onClick={() => navigate('/admin')}>
+                    {t("common.viewAll", "Voir tout")}
+                    <ArrowRight className="h-4 w-4 ml-1" />
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {tasks.map((task, index) => (
+                  <div 
+                    key={index} 
+                    className={cn(
+                      "flex items-center justify-between p-3 rounded-lg border transition-colors",
+                      task.status === 'completed' 
+                        ? "bg-muted/30 border-border/50" 
+                        : "bg-background border-border hover:border-primary/30"
+                    )}
+                  >
+                    <div className="flex items-center gap-3">
+                      {task.status === 'completed' ? (
+                        <CheckCircle2 className="h-5 w-5 text-green-500" />
+                      ) : (
+                        <div className="h-5 w-5 rounded-full border-2 border-muted-foreground/30" />
+                      )}
+                      <span className={cn(
+                        "text-sm",
+                        task.status === 'completed' && "line-through text-muted-foreground"
+                      )}>
+                        {task.title}
+                      </span>
+                    </div>
+                    <Badge variant="outline" className="text-[10px]">
+                      <Calendar className="h-3 w-3 mr-1" />
+                      {task.dueDate}
+                    </Badge>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+
+            {/* Quick Actions */}
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Zap className="h-5 w-5 text-accent" />
+                  {t("dashboard.quickActions.title")}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                {quickActions.map((action, index) => (
+                  <Button
+                    key={index}
+                    variant="outline"
+                    className="w-full justify-start gap-3 h-12"
+                    onClick={() => navigate(action.href)}
+                  >
+                    <action.icon className="h-4 w-4 text-muted-foreground" />
+                    {action.label}
+                  </Button>
+                ))}
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Onboarding Progress */}
+          <Card className="bg-gradient-to-r from-primary/5 to-secondary/5 border-primary/20">
+            <CardContent className="p-4 md:p-6">
+              <div className="flex flex-col md:flex-row md:items-center gap-4">
+                <div className="flex-1">
+                  <h3 className="font-semibold mb-1">
+                    {t("dashboard.onboarding.title", "Complétez votre profil")}
+                  </h3>
+                  <p className="text-sm text-muted-foreground mb-3">
+                    {t("dashboard.onboarding.description", "Finalisez la configuration de votre association pour profiter de toutes les fonctionnalités.")}
+                  </p>
+                  <Progress value={65} className="h-2" />
+                  <p className="text-xs text-muted-foreground mt-2">65% complété</p>
+                </div>
+                <Button onClick={() => navigate('/settings')}>
+                  {t("dashboard.onboarding.cta", "Continuer")}
+                  <ArrowRight className="h-4 w-4 ml-2" />
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </main>
       </div>
     </div>

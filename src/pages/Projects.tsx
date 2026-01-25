@@ -5,10 +5,12 @@ import { useAssociation } from '@/hooks/useAssociation';
 import { useOrganigramme } from '@/hooks/useOrganigramme';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Plus, Search } from 'lucide-react';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { Plus, Search, LayoutGrid, Columns } from 'lucide-react';
 import { ProjectForm } from '@/components/ProjectForm';
 import { SimpleProjectForm } from '@/components/projects/SimpleProjectForm';
 import { ProjectGridCard } from '@/components/projects/ProjectGridCard';
+import { ProjectsKanban } from '@/components/projects/ProjectsKanban';
 import { ProjectDetailDrawer } from '@/components/projects/ProjectDetailDrawer';
 import { IdeaBox } from '@/components/projects/IdeaBox';
 import { HubPageLayout } from '@/components/hub/HubPageLayout';
@@ -62,6 +64,7 @@ const Projects = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [showSimpleForm, setShowSimpleForm] = useState(false);
+  const [viewMode, setViewMode] = useState<'grid' | 'kanban'>('kanban');
 
   useEffect(() => {
     const fetchProjects = async () => {
@@ -242,6 +245,7 @@ const Projects = () => {
     setShowDetail(true);
   };
 
+  // For Kanban mode, don't filter by status
   const filteredProjects = projects.filter(p => {
     if (p.approval_status !== 'approved' && !isAdmin) return false;
     
@@ -253,12 +257,38 @@ const Projects = () => {
       }
     }
     
-    if (filterStatus !== 'all' && p.status !== filterStatus) {
+    // Only apply status filter in grid mode
+    if (viewMode === 'grid' && filterStatus !== 'all' && p.status !== filterStatus) {
       return false;
     }
     
     return true;
   });
+
+  const handleStatusChange = async (projectId: string, newStatus: 'planned' | 'in_progress' | 'completed') => {
+    try {
+      const { error } = await supabase
+        .from('projects')
+        .update({ status: newStatus })
+        .eq('id', projectId);
+
+      if (error) throw error;
+
+      setProjects(
+        projects.map((p) =>
+          p.id === projectId ? { ...p, status: newStatus } : p
+        )
+      );
+      toast({ title: 'Statut mis à jour' });
+    } catch (error: any) {
+      console.error('Error updating status:', error);
+      toast({
+        title: 'Erreur',
+        description: "Impossible de modifier le statut",
+        variant: 'destructive',
+      });
+    }
+  };
 
   if (authLoading || isLoading) {
     return (
@@ -297,17 +327,19 @@ const Projects = () => {
 
           {/* Filters */}
           <div className="flex flex-col sm:flex-row gap-3 mb-6">
-            <Select value={filterStatus} onValueChange={setFilterStatus}>
-              <SelectTrigger className="w-full sm:w-[150px]">
-                <SelectValue placeholder="Filtrer" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Tous</SelectItem>
-                <SelectItem value="planned">Planifiés</SelectItem>
-                <SelectItem value="in_progress">En cours</SelectItem>
-                <SelectItem value="completed">Terminés</SelectItem>
-              </SelectContent>
-            </Select>
+            {viewMode === 'grid' && (
+              <Select value={filterStatus} onValueChange={setFilterStatus}>
+                <SelectTrigger className="w-full sm:w-[150px]">
+                  <SelectValue placeholder="Filtrer" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Tous</SelectItem>
+                  <SelectItem value="planned">Planifiés</SelectItem>
+                  <SelectItem value="in_progress">En cours</SelectItem>
+                  <SelectItem value="completed">Terminés</SelectItem>
+                </SelectContent>
+              </Select>
+            )}
             
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -318,13 +350,35 @@ const Projects = () => {
                 className="pl-10"
               />
             </div>
+
+            {/* View Mode Toggle */}
+            <ToggleGroup 
+              type="single" 
+              value={viewMode} 
+              onValueChange={(v) => v && setViewMode(v as 'grid' | 'kanban')}
+              className="bg-muted rounded-lg p-1"
+            >
+              <ToggleGroupItem value="kanban" aria-label="Vue Kanban" className="data-[state=on]:bg-background">
+                <Columns className="h-4 w-4" />
+              </ToggleGroupItem>
+              <ToggleGroupItem value="grid" aria-label="Vue Grille" className="data-[state=on]:bg-background">
+                <LayoutGrid className="h-4 w-4" />
+              </ToggleGroupItem>
+            </ToggleGroup>
           </div>
 
-          {/* Projects Grid */}
+          {/* Projects Display */}
           {filteredProjects.length === 0 ? (
             <div className="text-center py-12 bg-muted/30 rounded-xl">
               <p className="text-muted-foreground">Aucun projet trouvé</p>
             </div>
+          ) : viewMode === 'kanban' ? (
+            <ProjectsKanban
+              projects={filteredProjects}
+              onStatusChange={handleStatusChange}
+              onProjectClick={handleProjectClick}
+              isAdmin={isAdmin}
+            />
           ) : (
             <div className="grid gap-6 sm:grid-cols-2">
               {filteredProjects.map(project => (
