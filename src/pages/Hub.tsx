@@ -5,8 +5,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useAssociation, Association } from "@/hooks/useAssociation";
 import { useAuth } from "@/hooks/useAuth";
+import { useNetworkStats } from "@/hooks/useNetworkStats";
 import { 
   Building2, 
   GraduationCap, 
@@ -30,6 +32,7 @@ const Hub = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { associations, selectAssociationContext } = useAssociation();
+  const { data: networkStats, isLoading: statsLoading } = useNetworkStats();
 
   // Get user's first name
   const userFirstName = user?.user_metadata?.first_name 
@@ -60,13 +63,13 @@ const Hub = () => {
         </div>
       </div>
 
-      {/* Quick Stats Row - Compact */}
+      {/* Quick Stats Row - Dynamic */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
         {[
-          { icon: Building2, value: "150+", label: t("hub.stats.associations") },
-          { icon: Globe, value: "4", label: t("hub.stats.countries") },
-          { icon: FolderKanban, value: "25+", label: t("hub.stats.projects") },
-          { icon: Users, value: "1,200+", label: t("hub.stats.members") },
+          { icon: Building2, value: networkStats?.associationsCount || 0, label: t("hub.stats.associations"), loading: statsLoading },
+          { icon: Globe, value: networkStats?.countriesCount || 0, label: t("hub.stats.countries"), loading: statsLoading },
+          { icon: FolderKanban, value: networkStats?.projectsCount || 0, label: t("hub.stats.projects"), loading: statsLoading },
+          { icon: Users, value: networkStats?.membersCount || 0, label: t("hub.stats.members"), loading: statsLoading },
         ].map((stat, index) => (
           <Card key={index} className="border-border/50">
             <CardContent className="p-4 flex items-center gap-3">
@@ -74,7 +77,11 @@ const Hub = () => {
                 <stat.icon className="h-5 w-5 text-primary" />
               </div>
               <div>
-                <p className="text-xl font-bold">{stat.value}</p>
+                {stat.loading ? (
+                  <Skeleton className="h-6 w-12 mb-1" />
+                ) : (
+                  <p className="text-xl font-bold">{stat.value.toLocaleString()}</p>
+                )}
                 <p className="text-xs text-muted-foreground">{stat.label}</p>
               </div>
             </CardContent>

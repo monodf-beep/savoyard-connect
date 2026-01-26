@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { HubSidebar } from "./HubSidebar";
 import { GlobalHeader } from "./GlobalHeader";
+import { MobileBottomNav } from "./MobileBottomNav";
 import { cn } from "@/lib/utils";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useAssociation } from "@/hooks/useAssociation";
@@ -233,8 +234,13 @@ export const HubPageLayout = ({
               children
             )}
           </div>
+          {/* Bottom padding for mobile nav */}
+          <div className="h-20 md:hidden" />
         </main>
       </div>
+      
+      {/* Mobile Bottom Navigation */}
+      <MobileBottomNav onMenuClick={() => setMobileMenuOpen(true)} />
     </div>
   );
 };
