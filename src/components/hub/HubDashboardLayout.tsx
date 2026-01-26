@@ -3,8 +3,11 @@ import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/hooks/useAuth";
 import { useAssociation } from "@/hooks/useAssociation";
+import { useAssociationStats, useAssociationTasks } from "@/hooks/useAssociationStats";
 import { HubSidebar } from "./HubSidebar";
 import { GlobalHeader } from "./GlobalHeader";
+import { MobileBottomNav } from "./MobileBottomNav";
+import { OnboardingChecklist } from "@/components/dashboard/OnboardingChecklist";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -31,6 +34,7 @@ import {
   CheckCircle2,
   Clock,
   ArrowRight,
+  ClipboardList,
 } from "lucide-react";
 
 interface HubDashboardLayoutProps {
@@ -58,6 +62,10 @@ export const HubDashboardLayout = ({
     selectHubContext,
     selectAssociationContext 
   } = useAssociation();
+
+  // Fetch real stats
+  const { data: stats, isLoading: statsLoading } = useAssociationStats(currentAssociation?.id);
+  const { data: realTasks, isLoading: tasksLoading } = useAssociationTasks(currentAssociation?.id);
 
   const dateLocale = i18n.language === "it" ? it : fr;
   const today = format(new Date(), "EEEE d MMMM yyyy", { locale: dateLocale });
@@ -102,27 +110,60 @@ export const HubDashboardLayout = ({
     );
   }
 
-  // KPI Data
+  // KPI Data - Dynamic
   const kpis = [
-    { icon: Users, value: 12, label: t("dashboard.kpi.connections.label"), trend: "+3", color: "text-primary", bg: "bg-primary/10" },
-    { icon: FolderKanban, value: 5, label: t("dashboard.kpi.projects.label"), trend: "+1", color: "text-secondary", bg: "bg-secondary/10" },
-    { icon: Euro, value: "2,450€", label: t("dashboard.kpi.savings.label"), trend: "+340€", color: "text-green-600", bg: "bg-green-500/10" },
-    { icon: TrendingUp, value: "78%", label: t("dashboard.kpi.completion", "Complétion"), trend: "+5%", color: "text-orange-500", bg: "bg-orange-500/10" },
+    { 
+      icon: Users, 
+      value: statsLoading ? null : (stats?.membersCount || 0), 
+      label: t("dashboard.kpi.members", "Membres"), 
+      trend: null, 
+      color: "text-primary", 
+      bg: "bg-primary/10" 
+    },
+    { 
+      icon: FolderKanban, 
+      value: statsLoading ? null : (stats?.projectsCount || 0), 
+      label: t("dashboard.kpi.projects.label"), 
+      trend: null, 
+      color: "text-secondary", 
+      bg: "bg-secondary/10" 
+    },
+    { 
+      icon: ClipboardList, 
+      value: statsLoading ? null : (stats?.tasksCount || 0), 
+      label: t("dashboard.kpi.tasks", "Tâches"), 
+      trend: null, 
+      color: "text-orange-500", 
+      bg: "bg-orange-500/10" 
+    },
+    { 
+      icon: Clock, 
+      value: statsLoading ? null : (stats?.pendingTasksCount || 0), 
+      label: t("dashboard.kpi.pending", "En attente"), 
+      trend: null, 
+      color: "text-amber-500", 
+      bg: "bg-amber-500/10" 
+    },
   ];
 
   // Quick Actions
   const quickActions = [
-    { icon: FileText, label: t("dashboard.quickActions.addDocument", "Ajouter un document"), href: "/projets" },
-    { icon: Users, label: t("dashboard.quickActions.manageMembers", "Gérer les membres"), href: "/membres" },
+    { icon: FileText, label: t("dashboard.quickActions.addDocument", "Ajouter un document"), href: "/projects" },
+    { icon: Users, label: t("dashboard.quickActions.manageMembers", "Gérer les membres"), href: "/members" },
     { icon: Settings, label: t("dashboard.quickActions.settings", "Paramètres"), href: "/settings" },
   ];
 
-  // Sample tasks
-  const tasks = [
-    { title: "Mettre à jour l'organigramme", status: "pending", dueDate: "Aujourd'hui" },
-    { title: "Valider le rapport financier", status: "pending", dueDate: "Demain" },
-    { title: "Répondre aux candidatures", status: "completed", dueDate: "Hier" },
-  ];
+  // Real tasks or fallback
+  const displayTasks = realTasks && realTasks.length > 0 
+    ? realTasks.map(task => ({
+        title: task.title,
+        status: task.status,
+        dueDate: task.due_date ? format(new Date(task.due_date), "d MMM", { locale: dateLocale }) : t("common.noDate", "Non défini"),
+      }))
+    : [
+        { title: t("dashboard.tasks.sample.orgChart", "Mettre à jour l'organigramme"), status: "pending", dueDate: t("common.today", "Aujourd'hui") },
+        { title: t("dashboard.tasks.sample.finance", "Valider le rapport financier"), status: "pending", dueDate: t("common.tomorrow", "Demain") },
+      ];
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -270,7 +311,7 @@ export const HubDashboardLayout = ({
             )}
           </div>
 
-          {/* KPI Cards - Compact */}
+          {/* KPI Cards - Dynamic */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
             {kpis.map((kpi, index) => (
               <Card key={index} className="border-border/50">
@@ -279,12 +320,12 @@ export const HubDashboardLayout = ({
                     <div className={cn("p-2 rounded-lg", kpi.bg)}>
                       <kpi.icon className={cn("h-4 w-4", kpi.color)} />
                     </div>
-                    <Badge variant="secondary" className="text-[10px] bg-green-500/10 text-green-600">
-                      <TrendingUp className="h-2.5 w-2.5 mr-0.5" />
-                      {kpi.trend}
-                    </Badge>
                   </div>
-                  <p className="text-2xl font-bold mt-3">{kpi.value}</p>
+                  {kpi.value === null ? (
+                    <Skeleton className="h-7 w-12 mt-3" />
+                  ) : (
+                    <p className="text-2xl font-bold mt-3">{kpi.value}</p>
+                  )}
                   <p className="text-xs text-muted-foreground">{kpi.label}</p>
                 </CardContent>
               </Card>
@@ -308,7 +349,7 @@ export const HubDashboardLayout = ({
                 </div>
               </CardHeader>
               <CardContent className="space-y-3">
-                {tasks.map((task, index) => (
+                {displayTasks.map((task, index) => (
                   <div 
                     key={index} 
                     className={cn(
@@ -364,29 +405,21 @@ export const HubDashboardLayout = ({
             </Card>
           </div>
 
-          {/* Onboarding Progress */}
-          <Card className="bg-gradient-to-r from-primary/5 to-secondary/5 border-primary/20">
-            <CardContent className="p-4 md:p-6">
-              <div className="flex flex-col md:flex-row md:items-center gap-4">
-                <div className="flex-1">
-                  <h3 className="font-semibold mb-1">
-                    {t("dashboard.onboarding.title", "Complétez votre profil")}
-                  </h3>
-                  <p className="text-sm text-muted-foreground mb-3">
-                    {t("dashboard.onboarding.description", "Finalisez la configuration de votre association pour profiter de toutes les fonctionnalités.")}
-                  </p>
-                  <Progress value={65} className="h-2" />
-                  <p className="text-xs text-muted-foreground mt-2">65% complété</p>
-                </div>
-                <Button onClick={() => navigate('/settings')}>
-                  {t("dashboard.onboarding.cta", "Continuer")}
-                  <ArrowRight className="h-4 w-4 ml-2" />
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+          {/* Onboarding Checklist - Dynamic */}
+          <OnboardingChecklist
+            association={currentAssociation}
+            membersCount={stats?.membersCount || 0}
+            projectsCount={stats?.projectsCount || 0}
+            onActionClick={(path) => navigate(path)}
+          />
+
+          {/* Bottom padding for mobile nav */}
+          <div className="h-20 md:hidden" />
         </main>
       </div>
+      
+      {/* Mobile Bottom Navigation */}
+      <MobileBottomNav onMenuClick={() => setMobileMenuOpen(true)} />
     </div>
   );
 };

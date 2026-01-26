@@ -48,14 +48,30 @@ export function AssociationCard({ association, userLocation }: AssociationCardPr
 
   return (
     <Card className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border-border/50 bg-card overflow-hidden">
-      <CardHeader className="pb-3">
-        <div className="flex items-start gap-4">
-          <Avatar className="h-14 w-14 rounded-xl border-2 border-border/50">
+      {/* Cover Image Banner */}
+      <div className="relative h-24 w-full overflow-hidden">
+        {association.cover_image_url ? (
+          <img 
+            src={association.cover_image_url} 
+            alt={`${association.name} cover`}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+          />
+        ) : (
+          <div className="w-full h-full bg-gradient-to-br from-primary/20 via-secondary/10 to-primary/5" />
+        )}
+        {/* Logo overlay on cover */}
+        <div className="absolute -bottom-5 left-4">
+          <Avatar className="h-12 w-12 rounded-xl border-3 border-background shadow-lg">
             <AvatarImage src={association.logo_url || undefined} alt={association.name} />
-            <AvatarFallback className="rounded-xl bg-primary/10 text-primary font-bold">
+            <AvatarFallback className="rounded-xl bg-primary text-primary-foreground font-bold text-sm">
               {initials}
             </AvatarFallback>
           </Avatar>
+        </div>
+      </div>
+      
+      <CardHeader className="pb-3 pt-8">
+        <div className="flex items-start justify-between gap-2">
           <div className="flex-1 min-w-0">
             <h3 className="font-semibold text-foreground truncate group-hover:text-primary transition-colors">
               {association.name}

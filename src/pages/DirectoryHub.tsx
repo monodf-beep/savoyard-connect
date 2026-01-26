@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { HubPageLayout } from '@/components/hub/HubPageLayout';
 import { DirectoryFilters } from '@/components/directory/DirectoryFilters';
@@ -20,6 +20,8 @@ import {
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 
+const DIRECTORY_VIEW_MODE_KEY = 'directory-view-mode';
+
 const DirectoryHub = () => {
   const { t } = useTranslation();
   const [selectedZones, setSelectedZones] = useState<GeographicZone[]>([]);
@@ -28,8 +30,17 @@ const DirectoryHub = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedAssociation, setSelectedAssociation] = useState<DirectoryAssociation | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
-  // Map view is default/predominant
-  const [viewMode, setViewMode] = useState<'grid' | 'map'>('map');
+  
+  // Restore viewMode from localStorage, default to 'map'
+  const [viewMode, setViewMode] = useState<'grid' | 'map'>(() => {
+    const saved = localStorage.getItem(DIRECTORY_VIEW_MODE_KEY);
+    return (saved === 'grid' || saved === 'map') ? saved : 'map';
+  });
+
+  // Persist viewMode changes
+  useEffect(() => {
+    localStorage.setItem(DIRECTORY_VIEW_MODE_KEY, viewMode);
+  }, [viewMode]);
 
   const { data: userLocation } = useUserGeolocation();
   

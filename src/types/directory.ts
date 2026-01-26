@@ -47,6 +47,7 @@ export interface DirectoryAssociation {
   name: string;
   description: string | null;
   logo_url: string | null;
+  cover_image_url: string | null;
   primary_zone: GeographicZone | null;
   secondary_zone: GeographicZone | null;
   silo: string | null;

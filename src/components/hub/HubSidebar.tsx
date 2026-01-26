@@ -175,7 +175,7 @@ export const HubSidebar = ({ collapsed, onToggle, isMobile = false }: HubSidebar
   const location = useLocation();
   const navigate = useNavigate();
   const { isAdmin } = useAuth();
-  const { currentContext, isOwnerOrAdmin, isGestionnaire, selectHubContext } = useAssociation();
+  const { currentContext, currentAssociation, isOwnerOrAdmin, isGestionnaire, selectHubContext } = useAssociation();
 
   // On mobile, always show expanded view
   const isCollapsed = isMobile ? false : collapsed;
@@ -287,21 +287,39 @@ export const HubSidebar = ({ collapsed, onToggle, isMobile = false }: HubSidebar
     );
   }
 
+  // Context border color
+  const contextBorderColor = currentContext === 'hub' 
+    ? 'border-l-primary' 
+    : 'border-l-secondary';
+
   // Desktop view
   return (
     <aside 
       className={cn(
         "fixed left-0 top-16 z-40 h-[calc(100vh-4rem)] border-r border-border bg-card transition-all duration-300",
+        "border-l-4",
+        contextBorderColor,
         isCollapsed ? "w-14" : "w-56"
       )}
     >
       <div className="flex h-full flex-col">
-        {/* Context Indicator - Compact */}
+        {/* Context Indicator - Enhanced with association name */}
         {!isCollapsed && (
-          <div className="px-3 py-2 border-b border-border">
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+          <div className={cn(
+            "px-3 py-2.5 border-b border-border",
+            currentContext === 'hub' ? "bg-primary/5" : "bg-secondary/5"
+          )}>
+            <p className={cn(
+              "text-[10px] font-semibold uppercase tracking-wider",
+              currentContext === 'hub' ? "text-primary" : "text-secondary"
+            )}>
               {currentContext === 'hub' ? t("nav.hubNetwork") : t("nav.sections.myAssociation")}
             </p>
+            {currentContext === 'association' && currentAssociation && (
+              <p className="text-sm font-medium text-foreground truncate mt-0.5">
+                {currentAssociation.name}
+              </p>
+            )}
           </div>
         )}
 
