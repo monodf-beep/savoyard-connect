@@ -22,8 +22,6 @@ import {
   Kanban,
   Handshake,
   GitBranch,
-  Mountain,
-  Palette,
   TrendingUp,
   Rocket,
 } from "lucide-react";
@@ -76,30 +74,13 @@ const hubNetworkItems: NavItem[] = [
   },
   { 
     path: "/projets-reseau", 
-    labelKey: "nav.networkProjects", 
+    labelKey: "nav.projectsNetwork", 
     icon: Rocket, 
   },
   { 
     path: "/opportunites", 
     labelKey: "nav.opportunities", 
     icon: TrendingUp, 
-  },
-  // Separator for Silos
-  { 
-    path: "", 
-    labelKey: "nav.silosSection", 
-    icon: Globe, 
-    isSeparator: true,
-  },
-  { 
-    path: "/silos/sport", 
-    labelKey: "nav.siloSport", 
-    icon: Mountain, 
-  },
-  { 
-    path: "/silos/culture", 
-    labelKey: "nav.siloCulture", 
-    icon: Palette, 
   },
 ];
 
