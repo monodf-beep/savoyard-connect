@@ -1,10 +1,9 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
-import { Menu, X, Star } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { LanguageToggle } from '@/components/LanguageToggle';
+import { Button } from '@/components/ui/button';
+import { PublicNavbar } from '@/components/PublicNavbar';
 import { ExpertCard } from '@/components/experts/ExpertCard';
 import { ExpertModal } from '@/components/experts/ExpertModal';
 import { PublicFooter } from '@/components/PublicFooter';
@@ -16,7 +15,6 @@ const Experts = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [selectedExpert, setSelectedExpert] = useState<Expert | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
 
@@ -27,112 +25,8 @@ const Experts = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-border/50">
-        <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between h-16">
-            {/* Logo */}
-            <Link to="/" className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#1e3a8a] to-[#065f46] flex items-center justify-center">
-                <span className="text-white font-bold text-sm">A</span>
-              </div>
-              <span className="font-bold text-foreground hidden sm:block">Associacion</span>
-            </Link>
-
-            {/* Desktop Nav */}
-            <nav className="hidden md:flex items-center gap-6">
-              <Link to="/" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                {t('nav.home')}
-              </Link>
-              <Link to="/annuaire" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                {t('nav.directory')}
-              </Link>
-              <Link to="/experts" className="text-sm font-medium text-[#1e3a8a] flex items-center gap-1">
-                <Star className="w-4 h-4" />
-                {t('experts.navTitle')}
-              </Link>
-            </nav>
-
-            {/* Actions */}
-            <div className="flex items-center gap-2">
-              <LanguageToggle />
-              {user ? (
-                <Button 
-                  onClick={() => navigate('/dashboard')}
-                  className="bg-[#1e3a8a] hover:bg-[#1e3a8a]/90 text-white"
-                >
-                  {t('nav.dashboard')}
-                </Button>
-              ) : (
-                <>
-                  <Button 
-                    variant="ghost" 
-                    onClick={() => navigate('/login')}
-                    className="hidden sm:inline-flex"
-                  >
-                    {t('nav.login')}
-                  </Button>
-                  <Button 
-                    onClick={() => navigate('/signup')}
-                    className="bg-[#dc2626] hover:bg-[#dc2626]/90 text-white"
-                  >
-                    {t('nav.signup')}
-                  </Button>
-                </>
-              )}
-
-              {/* Mobile menu button */}
-              <Button
-                variant="ghost"
-                size="icon"
-                className="md:hidden"
-                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              >
-                {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-              </Button>
-            </div>
-          </div>
-        </div>
-
-        {/* Mobile Menu */}
-        {mobileMenuOpen && (
-          <div className="md:hidden absolute top-16 left-0 right-0 bottom-0 h-[calc(100vh-4rem)] bg-white z-[100]">
-            <nav className="flex flex-col p-4 gap-4">
-              <Link 
-                to="/" 
-                className="text-lg font-medium text-foreground py-2"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                {t('nav.home')}
-              </Link>
-              <Link 
-                to="/annuaire" 
-                className="text-lg font-medium text-foreground py-2"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                {t('nav.directory')}
-              </Link>
-              <Link 
-                to="/experts" 
-                className="text-lg font-medium text-[#1e3a8a] py-2 flex items-center gap-2"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                <Star className="w-5 h-5" />
-                {t('experts.navTitle')}
-              </Link>
-              {!user && (
-                <Link 
-                  to="/login" 
-                  className="text-lg font-medium text-foreground py-2"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  {t('nav.login')}
-                </Link>
-              )}
-            </nav>
-          </div>
-        )}
-      </header>
+      {/* Unified Navbar */}
+      <PublicNavbar />
 
       {/* Hero Section */}
       <section className="pt-24 pb-12 bg-gradient-to-b from-[#1e3a8a]/5 to-transparent">
