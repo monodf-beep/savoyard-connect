@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
+import { PublicNavbar } from "@/components/PublicNavbar";
 import { PublicFooter } from "@/components/PublicFooter";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -52,21 +53,7 @@ const BlogPost = () => {
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col bg-background">
-        <header className="border-b border-border bg-background/80 backdrop-blur-sm sticky top-0 z-50">
-          <div className="container px-4 md:px-8 py-4 flex items-center gap-4">
-            <Button variant="ghost" size="icon" asChild>
-              <Link to="/blog">
-                <ArrowLeft className="h-5 w-5" />
-              </Link>
-            </Button>
-            <Link to="/" className="flex items-center gap-1.5">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
-                <span className="text-white font-bold text-sm">A</span>
-              </div>
-              <span className="font-bold text-foreground">associacion</span>
-            </Link>
-          </div>
-        </header>
+        <PublicNavbar />
         <main className="flex-1 container px-4 md:px-8 py-12 max-w-4xl">
           <Skeleton className="h-10 w-3/4 mb-4" />
           <Skeleton className="h-6 w-1/2 mb-8" />
@@ -85,21 +72,7 @@ const BlogPost = () => {
   if (!post) {
     return (
       <div className="min-h-screen flex flex-col bg-background">
-        <header className="border-b border-border bg-background/80 backdrop-blur-sm sticky top-0 z-50">
-          <div className="container px-4 md:px-8 py-4 flex items-center gap-4">
-            <Button variant="ghost" size="icon" asChild>
-              <Link to="/blog">
-                <ArrowLeft className="h-5 w-5" />
-              </Link>
-            </Button>
-            <Link to="/" className="flex items-center gap-1.5">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
-                <span className="text-white font-bold text-sm">A</span>
-              </div>
-              <span className="font-bold text-foreground">associacion</span>
-            </Link>
-          </div>
-        </header>
+        <PublicNavbar />
         <main className="flex-1 container px-4 md:px-8 py-12 text-center">
           <Newspaper className="h-16 w-16 text-muted-foreground/50 mx-auto mb-6" />
           <h1 className="text-2xl font-bold text-foreground mb-4">{t("blog.notFound")}</h1>
@@ -115,22 +88,8 @@ const BlogPost = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
-      {/* Header */}
-      <header className="border-b border-border bg-background/80 backdrop-blur-sm sticky top-0 z-50">
-        <div className="container px-4 md:px-8 py-4 flex items-center gap-4">
-          <Button variant="ghost" size="icon" asChild>
-            <Link to="/blog">
-              <ArrowLeft className="h-5 w-5" />
-            </Link>
-          </Button>
-          <Link to="/" className="flex items-center gap-1.5">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
-              <span className="text-white font-bold text-sm">A</span>
-            </div>
-            <span className="font-bold text-foreground">associacion</span>
-          </Link>
-        </div>
-      </header>
+      {/* Unified Navbar */}
+      <PublicNavbar />
 
       {/* Content */}
       <main className="flex-1">
