@@ -1,136 +1,109 @@
 
-# Plan d'Amélioration UX/UI/Positionnement
+# Suppression du Hub Réseau et simplification de la navigation
 
-## Vue d'ensemble
+## Pourquoi supprimer le Hub ?
 
-Ce plan adresse les problèmes critiques identifiés dans l'analyse et propose des améliorations concrètes réparties en 3 phases.
+Depuis la migration de toutes les fonctionnalités (Annuaire, Experts, Mutualisation, etc.) dans le contexte association via le Store de modules, le Hub Réseau n'a plus de raison d'exister :
 
----
+- Les raccourcis du Hub pointent vers des pages accessibles dans la sidebar
+- Le sélecteur d'association est deja dans le header global
+- Les stats réseau peuvent etre integrees au Dashboard
+- Le double contexte hub/association complexifie l'UX sans apporter de valeur
 
-## PHASE 1 : Quick Wins Visuels (2-3 jours)
+## Ce qui change
 
-### 1.1 Indicateur de Contexte Fort
-**Fichier : `HubSidebar.tsx` + `HubDashboardLayout.tsx`**
-- Ajouter une bordure gauche colorée :
-  - Bleu (#0066FF) quand contexte = Hub Réseau
-  - Vert (#00D084) quand contexte = Association
-- Afficher le nom de l'association sélectionnée en haut de la sidebar
+### 1. Flux de connexion simplifie
 
-### 1.2 Bottom Navigation Mobile
-**Nouveau fichier : `src/components/hub/MobileBottomNav.tsx`**
-- Navigation fixe en bas sur mobile avec 4-5 icônes
-- Icônes : Accueil, Annuaire, Dashboard, Menu (sheet)
-- Visible uniquement sous 768px
+**Avant** : Login -> Hub -> Choisir asso -> Dashboard
+**Apres** : Login -> Dashboard (association auto-selectionnee ou choix si plusieurs)
 
-### 1.3 Mémorisation des préférences
-**Fichier : `DirectoryHub.tsx`**
-- Sauvegarder `viewMode` (carte/grille) dans localStorage
-- Restaurer à chaque visite
+### 2. Fichiers a supprimer
 
-### 1.4 Photos de couverture sur les cartes
-**Fichier : `AssociationCard.tsx`**
-- Ajouter un bandeau image en haut de la carte (utiliser `cover_image_url`)
-- Fallback gradient si pas d'image
+- `src/pages/Hub.tsx` : page Hub complete
+- `src/hooks/useNetworkStats.ts` : stats reseau (plus utilisees)
+- `src/components/hub/HubKPICards.tsx` : cartes KPI du hub
+- `src/components/hub/HubQuickActions.tsx` : actions rapides du hub
+- `src/components/hub/HubActivityTimeline.tsx` : timeline hub
+- `src/components/hub/HubOnboardingCard.tsx` : onboarding hub
 
----
+### 3. Fichiers a modifier
 
-## PHASE 2 : Données Réelles & Preuve Sociale (3-4 jours)
+**`src/hooks/useAssociation.tsx`**
+- Supprimer le type `ContextType` et la dualite hub/association
+- Supprimer `selectHubContext`, `currentContext`, `setCurrentContext`
+- Au login, auto-selectionner la premiere association (ou la derniere utilisee)
+- Si aucune association, rediriger vers `/onboarding-asso`
 
-### 2.1 Stats dynamiques sur le Hub
-**Fichier : `Hub.tsx`**
-- Remplacer les valeurs hardcodées par des requêtes Supabase :
-  - Nombre total d'associations (count sur `associations`)
-  - Nombre de projets actifs
-  - Nombre de membres (sum sur `association_members`)
-- Afficher un skeleton pendant le chargement
+**`src/components/hub/HubSidebar.tsx`**
+- Supprimer `hubNetworkItems` (le tableau avec un seul item "Home Hub")
+- Supprimer toute la logique de contexte `if (currentContext === 'hub')`
+- Ne garder que les `associationItems` filtres par modules
+- Renommer le composant en `AppSidebar` (optionnel, pour clarte)
 
-### 2.2 KPIs réels sur le Dashboard
-**Fichier : `HubDashboardLayout.tsx`**
-- Requêter les vraies données de l'association sélectionnée :
-  - Nombre de membres
-  - Nombre de projets
-  - Budget (si disponible)
-- Remplacer les tâches mockées par les vraies tâches de `admin_tasks` (si table existe)
+**`src/components/hub/HubPageLayout.tsx`** et **`src/components/hub/HubDashboardLayout.tsx`**
+- Supprimer les references au contexte hub
+- Supprimer le bouton "Retour au Hub Reseau"
+- Simplifier le menu mobile : plus de switch hub/asso
 
-### 2.3 Onboarding progressif
-**Nouveau fichier : `src/components/dashboard/OnboardingChecklist.tsx`**
-- Checklist visuelle des étapes :
-  1. Compléter le profil association
-  2. Ajouter le logo
-  3. Inviter 3 membres
-  4. Créer un premier projet
-- Persistance en base (champ `onboarding_completed` sur `associations`)
+**`src/components/hub/MobileBottomNav.tsx`**
+- Supprimer la branche `if (currentContext === 'hub')` qui affichait des nav items hub
+- Ne garder que la navigation association
 
----
+**`src/components/hub/GlobalHeader.tsx`**
+- Supprimer l'option "Retour au Hub" du switcher
+- Le switcher ne fait plus que changer d'association
 
-## PHASE 3 : Conversion & Activation (4-5 jours)
+**`src/App.tsx`**
+- Supprimer la route `/hub`
+- Rediriger les utilisateurs connectes vers `/dashboard` par defaut
 
-### 3.1 CTAs actifs avec capture d'intention
-**Fichiers : `NetworkProjects.tsx`, `Mutualisation.tsx`**
-- Remplacer les boutons disabled par des modales de "waitlist"
-- Capturer l'email + type de besoin dans une table `feature_requests`
-- Afficher un message de confirmation engageant
+**`src/i18n/locales/fr.ts`** et **`src/i18n/locales/it.ts`**
+- Nettoyer les cles de traduction `hubNetwork`, `hubHome`, `returnToHub`, etc.
 
-### 3.2 Amélioration de la Landing Page
-**Fichier : `Landing.tsx`**
-- Section "Témoignages" avec 3 citations (mockées puis réelles)
-- Section "Ils nous font confiance" avec logos d'associations
-- Compteur animé des stats réseau (avec données réelles)
-- Video embed ou animation du produit en action
+### 4. Recuperer les elements utiles du Hub
 
-### 3.3 Parcours post-consultation annuaire
-**Fichier : `AssociationProfile.tsx`**
-- Après consultation d'un profil, proposer :
-  - "Demander une mise en relation" (CTA principal)
-  - "Voir les associations similaires" (suggestions)
-- Tracker les consultations de profil (analytics)
+Les quelques elements de valeur du Hub seront redistribues :
 
----
+- **Stats reseau** : integrees au Dashboard sous forme de petit widget "Mon reseau" (nombre d'assos, de projets)
+- **Liste associations** : deja dans le header via `AssociationSwitcher`, suffisant
+- **Bouton "Creer une association"** : deja dans le switcher du header
+- **Silos Sport/Culture** : restent accessibles via les landing pages publiques et la sidebar
 
-## Détails Techniques
+## Details techniques
 
-### Nouvelles Dépendances
-- Aucune nouvelle dépendance requise (tout est faisable avec l'existant)
-
-### Modifications Base de Données
-- Ajouter champ `onboarding_step: integer` sur table `associations`
-- Créer table `feature_requests (id, user_id, feature_name, email, created_at)`
-- Créer table `profile_views (id, viewer_id, association_id, viewed_at)` pour analytics
-
-### Fichiers Impactés
+### Simplification du contexte
 
 ```text
-src/components/hub/HubSidebar.tsx        # Indicateur contexte
-src/components/hub/HubDashboardLayout.tsx # KPIs réels
-src/components/hub/MobileBottomNav.tsx   # NOUVEAU
-src/pages/Hub.tsx                        # Stats dynamiques
-src/pages/DirectoryHub.tsx               # Mémorisation préférences
-src/pages/Landing.tsx                    # Preuve sociale
-src/pages/NetworkProjects.tsx            # CTA actifs
-src/components/directory/AssociationCard.tsx # Cover image
-src/components/dashboard/OnboardingChecklist.tsx # NOUVEAU
+AVANT:
+useAssociation() -> currentContext: 'hub' | 'association'
+                 -> selectHubContext()
+                 -> selectAssociationContext(asso)
+
+APRES:
+useAssociation() -> currentAssociation (toujours defini si connecte)
+                 -> setCurrentAssociation(asso)
 ```
 
----
+### Redirections
 
-## Priorités Recommandées
+```text
+/hub           -> redirige vers /dashboard
+Login reussi   -> /dashboard (au lieu de /hub)
+Aucune asso    -> /onboarding-asso
+```
 
-| Priorité | Élément | Impact UX | Effort |
-|----------|---------|-----------|--------|
-| 🔴 Haute | Indicateur de contexte | ++++ | Faible |
-| 🔴 Haute | Stats dynamiques Hub | +++ | Moyen |
-| 🟡 Moyenne | Bottom nav mobile | +++ | Moyen |
-| 🟡 Moyenne | Onboarding checklist | +++ | Moyen |
-| 🟢 Basse | Cover images cartes | ++ | Faible |
-| 🟢 Basse | CTAs waitlist | ++ | Faible |
+### Impact sur la sidebar
 
----
+```text
+AVANT (contexte hub):     Sidebar avec 1 seul item "Home Hub"
+AVANT (contexte asso):    Sidebar complete avec modules
 
-## Résultat Attendu
+APRES:                    Sidebar unique, toujours les modules de l'asso active
+```
 
-Après implémentation :
-1. **Clarté contextuelle** : L'utilisateur sait toujours où il se trouve
-2. **Crédibilité** : Les données réelles renforcent la confiance
-3. **Engagement** : L'onboarding guide vers l'activation
-4. **Conversion** : Les CTAs capturent l'intention même si les features ne sont pas prêtes
-5. **Mobile-first** : Navigation intuitive sur tous les appareils
+## Resultat attendu
+
+- Navigation simplifiee en 1 seul niveau (plus de bascule hub/asso)
+- Moins de code a maintenir (~300 lignes supprimees)
+- Experience utilisateur plus directe : connexion -> gestion immediate
+- Le header reste le point central pour changer d'association
