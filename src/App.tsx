@@ -34,7 +34,7 @@ import Experts from "./pages/Experts";
 import DirectoryHub from "./pages/DirectoryHub";
 import Opportunites from "./pages/Opportunites";
 import Toolbox from "./pages/Toolbox";
-import Hub from "./pages/Hub";
+
 import Members from "./pages/Members";
 import Mutualisation from "./pages/Mutualisation";
 import Accompagnateur from "./pages/Accompagnateur";
@@ -105,7 +105,8 @@ const AppContent = () => {
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/onboarding-asso" element={<OnboardingAsso />} />
-        <Route path="/hub" element={<Hub />} />
+        {/* /hub redirects to /dashboard */}
+        <Route path="/hub" element={<Dashboard />} />
         <Route path="/mutualisation" element={<Mutualisation />} />
         <Route path="/adhesion-reseau" element={<AdhesionReseau />} />
         <Route path="/dashboard" element={<Dashboard />} />
