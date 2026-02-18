@@ -42,6 +42,7 @@ import AdhesionReseau from "./pages/AdhesionReseau";
 import AssociationProfile from "./pages/AssociationProfile";
 import Profile from "./pages/Profile";
 import NetworkProjects from "./pages/NetworkProjects";
+import ModuleStore from "./pages/ModuleStore";
 import Contact from "./pages/Contact";
 import FAQ from "./pages/FAQ";
 import LegalMentions from "./pages/LegalMentions";
@@ -130,6 +131,7 @@ const AppContent = () => {
         <Route path="/opportunites" element={<Opportunites />} />
         <Route path="/profil" element={<Profile />} />
         <Route path="/projets-reseau" element={<NetworkProjects />} />
+        <Route path="/module-store" element={<ModuleStore />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/faq" element={<FAQ />} />
         <Route path="/mentions-legales" element={<LegalMentions />} />
