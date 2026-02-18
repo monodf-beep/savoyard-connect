@@ -16,6 +16,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from './ui
 import { Dialog, DialogContent } from './ui/dialog';
 import { Input } from './ui/input';
 import { Settings, Eye, EyeOff, ExpandIcon as Expand, ShrinkIcon as Shrink, UserPlus, FolderPlus, LogIn, LogOut, LayoutGrid, List, Network, Menu, X, Upload, Plus, Search } from 'lucide-react';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { useOrganigramme } from '../hooks/useOrganigramme';
 import { supabase } from '../integrations/supabase/client';
 import { useAuth } from '../hooks/useAuth';
@@ -52,6 +53,8 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
   const [isImportOpen, setIsImportOpen] = useState(false);
   const [isNameCorrectionOpen, setIsNameCorrectionOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const isMobile = useIsMobile();
+  const [mobileCollapsedOverride, setMobileCollapsedOverride] = useState(true);
   
   // Drag & Drop
   const sensors = useSensors(
@@ -115,6 +118,7 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
     handlePersonDragCancel();
     handleDragCancel();
   };
+
 
   // Listen for custom events to open vacant positions sidebar
   React.useEffect(() => {
@@ -184,6 +188,11 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
   }, [isAdmin]);
 
   const toggleSection = useCallback(async (sectionId: string) => {
+    // Disable mobile collapse override when user interacts
+    if (isMobile && mobileCollapsedOverride) {
+      setMobileCollapsedOverride(false);
+    }
+    
     const findSectionRecursively = (sections: Section[]): Section | null => {
       for (const section of sections) {
         if (section.id === sectionId) {
@@ -201,7 +210,7 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
     if (targetSection) {
       await updateSectionExpansion(sectionId, !targetSection.isExpanded);
     }
-  }, [data.sections, updateSectionExpansion]);
+  }, [data.sections, updateSectionExpansion, isMobile, mobileCollapsedOverride]);
 
   const expandAll = useCallback(async () => {
     try {
@@ -373,8 +382,20 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
 
   const visibleSections = filterVisibleSections(data.sections);
   
+  // On mobile initial load, override all sections to collapsed
+  const mobileAdjustedSections = React.useMemo(() => {
+    if (!isMobile || !mobileCollapsedOverride) return visibleSections;
+    const collapseAll = (sections: Section[]): Section[] => 
+      sections.map(s => ({
+        ...s,
+        isExpanded: false,
+        subsections: s.subsections ? collapseAll(s.subsections) : []
+      }));
+    return collapseAll(visibleSections);
+  }, [visibleSections, isMobile, mobileCollapsedOverride]);
+  
   // Appliquer ensuite le filtre de recherche sur les sections visibles
-  const searchFilteredSections = filterSectionsBySearch(visibleSections, searchQuery);
+  const searchFilteredSections = filterSectionsBySearch(mobileAdjustedSections, searchQuery);
 
   const handlePersonClick = useCallback((person: Person) => {
     // Fermer le panneau des postes vacants s'il est ouvert
@@ -669,6 +690,43 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
       <div className={`organigramme-container transition-all duration-300 ${(isSidebarOpen || isVacantPositionsSidebarOpen) ? 'pr-80' : ''} flex-1 max-w-full px-2 md:px-4 py-2 md:py-4`}>
       {/* Header épuré */}
       <div className="mb-3 md:mb-6">
+        {/* Mobile: Section jump navigation */}
+        {!loading && searchFilteredSections.length > 0 && (
+          <div className="md:hidden mb-3 -mx-2 px-2">
+            <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide">
+              {searchFilteredSections.map(section => {
+                const count = (() => {
+                  const getTotalCount = (s: Section): number => {
+                    let c = s.members.length;
+                    if (s.subsections) s.subsections.forEach(sub => { c += getTotalCount(sub); });
+                    return c;
+                  };
+                  return getTotalCount(section);
+                })();
+                return (
+                  <button
+                    key={section.id}
+                    onClick={() => {
+                      // Expand the section first
+                      if (!section.isExpanded) {
+                        toggleSection(section.id);
+                      }
+                      setTimeout(() => {
+                        const el = document.getElementById(`section-${section.id}`);
+                        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                      }, 100);
+                    }}
+                    className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-border bg-card text-xs font-medium text-foreground hover:bg-primary/10 hover:border-primary/30 transition-colors shadow-sm"
+                  >
+                    <span className="truncate max-w-[120px]">{section.title}</span>
+                    <span className="bg-muted text-muted-foreground px-1.5 py-0.5 rounded-full text-[10px] font-semibold">{count}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         {/* Version mobile : menu bouton */}
         <div className="md:hidden flex items-center justify-end mb-2">
           {/* Bouton Menu Modal */}
