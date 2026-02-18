@@ -6,7 +6,7 @@ import { VacantPositionCard } from './VacantPositionCard';
 import { OpenPositionCard } from './OpenPositionCard';
 import { SpontaneousApplicationForm } from './SpontaneousApplicationForm';
 import { SectionReassuranceDialog } from './SectionReassuranceDialog';
-import { ChevronDown, ChevronRight, Users, Star, MoreVertical } from 'lucide-react';
+import { ChevronDown, ChevronRight, Users, Star, MoreVertical, Edit, Trash2 } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useDroppable } from '@dnd-kit/core';
 import {
@@ -38,6 +38,8 @@ interface SectionCardProps {
   onUpdate?: () => void;
   isPersonDragOver?: boolean;
   showSubsections?: boolean;
+  onEditSection?: (section: Section) => void;
+  onDeleteSection?: (sectionId: string) => void;
 }
 
 export const SectionCard: React.FC<SectionCardProps> = ({ 
@@ -48,6 +50,8 @@ export const SectionCard: React.FC<SectionCardProps> = ({
   onEditPerson,
   onEditVacantPosition,
   level = 0,
+  onEditSection,
+  onDeleteSection,
   allSections = [],
   onUpdate,
   isPersonDragOver = false,
@@ -199,6 +203,27 @@ export const SectionCard: React.FC<SectionCardProps> = ({
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
+                  {onEditSection && (
+                    <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onEditSection(section); }}>
+                      <Edit className="w-4 h-4 mr-2" />
+                      Modifier la section
+                    </DropdownMenuItem>
+                  )}
+                  {onDeleteSection && (
+                    <DropdownMenuItem 
+                      onClick={(e) => { 
+                        e.stopPropagation(); 
+                        if (confirm('Êtes-vous sûr de vouloir supprimer cette section ?')) {
+                          onDeleteSection(section.id);
+                        }
+                      }}
+                      className="text-destructive focus:text-destructive focus:bg-destructive/10"
+                    >
+                      <Trash2 className="w-4 h-4 mr-2" />
+                      Supprimer la section
+                    </DropdownMenuItem>
+                  )}
+                  {(onEditSection || onDeleteSection) && <DropdownMenuSeparator />}
                   <DropdownMenuLabel className="text-xs text-muted-foreground">
                     Niveau actuel : {getCurrentLevel()}
                   </DropdownMenuLabel>
@@ -383,6 +408,27 @@ export const SectionCard: React.FC<SectionCardProps> = ({
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
+                  {onEditSection && (
+                    <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onEditSection(section); }}>
+                      <Edit className="w-4 h-4 mr-2" />
+                      Modifier la section
+                    </DropdownMenuItem>
+                  )}
+                  {onDeleteSection && (
+                    <DropdownMenuItem 
+                      onClick={(e) => { 
+                        e.stopPropagation(); 
+                        if (confirm('Êtes-vous sûr de vouloir supprimer cette section ?')) {
+                          onDeleteSection(section.id);
+                        }
+                      }}
+                      className="text-destructive focus:text-destructive focus:bg-destructive/10"
+                    >
+                      <Trash2 className="w-4 h-4 mr-2" />
+                      Supprimer la section
+                    </DropdownMenuItem>
+                  )}
+                  {(onEditSection || onDeleteSection) && <DropdownMenuSeparator />}
                   <DropdownMenuLabel className="text-xs text-muted-foreground">
                     Niveau actuel : {getCurrentLevel()}
                   </DropdownMenuLabel>

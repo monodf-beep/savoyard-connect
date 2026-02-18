@@ -556,6 +556,11 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
     }
   }, [deleteSection]);
 
+  const handleEditSection = useCallback((section: Section) => {
+    setEditingSection(section);
+    setIsSectionFormOpen(true);
+  }, []);
+
   // Handlers pour les postes vacants
   const handleAddVacantPosition = useCallback(() => {
     setEditingVacantPosition(null);
@@ -992,6 +997,8 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
                   isDragging={activeId === section.id}
                   isOver={overId === section.id}
                   isPersonDragOver={overSectionId === section.id}
+                  onEditSection={handleEditSection}
+                  onDeleteSection={handleDeleteSection}
                 />
               ))
             ) : (
