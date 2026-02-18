@@ -19,6 +19,7 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import SubventionsSection from "@/components/landing/SubventionsSection";
 
 const Landing = () => {
   const { t } = useTranslation();
@@ -395,6 +396,9 @@ const Landing = () => {
           </div>
         </div>
       </section>
+
+      {/* Subventions Section */}
+      <SubventionsSection />
 
       {/* Pricing Section */}
       <section id="pricing" className="py-16 md:py-24 bg-muted/30">
