@@ -225,6 +225,47 @@ export type Database = {
           },
         ]
       }
+      association_modules: {
+        Row: {
+          association_id: string
+          created_at: string
+          enabled_at: string | null
+          enabled_by: string | null
+          id: string
+          is_enabled: boolean
+          module_key: string
+          updated_at: string
+        }
+        Insert: {
+          association_id: string
+          created_at?: string
+          enabled_at?: string | null
+          enabled_by?: string | null
+          id?: string
+          is_enabled?: boolean
+          module_key: string
+          updated_at?: string
+        }
+        Update: {
+          association_id?: string
+          created_at?: string
+          enabled_at?: string | null
+          enabled_by?: string | null
+          id?: string
+          is_enabled?: boolean
+          module_key?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "association_modules_association_id_fkey"
+            columns: ["association_id"]
+            isOneToOne: false
+            referencedRelation: "associations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       associations: {
         Row: {
           city: string | null

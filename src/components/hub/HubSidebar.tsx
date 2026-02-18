@@ -2,6 +2,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/hooks/useAuth";
 import { useAssociation } from "@/hooks/useAssociation";
+import { useModules } from "@/hooks/useModules";
 import { Button } from "@/components/ui/button";
 import { 
   LayoutDashboard, 
@@ -24,6 +25,7 @@ import {
   GitBranch,
   TrendingUp,
   Rocket,
+  Package,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -50,37 +52,12 @@ interface NavItem {
   isSeparator?: boolean;
 }
 
-// Hub Network navigation items
+// Hub Network navigation items - simplified (features moved to association context)
 const hubNetworkItems: NavItem[] = [
   { 
     path: "/hub", 
     labelKey: "nav.hubHome", 
     icon: Home, 
-  },
-  { 
-    path: "/annuaire", 
-    labelKey: "nav.directoryB2B", 
-    icon: Building2, 
-  },
-  { 
-    path: "/experts", 
-    labelKey: "nav.experts", 
-    icon: GraduationCap, 
-  },
-  { 
-    path: "/mutualisation", 
-    labelKey: "nav.mutualisation", 
-    icon: Handshake, 
-  },
-  { 
-    path: "/projets-reseau", 
-    labelKey: "nav.projectsNetwork", 
-    icon: Rocket, 
-  },
-  { 
-    path: "/opportunites", 
-    labelKey: "nav.opportunities", 
-    icon: TrendingUp, 
   },
 ];
 
@@ -144,6 +121,37 @@ const associationItems: NavItem[] = [
     icon: Briefcase,
   },
   { 
+    path: "/annuaire", 
+    labelKey: "nav.directoryB2B", 
+    icon: Building2, 
+  },
+  { 
+    path: "/experts", 
+    labelKey: "nav.experts", 
+    icon: GraduationCap, 
+  },
+  { 
+    path: "/mutualisation", 
+    labelKey: "nav.mutualisation", 
+    icon: Handshake, 
+  },
+  { 
+    path: "/projets-reseau", 
+    labelKey: "nav.projectsNetwork", 
+    icon: Rocket, 
+  },
+  { 
+    path: "/opportunites", 
+    labelKey: "nav.opportunities", 
+    icon: TrendingUp, 
+  },
+  { 
+    path: "/module-store", 
+    labelKey: "nav.moduleStore", 
+    icon: Package, 
+    adminOnly: true,
+  },
+  { 
     path: "/settings", 
     labelKey: "nav.settings", 
     icon: Settings, 
@@ -157,6 +165,7 @@ export const HubSidebar = ({ collapsed, onToggle, isMobile = false }: HubSidebar
   const navigate = useNavigate();
   const { isAdmin } = useAuth();
   const { currentContext, currentAssociation, isOwnerOrAdmin, isGestionnaire, selectHubContext } = useAssociation();
+  const { isModuleVisibleInSidebar } = useModules();
 
   // On mobile, always show expanded view
   const isCollapsed = isMobile ? false : collapsed;
@@ -167,10 +176,12 @@ export const HubSidebar = ({ collapsed, onToggle, isMobile = false }: HubSidebar
       return hubNetworkItems;
     }
 
-    // Filter association items based on role
+    // Filter association items based on role AND enabled modules
     return associationItems.filter(item => {
       if (item.adminOnly && !isOwnerOrAdmin && !isAdmin) return false;
       if (item.gestionnaireOnly && !isGestionnaire && !isAdmin) return false;
+      // Check if module is enabled for this path
+      if (!isModuleVisibleInSidebar(item.path)) return false;
       return true;
     });
   };
