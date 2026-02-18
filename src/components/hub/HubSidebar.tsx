@@ -1,38 +1,16 @@
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/hooks/useAuth";
 import { useAssociation } from "@/hooks/useAssociation";
 import { useModules } from "@/hooks/useModules";
 import { Button } from "@/components/ui/button";
 import { 
-  LayoutDashboard, 
-  Users, 
-  FolderKanban, 
-  Briefcase,
-  PiggyBank,
-  Settings, 
-  ChevronLeft,
-  ChevronRight,
-  Building2,
-  GraduationCap,
-  Sparkles,
-  Globe,
-  Home,
-  UserCheck,
-  ArrowLeft,
-  Kanban,
-  Handshake,
-  GitBranch,
-  TrendingUp,
-  Rocket,
-  Package,
+  LayoutDashboard, Users, FolderKanban, Briefcase, PiggyBank, Settings, 
+  ChevronLeft, ChevronRight, GraduationCap, Sparkles, Globe, Building2,
+  UserCheck, Kanban, Handshake, GitBranch, TrendingUp, Rocket, Package,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface HubSidebarProps {
   collapsed: boolean;
@@ -52,149 +30,43 @@ interface NavItem {
   isSeparator?: boolean;
 }
 
-// Hub Network navigation items - simplified (features moved to association context)
-const hubNetworkItems: NavItem[] = [
-  { 
-    path: "/hub", 
-    labelKey: "nav.hubHome", 
-    icon: Home, 
-  },
-];
-
-// Association ERP navigation items - Refactored structure
 const associationItems: NavItem[] = [
-  { 
-    path: "/accompagnateur", 
-    labelKey: "nav.accompagnateur", 
-    icon: Sparkles, 
-  },
-  { 
-    path: "/dashboard", 
-    labelKey: "nav.dashboard", 
-    icon: LayoutDashboard, 
-  },
-  { 
-    path: "/members", 
-    labelKey: "nav.membersSubscriptions", 
-    icon: UserCheck,
-    gestionnaireOnly: true,
-  },
-  { 
-    path: "/finance", 
-    labelKey: "nav.finance", 
-    icon: PiggyBank, 
-    canBePublic: true,
-  },
-  { 
-    path: "/organigramme", 
-    labelKey: "nav.hrVolunteering", 
-    icon: Users, 
-    canBePublic: true,
-  },
-  { 
-    path: "/value-chains", 
-    labelKey: "nav.valueChains", 
-    icon: GitBranch, 
-    canBePublic: true,
-  },
-  { 
-    path: "/jobs", 
-    labelKey: "nav.volunteering", 
-    icon: Briefcase, 
-    canBePublic: true,
-  },
-  { 
-    path: "/projects", 
-    labelKey: "nav.internalProjects", 
-    icon: FolderKanban, 
-    canBePublic: true,
-  },
-  { 
-    path: "/admin", 
-    labelKey: "nav.taskManagement", 
-    icon: Kanban, 
-    gestionnaireOnly: true,
-  },
-  { 
-    path: "/toolbox", 
-    labelKey: "nav.toolbox", 
-    icon: Briefcase,
-  },
-  { 
-    path: "/annuaire", 
-    labelKey: "nav.directoryB2B", 
-    icon: Building2, 
-  },
-  { 
-    path: "/experts", 
-    labelKey: "nav.experts", 
-    icon: GraduationCap, 
-  },
-  { 
-    path: "/mutualisation", 
-    labelKey: "nav.mutualisation", 
-    icon: Handshake, 
-  },
-  { 
-    path: "/projets-reseau", 
-    labelKey: "nav.projectsNetwork", 
-    icon: Rocket, 
-  },
-  { 
-    path: "/opportunites", 
-    labelKey: "nav.opportunities", 
-    icon: TrendingUp, 
-  },
-  { 
-    path: "/module-store", 
-    labelKey: "nav.moduleStore", 
-    icon: Package, 
-    adminOnly: true,
-  },
-  { 
-    path: "/settings", 
-    labelKey: "nav.settings", 
-    icon: Settings, 
-    adminOnly: true,
-  },
+  { path: "/accompagnateur", labelKey: "nav.accompagnateur", icon: Sparkles },
+  { path: "/dashboard", labelKey: "nav.dashboard", icon: LayoutDashboard },
+  { path: "/members", labelKey: "nav.membersSubscriptions", icon: UserCheck, gestionnaireOnly: true },
+  { path: "/finance", labelKey: "nav.finance", icon: PiggyBank, canBePublic: true },
+  { path: "/organigramme", labelKey: "nav.hrVolunteering", icon: Users, canBePublic: true },
+  { path: "/value-chains", labelKey: "nav.valueChains", icon: GitBranch, canBePublic: true },
+  { path: "/jobs", labelKey: "nav.volunteering", icon: Briefcase, canBePublic: true },
+  { path: "/projects", labelKey: "nav.internalProjects", icon: FolderKanban, canBePublic: true },
+  { path: "/admin", labelKey: "nav.taskManagement", icon: Kanban, gestionnaireOnly: true },
+  { path: "/toolbox", labelKey: "nav.toolbox", icon: Briefcase },
+  { path: "/annuaire", labelKey: "nav.directoryB2B", icon: Building2 },
+  { path: "/experts", labelKey: "nav.experts", icon: GraduationCap },
+  { path: "/mutualisation", labelKey: "nav.mutualisation", icon: Handshake },
+  { path: "/projets-reseau", labelKey: "nav.projectsNetwork", icon: Rocket },
+  { path: "/opportunites", labelKey: "nav.opportunities", icon: TrendingUp },
+  { path: "/module-store", labelKey: "nav.moduleStore", icon: Package, adminOnly: true },
+  { path: "/settings", labelKey: "nav.settings", icon: Settings, adminOnly: true },
 ];
 
 export const HubSidebar = ({ collapsed, onToggle, isMobile = false }: HubSidebarProps) => {
   const { t } = useTranslation();
   const location = useLocation();
-  const navigate = useNavigate();
   const { isAdmin } = useAuth();
-  const { currentContext, currentAssociation, isOwnerOrAdmin, isGestionnaire, selectHubContext } = useAssociation();
+  const { currentAssociation, isOwnerOrAdmin, isGestionnaire } = useAssociation();
   const { isModuleVisibleInSidebar } = useModules();
 
-  // On mobile, always show expanded view
   const isCollapsed = isMobile ? false : collapsed;
 
-  // Get navigation items based on context
-  const getNavigationItems = (): NavItem[] => {
-    if (currentContext === 'hub') {
-      return hubNetworkItems;
-    }
-
-    // Filter association items based on role AND enabled modules
-    return associationItems.filter(item => {
-      if (item.adminOnly && !isOwnerOrAdmin && !isAdmin) return false;
-      if (item.gestionnaireOnly && !isGestionnaire && !isAdmin) return false;
-      // Check if module is enabled for this path
-      if (!isModuleVisibleInSidebar(item.path)) return false;
-      return true;
-    });
-  };
-
-  const navigationItems = getNavigationItems();
-
-  const handleReturnToHub = () => {
-    selectHubContext();
-    navigate('/hub');
-  };
+  const navigationItems = associationItems.filter(item => {
+    if (item.adminOnly && !isOwnerOrAdmin && !isAdmin) return false;
+    if (item.gestionnaireOnly && !isGestionnaire && !isAdmin) return false;
+    if (!isModuleVisibleInSidebar(item.path)) return false;
+    return true;
+  });
 
   const renderNavItem = (item: NavItem) => {
-    // Handle separator items
     if (item.isSeparator) {
       if (isCollapsed) return null;
       return (
@@ -223,7 +95,6 @@ export const HubSidebar = ({ collapsed, onToggle, isMobile = false }: HubSidebar
         )}
         onClick={(e) => {
           if (item.disabled) e.preventDefault();
-          // Close mobile menu on navigation
           if (isMobile) onToggle();
         }}
       >
@@ -242,9 +113,7 @@ export const HubSidebar = ({ collapsed, onToggle, isMobile = false }: HubSidebar
     if (isCollapsed || item.disabled) {
       return (
         <Tooltip key={item.path + item.labelKey}>
-          <TooltipTrigger asChild>
-            {linkContent}
-          </TooltipTrigger>
+          <TooltipTrigger asChild>{linkContent}</TooltipTrigger>
           <TooltipContent side="right" className="bg-popover border border-border shadow-lg">
             <p className="flex items-center gap-2">
               {item.disabled ? t(item.tooltip || "nav.comingSoon") : t(item.labelKey)}
@@ -258,56 +127,35 @@ export const HubSidebar = ({ collapsed, onToggle, isMobile = false }: HubSidebar
     return <div key={item.path + item.labelKey}>{linkContent}</div>;
   };
 
-  // Mobile view - just render navigation without wrapper
   if (isMobile) {
     return (
       <div className="py-2 px-2">
-        <div className="space-y-0.5">
-          {navigationItems.map(renderNavItem)}
-        </div>
-        
-        {/* Public indicator legend */}
-        {currentContext === 'association' && (
-          <div className="mt-4 px-2 py-2 border-t border-border">
-            <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
-              <Globe className="h-2.5 w-2.5 text-secondary" />
-              <span>{t("nav.publicIndicator")}</span>
-            </div>
+        <div className="space-y-0.5">{navigationItems.map(renderNavItem)}</div>
+        <div className="mt-4 px-2 py-2 border-t border-border">
+          <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
+            <Globe className="h-2.5 w-2.5 text-secondary" />
+            <span>{t("nav.publicIndicator")}</span>
           </div>
-        )}
+        </div>
       </div>
     );
   }
 
-  // Context border color
-  const contextBorderColor = currentContext === 'hub' 
-    ? 'border-l-primary' 
-    : 'border-l-secondary';
-
-  // Desktop view
   return (
     <aside 
       className={cn(
         "fixed left-0 top-16 z-40 h-[calc(100vh-4rem)] border-r border-border bg-card transition-all duration-300",
-        "border-l-4",
-        contextBorderColor,
+        "border-l-4 border-l-secondary",
         isCollapsed ? "w-14" : "w-56"
       )}
     >
       <div className="flex h-full flex-col">
-        {/* Context Indicator - Enhanced with association name */}
         {!isCollapsed && (
-          <div className={cn(
-            "px-3 py-2.5 border-b border-border",
-            currentContext === 'hub' ? "bg-primary/5" : "bg-secondary/5"
-          )}>
-            <p className={cn(
-              "text-[10px] font-semibold uppercase tracking-wider",
-              currentContext === 'hub' ? "text-primary" : "text-secondary"
-            )}>
-              {currentContext === 'hub' ? t("nav.hubNetwork") : t("nav.sections.myAssociation")}
+          <div className="px-3 py-2.5 border-b border-border bg-secondary/5">
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-secondary">
+              {t("nav.sections.myAssociation")}
             </p>
-            {currentContext === 'association' && currentAssociation && (
+            {currentAssociation && (
               <p className="text-sm font-medium text-foreground truncate mt-0.5">
                 {currentAssociation.name}
               </p>
@@ -315,15 +163,11 @@ export const HubSidebar = ({ collapsed, onToggle, isMobile = false }: HubSidebar
           </div>
         )}
 
-        {/* Navigation - Compact padding */}
         <nav className="flex-1 overflow-y-auto px-2 py-2">
-          <div className="space-y-0.5">
-            {navigationItems.map(renderNavItem)}
-          </div>
+          <div className="space-y-0.5">{navigationItems.map(renderNavItem)}</div>
         </nav>
 
-        {/* Public indicator legend - Compact */}
-        {!isCollapsed && currentContext === 'association' && (
+        {!isCollapsed && (
           <div className="px-3 py-1.5 border-t border-border">
             <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
               <Globe className="h-2.5 w-2.5 text-secondary" />
@@ -332,7 +176,6 @@ export const HubSidebar = ({ collapsed, onToggle, isMobile = false }: HubSidebar
           </div>
         )}
 
-        {/* Collapse Toggle - Compact */}
         <div className="border-t border-border p-2">
           <Tooltip>
             <TooltipTrigger asChild>

@@ -5,9 +5,6 @@ import { useAuth } from "@/hooks/useAuth";
 // Association role enum matching database
 export type AssociationRole = 'owner' | 'admin' | 'gestionnaire' | 'contributeur' | 'membre';
 
-// Context type: 'hub' for network view, 'association' for ERP management
-export type ContextType = 'hub' | 'association';
-
 export interface AssociationMembership {
   id: string;
   association_id: string;
@@ -42,11 +39,6 @@ interface AssociationContextType {
   isOwnerOrAdmin: boolean;
   isGestionnaire: boolean;
   currentRole: AssociationRole | null;
-  // New context state
-  currentContext: ContextType;
-  setCurrentContext: (context: ContextType) => void;
-  selectAssociationContext: (asso: Association) => void;
-  selectHubContext: () => void;
 }
 
 const AssociationContext = createContext<AssociationContextType | undefined>(undefined);
@@ -57,11 +49,20 @@ export const AssociationProvider = ({ children }: { children: ReactNode }) => {
   const [currentAssociation, setCurrentAssociationState] = useState<Association | null>(null);
   const [currentMembership, setCurrentMembership] = useState<AssociationMembership | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [currentContext, setCurrentContextState] = useState<ContextType>(() => {
-    // Initialize from localStorage
-    const saved = localStorage.getItem("currentContext");
-    return (saved as ContextType) || 'hub';
-  });
+
+  const setCurrentAssociationFromMemberships = (memberships: AssociationMembership[]) => {
+    const savedAssoId = localStorage.getItem("currentAssociationId");
+    const savedMembership = memberships.find((m) => m.association_id === savedAssoId);
+    
+    if (savedMembership) {
+      setCurrentAssociationState(savedMembership.association);
+      setCurrentMembership(savedMembership);
+    } else if (memberships.length > 0) {
+      setCurrentAssociationState(memberships[0].association);
+      setCurrentMembership(memberships[0]);
+      localStorage.setItem("currentAssociationId", memberships[0].association_id);
+    }
+  };
 
   const fetchAssociations = async () => {
     if (!user) {
@@ -73,7 +74,6 @@ export const AssociationProvider = ({ children }: { children: ReactNode }) => {
     }
 
     try {
-      // Fetch memberships with association details
       const { data: memberships, error } = await supabase
         .from("association_members")
         .select(`
@@ -83,25 +83,14 @@ export const AssociationProvider = ({ children }: { children: ReactNode }) => {
           person_id,
           joined_at,
           association:associations (
-            id,
-            name,
-            logo_url,
-            siret,
-            rna,
-            naf_ape,
-            instagram_url,
-            linkedin_url,
-            is_active,
-            created_at,
-            city,
-            description
+            id, name, logo_url, siret, rna, naf_ape,
+            instagram_url, linkedin_url, is_active, created_at, city, description
           )
         `)
         .eq("user_id", user.id)
         .order("joined_at", { ascending: true });
 
       if (error) {
-        // If association_members table doesn't exist or is empty, fallback to legacy query
         console.log("Falling back to legacy associations query:", error.message);
         const { data: legacyData, error: legacyError } = await supabase
           .from("associations")
@@ -111,7 +100,6 @@ export const AssociationProvider = ({ children }: { children: ReactNode }) => {
 
         if (legacyError) throw legacyError;
 
-        // Convert legacy format to new format
         const legacyMemberships: AssociationMembership[] = (legacyData || []).map(asso => ({
           id: asso.id + '_membership',
           association_id: asso.id,
@@ -122,27 +110,11 @@ export const AssociationProvider = ({ children }: { children: ReactNode }) => {
         }));
 
         setAssociations(legacyMemberships);
-
-        // Set current association if context is association
-        if (currentContext === 'association') {
-          const savedAssoId = localStorage.getItem("currentAssociationId");
-          const savedMembership = legacyMemberships.find((m) => m.association_id === savedAssoId);
-          
-          if (savedMembership) {
-            setCurrentAssociationState(savedMembership.association);
-            setCurrentMembership(savedMembership);
-          } else if (legacyMemberships.length > 0) {
-            setCurrentAssociationState(legacyMemberships[0].association);
-            setCurrentMembership(legacyMemberships[0]);
-            localStorage.setItem("currentAssociationId", legacyMemberships[0].association_id);
-          }
-        }
-
+        setCurrentAssociationFromMemberships(legacyMemberships);
         setIsLoading(false);
         return;
       }
 
-      // Transform the data - handle the nested association object
       const validMemberships: AssociationMembership[] = (memberships || [])
         .filter((m: any) => m.association)
         .map((m: any) => ({
@@ -155,21 +127,7 @@ export const AssociationProvider = ({ children }: { children: ReactNode }) => {
         }));
 
       setAssociations(validMemberships);
-
-      // Set current association if context is association
-      if (currentContext === 'association') {
-        const savedAssoId = localStorage.getItem("currentAssociationId");
-        const savedMembership = validMemberships.find((m) => m.association_id === savedAssoId);
-        
-        if (savedMembership) {
-          setCurrentAssociationState(savedMembership.association);
-          setCurrentMembership(savedMembership);
-        } else if (validMemberships.length > 0) {
-          setCurrentAssociationState(validMemberships[0].association);
-          setCurrentMembership(validMemberships[0]);
-          localStorage.setItem("currentAssociationId", validMemberships[0].association_id);
-        }
-      }
+      setCurrentAssociationFromMemberships(validMemberships);
     } catch (error) {
       console.error("Error fetching associations:", error);
     } finally {
@@ -184,31 +142,12 @@ export const AssociationProvider = ({ children }: { children: ReactNode }) => {
   const setCurrentAssociation = (asso: Association) => {
     setCurrentAssociationState(asso);
     localStorage.setItem("currentAssociationId", asso.id);
-    
-    // Update current membership
     const membership = associations.find(m => m.association_id === asso.id);
     if (membership) {
       setCurrentMembership(membership);
     }
   };
 
-  const setCurrentContext = (context: ContextType) => {
-    setCurrentContextState(context);
-    localStorage.setItem("currentContext", context);
-  };
-
-  // Select an association and switch to association context
-  const selectAssociationContext = (asso: Association) => {
-    setCurrentAssociation(asso);
-    setCurrentContext('association');
-  };
-
-  // Switch to hub context
-  const selectHubContext = () => {
-    setCurrentContext('hub');
-  };
-
-  // Computed role permissions
   const currentRole = currentMembership?.role || null;
   const isOwnerOrAdmin = currentRole === 'owner' || currentRole === 'admin';
   const isGestionnaire = currentRole === 'gestionnaire' || isOwnerOrAdmin;
@@ -225,10 +164,6 @@ export const AssociationProvider = ({ children }: { children: ReactNode }) => {
         isOwnerOrAdmin,
         isGestionnaire,
         currentRole,
-        currentContext,
-        setCurrentContext,
-        selectAssociationContext,
-        selectHubContext,
       }}
     >
       {children}
