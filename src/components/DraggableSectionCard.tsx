@@ -18,6 +18,8 @@ interface DraggableSectionCardProps {
   isDragging?: boolean;
   isOver?: boolean;
   isPersonDragOver?: boolean;
+  onEditSection?: (section: Section) => void;
+  onDeleteSection?: (sectionId: string) => void;
 }
 
 export const DraggableSectionCard: React.FC<DraggableSectionCardProps> = ({
@@ -32,7 +34,9 @@ export const DraggableSectionCard: React.FC<DraggableSectionCardProps> = ({
   onUpdate,
   isDragging = false,
   isOver = false,
-  isPersonDragOver = false
+  isPersonDragOver = false,
+  onEditSection,
+  onDeleteSection,
 }) => {
   const {
     attributes,
@@ -88,6 +92,8 @@ export const DraggableSectionCard: React.FC<DraggableSectionCardProps> = ({
         onUpdate={onUpdate}
         isPersonDragOver={isPersonDragOver}
         showSubsections={false}
+        onEditSection={onEditSection}
+        onDeleteSection={onDeleteSection}
       />
       
       {section.subsections && section.isExpanded && (
@@ -107,6 +113,8 @@ export const DraggableSectionCard: React.FC<DraggableSectionCardProps> = ({
               isDragging={isDragging}
               isOver={isOver}
               isPersonDragOver={isPersonDragOver}
+              onEditSection={onEditSection}
+              onDeleteSection={onDeleteSection}
             />
           ))}
         </div>
