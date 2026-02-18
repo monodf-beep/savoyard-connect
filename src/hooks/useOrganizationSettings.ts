@@ -21,11 +21,16 @@ export const useOrganizationSettings = () => {
       const { data, error } = await supabase
         .from('organization_settings')
         .select('*')
-        .single();
+        .maybeSingle();
 
-      if (error) throw error;
-      return data as OrganizationSettings;
+      if (error) {
+        // Table might not exist yet — return defaults silently
+        console.warn('organization_settings not available:', error.message);
+        return null;
+      }
+      return data as OrganizationSettings | null;
     },
+    retry: false,
   });
 
   const updateSettings = useMutation({
