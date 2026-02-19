@@ -170,7 +170,7 @@ export const SectionCard: React.FC<SectionCardProps> = ({
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <span className="text-xs font-medium flex items-center gap-1 bg-primary/10 text-primary px-2 py-0.5 rounded-full border border-primary/20 flex-shrink-0">
+                      <span className="text-[10px] font-medium bg-primary/10 text-primary px-1.5 py-0.5 rounded flex-shrink-0">
                         Resp. {section.leader.firstName} {section.leader.lastName}
                       </span>
                     </TooltipTrigger>
@@ -373,7 +373,7 @@ export const SectionCard: React.FC<SectionCardProps> = ({
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <span className="text-xs font-medium flex items-center gap-1 bg-primary/10 text-primary px-2 py-0.5 rounded-full border border-primary/20">
+                    <span className="text-[10px] font-medium bg-primary/10 text-primary px-1.5 py-0.5 rounded">
                       Resp. {section.leader.firstName} {section.leader.lastName}
                     </span>
                   </TooltipTrigger>
