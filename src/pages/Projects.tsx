@@ -64,7 +64,7 @@ const Projects = () => {
   const [ideaBoxOpen, setIdeaBoxOpen] = useState(true);
   const [showTranscriptImporter, setShowTranscriptImporter] = useState(false);
   const [filterMeetingId, setFilterMeetingId] = useState<string | null>(null);
-  const { meetings, isLoading: meetingsLoading } = useMeetings(5);
+  const { meetings, isLoading: meetingsLoading, refetch: refetchMeetings } = useMeetings(10);
 
   // Build flat section map for name lookups
   const flattenSections = (sections: Section[]): Record<string, string> => {
@@ -303,6 +303,8 @@ const Projects = () => {
         isLoading={meetingsLoading}
         activeMeetingId={filterMeetingId}
         onFilterByMeeting={setFilterMeetingId}
+        isAdmin={isAdmin}
+        onMeetingCreated={refetchMeetings}
       />
 
       {/* Kanban - Full Width */}
