@@ -45,7 +45,8 @@ export const fr = {
     sections: {
       myAssociation: "Mon Association",
       myAssociations: "Mes Associations",
-      network: "Réseau Associacion",
+      network: "Réseau",
+      administration: "Administration",
     },
     createOrJoin: "Créer / Rejoindre",
     profile: "Mon Profil",
