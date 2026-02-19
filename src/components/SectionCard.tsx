@@ -9,6 +9,7 @@ import { SectionReassuranceDialog } from './SectionReassuranceDialog';
 import { ChevronDown, ChevronRight, Users, MoreVertical, Edit, Trash2 } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useDroppable } from '@dnd-kit/core';
+import { Avatar, AvatarImage, AvatarFallback } from './ui/avatar';
 import {
   Tooltip,
   TooltipContent,
@@ -179,6 +180,28 @@ export const SectionCard: React.FC<SectionCardProps> = ({
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
+              )}
+              {!section.isExpanded && section.members.length > 0 && (
+                <div className="flex items-center ml-2 flex-shrink-0">
+                  {section.members.slice(0, 8).map((person, index) => (
+                    <Avatar 
+                      key={person.id} 
+                      className="w-6 h-6 border-2 border-background"
+                      style={{ marginLeft: index === 0 ? 0 : -8 }}
+                    >
+                      <AvatarImage src={person.photo} />
+                      <AvatarFallback className="text-[8px] bg-primary/10 text-primary">
+                        {person.firstName.charAt(0)}
+                      </AvatarFallback>
+                    </Avatar>
+                  ))}
+                  {section.members.length > 8 && (
+                    <span className="w-6 h-6 rounded-full bg-muted flex items-center justify-center text-[9px] font-medium text-muted-foreground border-2 border-background"
+                          style={{ marginLeft: -8 }}>
+                      +{section.members.length - 8}
+                    </span>
+                  )}
+                </div>
               )}
               <span className="text-xs font-medium text-primary ml-auto flex-shrink-0">
                 {totalMemberCount} membre{totalMemberCount > 1 ? 's' : ''}
@@ -385,6 +408,28 @@ export const SectionCard: React.FC<SectionCardProps> = ({
             )}
           </div>
           <div className="flex items-center gap-2">
+            {!section.isExpanded && section.members.length > 0 && (
+              <div className="flex items-center flex-shrink-0">
+                {section.members.slice(0, 8).map((person, index) => (
+                  <Avatar 
+                    key={person.id} 
+                    className="w-5 h-5 border-2 border-background"
+                    style={{ marginLeft: index === 0 ? 0 : -6 }}
+                  >
+                    <AvatarImage src={person.photo} />
+                    <AvatarFallback className="text-[7px] bg-primary/10 text-primary">
+                      {person.firstName.charAt(0)}
+                    </AvatarFallback>
+                  </Avatar>
+                ))}
+                {section.members.length > 8 && (
+                  <span className="w-5 h-5 rounded-full bg-muted flex items-center justify-center text-[8px] font-medium text-muted-foreground border-2 border-background"
+                        style={{ marginLeft: -6 }}>
+                    +{section.members.length - 8}
+                  </span>
+                )}
+              </div>
+            )}
             <span className="text-xs font-medium text-muted-foreground bg-muted/50 px-2 py-1 rounded-full">
               {totalMemberCount}
             </span>
