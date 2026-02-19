@@ -1,28 +1,18 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/hooks/useAuth';
-import { useAssociation } from '@/hooks/useAssociation';
 import { useOrganigramme } from '@/hooks/useOrganigramme';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
-import { Plus, Search, LayoutGrid, Columns } from 'lucide-react';
+import { Plus, Search, Lightbulb, ChevronDown } from 'lucide-react';
 import { ProjectForm } from '@/components/ProjectForm';
-import { SimpleProjectForm } from '@/components/projects/SimpleProjectForm';
-import { ProjectGridCard } from '@/components/projects/ProjectGridCard';
 import { ProjectsKanban } from '@/components/projects/ProjectsKanban';
-import { ProjectDetailDrawer } from '@/components/projects/ProjectDetailDrawer';
 import { IdeaBox } from '@/components/projects/IdeaBox';
 import { HubPageLayout } from '@/components/hub/HubPageLayout';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { cn } from '@/lib/utils';
 
 export interface Project {
   id: string;
@@ -52,19 +42,14 @@ export interface Project {
 const Projects = () => {
   const { t } = useTranslation();
   const { isAdmin, isSectionLeader, user, loading: authLoading } = useAuth();
-  const { currentAssociation } = useAssociation();
   const { data } = useOrganigramme();
   const { toast } = useToast();
   const [projects, setProjects] = useState<Project[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editingProject, setEditingProject] = useState<Project | undefined>();
-  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
-  const [showDetail, setShowDetail] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [filterStatus, setFilterStatus] = useState('all');
-  const [showSimpleForm, setShowSimpleForm] = useState(false);
-  const [viewMode, setViewMode] = useState<'grid' | 'kanban'>('kanban');
+  const [ideaBoxOpen, setIdeaBoxOpen] = useState(true);
 
   useEffect(() => {
     const fetchProjects = async () => {
@@ -109,69 +94,55 @@ const Projects = () => {
     };
 
     window.addEventListener('aiAssistantSuccess', handleAISuccess);
-    return () => {
-      window.removeEventListener('aiAssistantSuccess', handleAISuccess);
-    };
+    return () => window.removeEventListener('aiAssistantSuccess', handleAISuccess);
   }, []);
 
   const handleSaveProject = async (projectData: Partial<Project>) => {
-    if (!projectData.title || !projectData.title.trim()) {
-      toast({
-        title: 'Champ manquant',
-        description: 'Le titre est requis',
-        variant: 'destructive',
-      });
+    if (!projectData.title?.trim()) {
+      toast({ title: 'Champ manquant', description: 'Le titre est requis', variant: 'destructive' });
       return;
     }
     if (!projectData.section_id) {
-      toast({
-        title: 'Champ manquant',
-        description: 'La section est requise',
-        variant: 'destructive',
-      });
+      toast({ title: 'Champ manquant', description: 'La section est requise', variant: 'destructive' });
       return;
     }
-
-    const sanitize = (data: Partial<Project>) => ({
-      ...data,
-      start_date: data.start_date ? data.start_date : null,
-      end_date: data.end_date ? data.end_date : null,
-      funding_deadline: data.funding_deadline ? data.funding_deadline : null,
-      documents: (data.documents ?? []) as any,
-    });
 
     try {
       if (editingProject) {
         const { error } = await supabase
           .from('projects')
-          .update(sanitize(projectData) as any)
+          .update(projectData as any)
           .eq('id', editingProject.id);
 
         if (error) throw error;
 
-        setProjects(
-          projects.map((p) =>
-            p.id === editingProject.id ? ({ ...p, ...sanitize(projectData) } as Project) : p
-          )
-        );
+        setProjects(projects.map(p =>
+          p.id === editingProject.id ? { ...p, ...projectData } as Project : p
+        ));
         toast({ title: 'Succès', description: 'Projet mis à jour' });
       } else {
+        const insertData: any = {
+          ...projectData,
+          created_by: user?.id,
+        };
+        // Section leaders' projects need approval
+        if (isSectionLeader && !isAdmin) {
+          insertData.approval_status = 'pending';
+        }
+
         const { data: newData, error } = await supabase
           .from('projects')
-          .insert([sanitize(projectData) as any])
+          .insert([insertData])
           .select()
           .single();
 
         if (error) throw error;
 
-        setProjects([
-          {
-            ...newData,
-            documents: (newData.documents as any) || [],
-            approval_status: (newData.approval_status as 'pending' | 'approved' | 'rejected' | undefined) || 'pending',
-          },
-          ...projects,
-        ]);
+        setProjects([{
+          ...newData,
+          documents: (newData.documents as any) || [],
+          approval_status: (newData.approval_status as any) || 'pending',
+        }, ...projects]);
         toast({ title: 'Succès', description: 'Projet créé' });
       }
 
@@ -187,81 +158,22 @@ const Projects = () => {
     }
   };
 
-  const handleAddProject = () => {
-    // Section leaders use simplified form, admins use full form
-    if (isSectionLeader && !isAdmin) {
-      setShowSimpleForm(true);
-    } else {
-      setEditingProject(undefined);
+  const handleProjectClick = (project: Project) => {
+    if (isAdmin) {
+      setEditingProject(project);
       setShowForm(true);
     }
   };
 
-  const handleSimpleProjectSave = async (projectData: {
-    title: string;
-    description: string;
-    section_id: string;
-    status: 'planned' | 'in_progress' | 'completed';
-  }) => {
-    try {
-      const { data: newData, error } = await supabase
-        .from('projects')
-        .insert([{
-          ...projectData,
-          created_by: user?.id,
-          approval_status: 'pending',
-        }])
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      setProjects([
-        {
-          ...newData,
-          documents: [],
-          approval_status: 'pending',
-        } as Project,
-        ...projects,
-      ]);
-      
-      toast({
-        title: 'Succès',
-        description: 'Projet créé et en attente d\'approbation',
-      });
-    } catch (error: any) {
-      console.error('Error creating project:', error);
-      toast({
-        title: 'Erreur',
-        description: error?.message || "Impossible de créer le projet",
-        variant: 'destructive',
-      });
-      throw error;
-    }
-  };
-
-  const handleProjectClick = (project: Project) => {
-    setSelectedProject(project);
-    setShowDetail(true);
-  };
-
-  // For Kanban mode, don't filter by status
   const filteredProjects = projects.filter(p => {
     if (p.approval_status !== 'approved' && !isAdmin) return false;
-    
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
-      if (!p.title.toLowerCase().includes(query) && 
+      if (!p.title.toLowerCase().includes(query) &&
           !(p.description?.toLowerCase().includes(query))) {
         return false;
       }
     }
-    
-    // Only apply status filter in grid mode
-    if (viewMode === 'grid' && filterStatus !== 'all' && p.status !== filterStatus) {
-      return false;
-    }
-    
     return true;
   });
 
@@ -274,27 +186,18 @@ const Projects = () => {
 
       if (error) throw error;
 
-      setProjects(
-        projects.map((p) =>
-          p.id === projectId ? { ...p, status: newStatus } : p
-        )
-      );
-      toast({ title: 'Statut mis à jour' });
+      setProjects(projects.map(p =>
+        p.id === projectId ? { ...p, status: newStatus } : p
+      ));
     } catch (error: any) {
       console.error('Error updating status:', error);
-      toast({
-        title: 'Erreur',
-        description: "Impossible de modifier le statut",
-        variant: 'destructive',
-      });
+      toast({ title: 'Erreur', description: "Impossible de modifier le statut", variant: 'destructive' });
     }
   };
 
   if (authLoading || isLoading) {
     return (
-      <HubPageLayout
-        breadcrumb={t('nav.projects')}
-      >
+      <HubPageLayout breadcrumb={t('nav.projects')}>
         <div className="flex items-center justify-center min-h-[50vh]">
           <p className="text-muted-foreground">Chargement...</p>
         </div>
@@ -303,109 +206,64 @@ const Projects = () => {
   }
 
   return (
-    <HubPageLayout
-      breadcrumb={t('nav.projects')}
-    >
-      <div className="flex flex-col lg:flex-row gap-8">
-        {/* Main Content - Projects */}
-        <div className="flex-1">
-          {/* Header */}
-          <div className="mb-6">
-            <div className="flex items-center justify-between mb-2">
-              <h1 className="text-2xl md:text-3xl font-bold">{t('nav.projects')} & Idées</h1>
-              {(isAdmin || isSectionLeader) && (
-                <Button onClick={handleAddProject}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Nouveau
-                </Button>
-              )}
-            </div>
-            <p className="text-muted-foreground">
-              Financez les projets et partagez vos idées
-            </p>
-          </div>
-
-          {/* Filters */}
-          <div className="flex flex-col sm:flex-row gap-3 mb-6">
-            {viewMode === 'grid' && (
-              <Select value={filterStatus} onValueChange={setFilterStatus}>
-                <SelectTrigger className="w-full sm:w-[150px]">
-                  <SelectValue placeholder="Filtrer" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Tous</SelectItem>
-                  <SelectItem value="planned">Planifiés</SelectItem>
-                  <SelectItem value="in_progress">En cours</SelectItem>
-                  <SelectItem value="completed">Terminés</SelectItem>
-                </SelectContent>
-              </Select>
-            )}
-            
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Rechercher un projet..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-
-            {/* View Mode Toggle */}
-            <ToggleGroup 
-              type="single" 
-              value={viewMode} 
-              onValueChange={(v) => v && setViewMode(v as 'grid' | 'kanban')}
-              className="bg-muted rounded-lg p-1"
-            >
-              <ToggleGroupItem value="kanban" aria-label="Vue Kanban" className="data-[state=on]:bg-background">
-                <Columns className="h-4 w-4" />
-              </ToggleGroupItem>
-              <ToggleGroupItem value="grid" aria-label="Vue Grille" className="data-[state=on]:bg-background">
-                <LayoutGrid className="h-4 w-4" />
-              </ToggleGroupItem>
-            </ToggleGroup>
-          </div>
-
-          {/* Projects Display */}
-          {filteredProjects.length === 0 ? (
-            <div className="text-center py-12 bg-muted/30 rounded-xl">
-              <p className="text-muted-foreground">Aucun projet trouvé</p>
-            </div>
-          ) : viewMode === 'kanban' ? (
-            <ProjectsKanban
-              projects={filteredProjects}
-              onStatusChange={handleStatusChange}
-              onProjectClick={handleProjectClick}
-              isAdmin={isAdmin}
-            />
-          ) : (
-            <div className="grid gap-6 sm:grid-cols-2">
-              {filteredProjects.map(project => (
-                <ProjectGridCard
-                  key={project.id}
-                  project={project}
-                  onClick={() => handleProjectClick(project)}
-                />
-              ))}
-            </div>
+    <HubPageLayout breadcrumb={t('nav.projects')}>
+      {/* Header */}
+      <div className="mb-6">
+        <div className="flex items-center justify-between mb-2">
+          <h1 className="text-2xl md:text-3xl font-bold">{t('nav.projects')}</h1>
+          {(isAdmin || isSectionLeader) && (
+            <Button onClick={() => { setEditingProject(undefined); setShowForm(true); }}>
+              <Plus className="h-4 w-4 mr-2" />
+              Nouveau
+            </Button>
           )}
         </div>
-
-        {/* Sidebar - Idea Box */}
-        <div className="w-full lg:w-[380px] flex-shrink-0">
-          <IdeaBox />
-        </div>
+        <p className="text-muted-foreground">
+          Suivez l'avancement des projets de l'association
+        </p>
       </div>
 
-      {/* Project Detail Drawer */}
-      <ProjectDetailDrawer
-        project={selectedProject}
-        open={showDetail}
-        onOpenChange={setShowDetail}
-      />
+      {/* Search */}
+      <div className="relative mb-6">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <Input
+          placeholder="Rechercher un projet..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="pl-10"
+        />
+      </div>
 
-      {/* Project Form Dialog */}
+      {/* Kanban - Full Width */}
+      {filteredProjects.length === 0 ? (
+        <div className="text-center py-12 bg-muted/30 rounded-xl">
+          <p className="text-muted-foreground">Aucun projet trouvé</p>
+        </div>
+      ) : (
+        <ProjectsKanban
+          projects={filteredProjects}
+          onStatusChange={handleStatusChange}
+          onProjectClick={handleProjectClick}
+          isAdmin={isAdmin}
+        />
+      )}
+
+      {/* Idea Box - Collapsible section */}
+      <Collapsible open={ideaBoxOpen} onOpenChange={setIdeaBoxOpen} className="mt-8">
+        <CollapsibleTrigger className="flex items-center gap-2 w-full p-3 rounded-lg hover:bg-muted/50 transition-colors group">
+          <Lightbulb className="h-5 w-5 text-primary" />
+          <span className="font-semibold text-lg">Boîte à Idées</span>
+          <ChevronDown className={cn(
+            "h-4 w-4 text-muted-foreground ml-auto transition-transform",
+            ideaBoxOpen && "rotate-180"
+          )} />
+        </CollapsibleTrigger>
+        <CollapsibleContent className="pt-2">
+          <IdeaBox />
+        </CollapsibleContent>
+      </Collapsible>
+
+      {/* Project Form Dialog (unified for all roles) */}
       {showForm && (
         <ProjectForm
           project={editingProject}
@@ -413,21 +271,11 @@ const Projects = () => {
           open={showForm}
           onOpenChange={(open) => {
             setShowForm(open);
-            if (!open) {
-              setEditingProject(undefined);
-            }
+            if (!open) setEditingProject(undefined);
           }}
           onSave={handleSaveProject}
         />
       )}
-
-      {/* Simple Project Form for Section Leaders */}
-      <SimpleProjectForm
-        open={showSimpleForm}
-        onOpenChange={setShowSimpleForm}
-        onSave={handleSimpleProjectSave}
-        sections={data.sections.map(s => ({ id: s.id, title: s.title }))}
-      />
     </HubPageLayout>
   );
 };
