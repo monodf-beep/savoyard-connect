@@ -184,31 +184,53 @@ export const HubSidebar = ({ collapsed, onToggle, isMobile = false }: HubSidebar
       onMouseLeave={handleMouseLeave}
     >
       <div className="flex h-full flex-col">
-        {!isCollapsed && (
-          <div className="px-3 py-2.5 border-b border-border bg-secondary/5">
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-secondary">
-              {t("nav.sections.myAssociation")}
-            </p>
-            {currentAssociation && (
-              <p className="text-sm font-medium text-foreground truncate mt-0.5">
-                {currentAssociation.name}
+        <div className={cn("border-b border-border bg-secondary/5 transition-all duration-200", isCollapsed ? "px-2 py-2" : "px-3 py-2.5")}>
+          {isCollapsed ? (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="flex justify-center">
+                  <Building2 className="h-4 w-4 text-secondary" />
+                </div>
+              </TooltipTrigger>
+              <TooltipContent side="right" className="bg-popover border border-border shadow-lg">
+                <p>{currentAssociation?.name || t("nav.sections.myAssociation")}</p>
+              </TooltipContent>
+            </Tooltip>
+          ) : (
+            <>
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-secondary">
+                {t("nav.sections.myAssociation")}
               </p>
-            )}
-          </div>
-        )}
+              {currentAssociation && (
+                <p className="text-sm font-medium text-foreground truncate mt-0.5">
+                  {currentAssociation.name}
+                </p>
+              )}
+            </>
+          )}
+        </div>
 
         <nav className="flex-1 overflow-y-auto px-2 py-2">
           <div className="space-y-0.5">{navigationItems.map(renderNavItem)}</div>
         </nav>
 
-        {!isCollapsed && (
-          <div className="px-3 py-1.5 border-t border-border">
+        <div className={cn("border-t border-border transition-all duration-200", isCollapsed ? "px-2 py-1.5 flex justify-center" : "px-3 py-1.5")}>
+          {isCollapsed ? (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Globe className="h-3 w-3 text-secondary" />
+              </TooltipTrigger>
+              <TooltipContent side="right" className="bg-popover border border-border shadow-lg">
+                <p>{t("nav.publicIndicator")}</p>
+              </TooltipContent>
+            </Tooltip>
+          ) : (
             <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
               <Globe className="h-2.5 w-2.5 text-secondary" />
               <span>{t("nav.publicIndicator")}</span>
             </div>
-          </div>
-        )}
+          )}
+        </div>
 
         <div className="border-t border-border p-2">
           <Tooltip>
