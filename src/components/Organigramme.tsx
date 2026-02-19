@@ -15,7 +15,7 @@ import { Button } from './ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from './ui/sheet';
 import { Dialog, DialogContent } from './ui/dialog';
 import { Input } from './ui/input';
-import { Settings, Eye, EyeOff, ExpandIcon as Expand, ShrinkIcon as Shrink, UserPlus, FolderPlus, LogIn, LogOut, LayoutGrid, List, Network, Menu, X, Upload, Plus, Search } from 'lucide-react';
+import { Eye, EyeOff, ExpandIcon as Expand, ShrinkIcon as Shrink, UserPlus, FolderPlus, LogIn, LogOut, List, Network, Menu, X, Upload, Plus, Search } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useOrganigramme } from '../hooks/useOrganigramme';
 import { supabase } from '../integrations/supabase/client';
@@ -776,15 +776,6 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
                       Ligne
                     </Button>
                     <Button
-                      onClick={() => { setViewMode('grid'); setIsControlsMenuOpen(false); }}
-                      variant={viewMode === 'grid' ? 'default' : 'outline'}
-                      size="sm"
-                      className="flex-1"
-                    >
-                      <LayoutGrid className="w-4 h-4 mr-2" />
-                      Tuiles
-                    </Button>
-                    <Button
                       onClick={() => { setViewMode('members'); setIsControlsMenuOpen(false); }}
                       variant={viewMode === 'members' ? 'default' : 'outline'}
                       size="sm"
@@ -903,16 +894,6 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
             </Button>
             <Button
               type="button"
-              onClick={() => setViewMode('grid')}
-              variant={viewMode === 'grid' ? 'default' : 'ghost'}
-              size="sm"
-              className="h-8 px-3"
-            >
-              <LayoutGrid className="w-3.5 h-3.5 mr-1" />
-              <span className="text-xs">Tuiles</span>
-            </Button>
-            <Button
-              type="button"
               onClick={() => setViewMode('members')}
               variant={viewMode === 'members' ? 'default' : 'ghost'}
               size="sm"
@@ -949,15 +930,6 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
         </div>
       </div>
 
-      {isAdmin && (
-        <div className="mb-4 p-3 bg-primary/10 border border-primary/30 rounded-lg">
-          <div className="flex items-center gap-2 text-sm">
-            <Settings className="w-4 h-4 text-primary" />
-            <span className="font-semibold text-primary">Mode Administrateur</span>
-            <span className="text-xs text-foreground/70">• Cliquez sur les icônes d'édition</span>
-          </div>
-        </div>
-      )}
 
       {/* Sections ou Vue membres */}
       {viewMode === 'members' ? (
@@ -967,7 +939,7 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
           isAdmin={isAdmin}
           onEdit={handleEditPerson}
         />
-      ) : viewMode === 'line' ? (
+      ) : (
         <DndContext
           sensors={sensors}
           collisionDetection={closestCenter}
@@ -1035,110 +1007,6 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
             )}
           </DragOverlay>
         </DndContext>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {(() => {
-            const renderSectionCards = (sections: Section[]): JSX.Element[] => {
-              return sections.flatMap(section => {
-                const cards = [];
-                
-                // Carte pour la section principale
-                cards.push(
-                  <div
-                    key={section.id}
-                    className="bg-card border rounded-lg p-4 hover:shadow-lg transition-shadow relative group"
-                  >
-                    {/* Section content */}
-                    <div
-                      className="cursor-pointer"
-                      onClick={() => {
-                        // Fermer les autres sidebars et ouvrir le détail de la section
-                        setIsSidebarOpen(false);
-                        setSelectedPerson(null);
-                        setIsVacantPositionsSidebarOpen(false);
-                        setSelectedSection(section);
-                        setIsSectionDetailsSidebarOpen(true);
-                      }}
-                    >
-                      <h3 className="font-semibold text-lg mb-2">{section.title}</h3>
-                      <div className="text-sm text-muted-foreground mb-3">
-                        {section.members.length} membre{section.members.length > 1 ? 's' : ''}
-                        {section.subsections && section.subsections.length > 0 && (
-                          <span> • {section.subsections.length} sous-groupe{section.subsections.length > 1 ? 's' : ''}</span>
-                        )}
-                      </div>
-                      <div className="flex flex-wrap gap-2">
-                        {section.members.slice(0, 3).map(member => (
-                          <div
-                            key={member.id}
-                            className="flex items-center gap-2 bg-muted/50 border border-border px-2 py-1 rounded-md text-xs hover:bg-muted transition-colors font-medium"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handlePersonClick(member);
-                            }}
-                          >
-                            <span>{member.firstName} {member.lastName}</span>
-                          </div>
-                        ))}
-                        {section.members.length > 3 && (
-                          <div className="flex items-center px-2 py-1 text-xs text-muted-foreground">
-                            +{section.members.length - 3} autres
-                          </div>
-                        )}
-                      </div>
-                      {section.vacantPositions && section.vacantPositions.length > 0 && (
-                        <div className="mt-3 text-xs text-primary">
-                          {section.vacantPositions.length} poste{section.vacantPositions.length > 1 ? 's' : ''} vacant{section.vacantPositions.length > 1 ? 's' : ''}
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Admin visibility toggle button */}
-                    {isAdmin && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          toggleSectionVisibility(section.id, section.isHidden || false);
-                        }}
-                      >
-                        {section.isHidden ? (
-                          <EyeOff className="w-4 h-4 text-muted-foreground" />
-                        ) : (
-                          <Eye className="w-4 h-4 text-muted-foreground" />
-                        )}
-                      </Button>
-                    )}
-
-                    {/* Hidden indicator for admins */}
-                    {isAdmin && section.isHidden && (
-                      <div className="absolute top-2 left-2 bg-muted text-muted-foreground px-2 py-1 rounded text-xs">
-                        Cachée
-                      </div>
-                    )}
-                  </div>
-                );
-                
-                // Ajouter les sous-sections récursivement
-                if (section.subsections && section.subsections.length > 0) {
-                  cards.push(...renderSectionCards(section.subsections));
-                }
-                
-                return cards;
-              });
-            };
-            
-            return searchFilteredSections.length > 0 
-              ? renderSectionCards(searchFilteredSections)
-              : (
-                <div className="col-span-full text-center py-8 text-muted-foreground">
-                  Aucun résultat trouvé pour "{searchQuery}"
-                </div>
-              );
-          })()}
-        </div>
       )}
 
       </div>

@@ -3,7 +3,7 @@ import { useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Organigramme } from '../components/Organigramme';
 import { HubPageLayout } from '@/components/hub/HubPageLayout';
-import { TutorialDialog } from '../components/TutorialDialog';
+
 import { useAuth } from '@/hooks/useAuth';
 import { useAssociation } from '@/hooks/useAssociation';
 import { UserPlus } from 'lucide-react';
@@ -84,45 +84,7 @@ const Index = () => {
           <div>
             <div className="flex items-center gap-3 mb-2">
               <h1 className="text-2xl md:text-3xl font-bold">{t('nav.organigramme')}</h1>
-              <TutorialDialog
-                title="Comprendre l'organigramme"
-                description="L'organigramme est l'outil central pour gérer votre organisation."
-                benefits={[
-                  "Visualiser toute la structure de l'organisation en un coup d'œil",
-                  "Gérer les membres, leurs rôles et compétences",
-                  "Organiser les sections et sous-sections hiérarchiques",
-                  "Publier des postes vacants pour recruter de nouveaux talents",
-                  "Faciliter la communication interne et externe"
-                ]}
-                steps={[
-                  {
-                    title: "Naviguer dans les vues",
-                    description: "Utilisez les boutons Ligne, Tuiles et Membres pour changer de vue.",
-                    tips: [
-                      "Vue Ligne : hiérarchie complète",
-                      "Vue Tuiles : sections en cartes",
-                      "Vue Membres : focus sur les personnes"
-                    ]
-                  },
-                  {
-                    title: "Ajouter des membres",
-                    description: "Cliquez sur 'Ajouter une personne' dans le menu Organisation.",
-                    tips: ["Utilisez l'import LinkedIn pour gagner du temps"]
-                  },
-                  {
-                    title: "Créer des sections",
-                    description: "Organisez votre structure avec des sections.",
-                    tips: ["Une bonne structure facilite la navigation"]
-                  },
-                  {
-                    title: "Gérer les postes vacants",
-                    description: "Publiez des postes à pourvoir pour attirer de nouveaux bénévoles.",
-                    tips: ["Soyez précis sur le rôle et les attentes"]
-                  }
-                ]}
-              />
             </div>
-            <p className="text-muted-foreground">Vue complète de la structure organisationnelle</p>
           </div>
           <div className="flex items-center gap-2">
             <span className="text-sm bg-primary/10 text-primary font-medium px-3 py-1 rounded-full border border-primary/20">

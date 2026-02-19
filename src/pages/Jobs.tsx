@@ -3,59 +3,17 @@ import { useTranslation } from 'react-i18next';
 import { JobPosting } from '../types/organigramme';
 import { JobPostingCard } from '../components/JobPostingCard';
 import { JobPostingForm } from '../components/JobPostingForm';
-import { TutorialDialog } from '../components/TutorialDialog';
 import { HubPageLayout } from '@/components/hub/HubPageLayout';
 import { useAuth } from '@/hooks/useAuth';
 import { useAssociation } from '@/hooks/useAssociation';
 import { Button } from '../components/ui/button';
-import { Plus, Briefcase, Settings, Info } from 'lucide-react';
-import { Tooltip, TooltipContent, TooltipTrigger } from '../components/ui/tooltip';
-
-// Données de démonstration
-const initialJobPostings: JobPosting[] = [
-  {
-    id: 'dev-fullstack-1',
-    title: 'Développeur Full-Stack Senior',
-    department: 'Tech',
-    description: 'Nous recherchons un développeur expérimenté pour rejoindre notre équipe technique.',
-    requirements: ['React', 'Node.js', 'TypeScript', 'PostgreSQL', 'AWS'],
-    location: 'Paris / Remote',
-    type: 'CDI',
-    applicationUrl: 'https://example.com/apply/dev-fullstack',
-    publishedDate: '2024-01-15',
-    isActive: true
-  },
-  {
-    id: 'marketing-manager-1',
-    title: 'Chef de projet Marketing Digital',
-    department: 'Marketing',
-    description: 'Poste de chef de projet pour développer et exécuter nos stratégies marketing digital.',
-    requirements: ['Marketing Digital', 'Google Ads', 'SEO', 'Analytics', 'Gestion de projet'],
-    location: 'Lyon',
-    type: 'CDI',
-    applicationUrl: 'https://example.com/apply/marketing-manager',
-    publishedDate: '2024-01-10',
-    isActive: true
-  },
-  {
-    id: 'stage-design-1',
-    title: 'Stage UX/UI Designer',
-    department: 'Design',
-    description: 'Stage de 6 mois pour apprendre et contribuer à la création d\'interfaces utilisateur.',
-    requirements: ['Figma', 'Adobe Creative Suite', 'UX Research', 'Prototypage'],
-    location: 'Paris',
-    type: 'Stage',
-    applicationUrl: 'https://example.com/apply/stage-design',
-    publishedDate: '2024-01-05',
-    isActive: true
-  }
-];
+import { Plus, Briefcase } from 'lucide-react';
 
 const Jobs = () => {
   const { t } = useTranslation();
   const { isAdmin } = useAuth();
   const { currentAssociation } = useAssociation();
-  const [jobPostings, setJobPostings] = useState<JobPosting[]>(initialJobPostings);
+  const [jobPostings, setJobPostings] = useState<JobPosting[]>([]);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedJobPosting, setSelectedJobPosting] = useState<JobPosting | null>(null);
 
@@ -100,39 +58,6 @@ const Jobs = () => {
               {activeJobPostings.length} opportunité{activeJobPostings.length > 1 ? 's' : ''} disponible{activeJobPostings.length > 1 ? 's' : ''}
             </p>
           </div>
-          <TutorialDialog
-            title="Gérer le bénévolat"
-            description="Publiez et gérez les opportunités de bénévolat de votre organisation."
-            benefits={[
-              "Centraliser toutes les opportunités de bénévolat au même endroit",
-              "Rendre visibles les besoins de l'association",
-              "Faciliter le processus de candidature avec des liens directs",
-              "Suivre les missions actives et archivées",
-              "Attirer de nouveaux bénévoles vers votre organisation"
-            ]}
-            steps={[
-              {
-                title: "Activer le mode admin",
-                description: "Cliquez sur le bouton 'Admin' pour activer les fonctionnalités de gestion.",
-                tips: ["Seuls les administrateurs peuvent créer et modifier les opportunités"]
-              },
-              {
-                title: "Créer une opportunité",
-                description: "Cliquez sur 'Ajouter une mission' pour créer une nouvelle opportunité.",
-                tips: ["Soyez précis sur les compétences souhaitées"]
-              },
-              {
-                title: "Ajouter un lien de candidature",
-                description: "Fournissez l'URL où les candidats peuvent postuler.",
-                tips: ["Testez le lien pour vous assurer qu'il fonctionne"]
-              },
-              {
-                title: "Publier ou désactiver",
-                description: "Marquez l'opportunité comme active ou inactive selon vos besoins.",
-                tips: ["Désactivez les missions pourvues plutôt que de les supprimer"]
-              }
-            ]}
-          />
         </div>
         
         <div className="flex items-center gap-2">
