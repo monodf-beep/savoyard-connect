@@ -125,12 +125,10 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
   // Listen for custom events to open vacant positions sidebar
   React.useEffect(() => {
     const handleOpenVacantPositions = (event: CustomEvent) => {
-      if (!isAdmin) {
-        // Fermer le panneau des personnes et ouvrir celui des postes vacants
-        setIsSidebarOpen(false);
-        setSelectedPerson(null);
-        setIsVacantPositionsSidebarOpen(true);
-      }
+      // Fermer le panneau des personnes et ouvrir celui des postes vacants
+      setIsSidebarOpen(false);
+      setSelectedPerson(null);
+      setIsVacantPositionsSidebarOpen(true);
     };
 
     window.addEventListener('openVacantPositions', handleOpenVacantPositions as EventListener);
