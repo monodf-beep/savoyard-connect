@@ -124,7 +124,7 @@ export const MeetingsTimeline = ({
       <Collapsible open={open} onOpenChange={setOpen}>
         <div className="rounded-xl border bg-card">
           <div className="flex items-center">
-            <CollapsibleTrigger className="flex items-center gap-2 flex-1 p-4 hover:bg-muted/50 transition-colors">
+            <CollapsibleTrigger className="flex items-center gap-2 flex-1 p-4 rounded-l-xl hover:bg-muted/50 active:bg-muted transition-all duration-200">
               <Calendar className="h-5 w-5 text-primary" />
               <span className="font-semibold">Calendrier</span>
               {meetings.length > 0 && (
@@ -145,9 +145,9 @@ export const MeetingsTimeline = ({
             </CollapsibleTrigger>
             {isAdmin && (
               <Button
-                variant="ghost"
+                variant="outline"
                 size="sm"
-                className="mr-2"
+                className="mr-3 border-primary/30 text-primary hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all duration-200"
                 onClick={(e) => { e.stopPropagation(); setShowForm(true); }}
               >
                 <Plus className="h-4 w-4 mr-1" />
