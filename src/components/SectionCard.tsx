@@ -6,7 +6,7 @@ import { VacantPositionCard } from './VacantPositionCard';
 import { OpenPositionCard } from './OpenPositionCard';
 import { SpontaneousApplicationForm } from './SpontaneousApplicationForm';
 import { SectionReassuranceDialog } from './SectionReassuranceDialog';
-import { ChevronDown, ChevronRight, Users, Star, MoreVertical, Edit, Trash2 } from 'lucide-react';
+import { ChevronDown, ChevronRight, Users, MoreVertical, Edit, Trash2 } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useDroppable } from '@dnd-kit/core';
 import {
@@ -170,9 +170,8 @@ export const SectionCard: React.FC<SectionCardProps> = ({
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <span className="text-xs font-semibold flex items-center gap-1 bg-primary text-primary-foreground px-2 py-0.5 rounded-full shadow-sm flex-shrink-0">
-                        <Star className="w-3 h-3 fill-current" />
-                        {section.leader.firstName} {section.leader.lastName}
+                      <span className="text-xs font-medium flex items-center gap-1 bg-primary/10 text-primary px-2 py-0.5 rounded-full border border-primary/20 flex-shrink-0">
+                        Resp. {section.leader.firstName} {section.leader.lastName}
                       </span>
                     </TooltipTrigger>
                     <TooltipContent>
@@ -374,9 +373,8 @@ export const SectionCard: React.FC<SectionCardProps> = ({
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <span className="text-xs font-semibold flex items-center gap-1 bg-primary text-primary-foreground px-2 py-0.5 rounded-full shadow-sm">
-                      <Star className="w-3 h-3 fill-current" />
-                      {section.leader.firstName} {section.leader.lastName}
+                    <span className="text-xs font-medium flex items-center gap-1 bg-primary/10 text-primary px-2 py-0.5 rounded-full border border-primary/20">
+                      Resp. {section.leader.firstName} {section.leader.lastName}
                     </span>
                   </TooltipTrigger>
                   <TooltipContent>
