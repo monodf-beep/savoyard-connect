@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -31,48 +30,71 @@ interface ImportResult {
 }
 
 export const ImportAssociationsDialog = () => {
-  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
-  const [selectedZone, setSelectedZone] = useState<string | null>(null);
-  const [selectedSource, setSelectedSource] = useState<string>('search');
+  const [selectedZones, setSelectedZones] = useState<string[]>([]);
+  const [selectedSources, setSelectedSources] = useState<string[]>(['search']);
   const [isLoading, setIsLoading] = useState(false);
-  const [result, setResult] = useState<ImportResult | null>(null);
+  const [results, setResults] = useState<ImportResult[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [currentZone, setCurrentZone] = useState<string | null>(null);
+
+  const toggleZone = (id: string) => {
+    setSelectedZones(prev => prev.includes(id) ? prev.filter(z => z !== id) : [...prev, id]);
+  };
+
+  const toggleSource = (id: string) => {
+    setSelectedSources(prev => {
+      const next = prev.includes(id) ? prev.filter(s => s !== id) : [...prev, id];
+      return next.length === 0 ? prev : next; // keep at least one
+    });
+  };
 
   const handleImport = async () => {
-    if (!selectedZone) return;
+    if (selectedZones.length === 0) return;
 
     setIsLoading(true);
-    setResult(null);
+    setResults([]);
     setError(null);
 
+    const allResults: ImportResult[] = [];
+
     try {
-      const { data, error: fnError } = await supabase.functions.invoke('scrape-associations', {
-        body: { zone: selectedZone, source: selectedSource },
-      });
+      for (const zone of selectedZones) {
+        setCurrentZone(zone);
+        for (const source of selectedSources) {
+          const { data, error: fnError } = await supabase.functions.invoke('scrape-associations', {
+            body: { zone, source },
+          });
 
-      if (fnError) throw fnError;
+          if (fnError) throw fnError;
 
-      if (data?.success) {
-        setResult(data);
-        toast.success(`${data.inserted} associations importées !`);
-      } else {
-        setError(data?.error || 'Erreur inconnue');
-        toast.error(data?.error || 'Erreur lors du scraping');
+          if (data?.success) {
+            allResults.push(data);
+          }
+        }
       }
+
+      setResults(allResults);
+      const totalInserted = allResults.reduce((sum, r) => sum + r.inserted, 0);
+      toast.success(`${totalInserted} associations importées !`);
     } catch (err: any) {
       setError(err.message || 'Erreur de connexion');
       toast.error('Erreur lors du scraping');
     } finally {
       setIsLoading(false);
+      setCurrentZone(null);
     }
   };
 
   const reset = () => {
-    setSelectedZone(null);
-    setResult(null);
+    setSelectedZones([]);
+    setResults([]);
     setError(null);
   };
+
+  const totalFound = results.reduce((s, r) => s + r.total_found, 0);
+  const totalInserted = results.reduce((s, r) => s + r.inserted, 0);
+  const totalSkipped = results.reduce((s, r) => s + r.skipped, 0);
 
   return (
     <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) reset(); }}>
@@ -87,17 +109,17 @@ export const ImportAssociationsDialog = () => {
           <DialogTitle>Importer des associations culturelles</DialogTitle>
         </DialogHeader>
 
-        {!result && !error && (
+        {results.length === 0 && !error && (
           <div className="space-y-4">
             <div>
-              <p className="text-sm font-medium mb-2">Zone géographique</p>
+              <p className="text-sm font-medium mb-2">Zones géographiques (multi-sélection)</p>
               <div className="flex flex-wrap gap-2">
                 {ZONES.map((zone) => (
                   <Badge
                     key={zone.id}
-                    variant={selectedZone === zone.id ? 'default' : 'outline'}
+                    variant={selectedZones.includes(zone.id) ? 'default' : 'outline'}
                     className="cursor-pointer text-xs"
-                    onClick={() => setSelectedZone(zone.id)}
+                    onClick={() => toggleZone(zone.id)}
                   >
                     {zone.flag} {zone.label}
                   </Badge>
@@ -106,21 +128,21 @@ export const ImportAssociationsDialog = () => {
             </div>
 
             <div>
-              <p className="text-sm font-medium mb-2">Source</p>
+              <p className="text-sm font-medium mb-2">Sources (multi-sélection)</p>
               <div className="flex flex-wrap gap-2">
                 {SOURCES.map((src) => (
                   <Badge
                     key={src.id}
-                    variant={selectedSource === src.id ? 'default' : 'outline'}
+                    variant={selectedSources.includes(src.id) ? 'default' : 'outline'}
                     className="cursor-pointer text-xs"
-                    onClick={() => setSelectedSource(src.id)}
+                    onClick={() => toggleSource(src.id)}
                   >
                     {src.label}
                   </Badge>
                 ))}
               </div>
               <p className="text-xs text-muted-foreground mt-1">
-                {SOURCES.find(s => s.id === selectedSource)?.description}
+                {selectedSources.map(id => SOURCES.find(s => s.id === id)?.description).filter(Boolean).join(' + ')}
               </p>
             </div>
 
@@ -128,7 +150,7 @@ export const ImportAssociationsDialog = () => {
               <div className="space-y-2">
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  Scraping en cours... Cela peut prendre 1-2 minutes.
+                  Scraping {currentZone ? ZONES.find(z => z.id === currentZone)?.label : ''}... Cela peut prendre plusieurs minutes.
                 </div>
                 <Progress value={undefined} className="h-2" />
               </div>
@@ -136,7 +158,7 @@ export const ImportAssociationsDialog = () => {
 
             <Button
               onClick={handleImport}
-              disabled={!selectedZone || isLoading}
+              disabled={selectedZones.length === 0 || isLoading}
               className="w-full"
             >
               {isLoading ? (
@@ -145,35 +167,35 @@ export const ImportAssociationsDialog = () => {
                   Scraping en cours...
                 </>
               ) : (
-                'Lancer le scraping'
+                `Lancer le scraping (${selectedZones.length} zone${selectedZones.length > 1 ? 's' : ''} × ${selectedSources.length} source${selectedSources.length > 1 ? 's' : ''})`
               )}
             </Button>
           </div>
         )}
 
-        {result && (
+        {results.length > 0 && (
           <div className="space-y-3">
-            <div className="flex items-center gap-2 text-green-600">
+            <div className="flex items-center gap-2 text-primary">
               <CheckCircle className="h-5 w-5" />
               <span className="font-medium">Import terminé !</span>
             </div>
             <div className="grid grid-cols-3 gap-2 text-center">
               <div className="bg-muted rounded-lg p-3">
-                <p className="text-2xl font-bold">{result.total_found}</p>
+                <p className="text-2xl font-bold">{totalFound}</p>
                 <p className="text-xs text-muted-foreground">Trouvées</p>
               </div>
               <div className="bg-muted rounded-lg p-3">
-                <p className="text-2xl font-bold text-green-600">{result.inserted}</p>
+                <p className="text-2xl font-bold text-primary">{totalInserted}</p>
                 <p className="text-xs text-muted-foreground">Ajoutées</p>
               </div>
               <div className="bg-muted rounded-lg p-3">
-                <p className="text-2xl font-bold text-muted-foreground">{result.skipped}</p>
+                <p className="text-2xl font-bold text-muted-foreground">{totalSkipped}</p>
                 <p className="text-xs text-muted-foreground">Ignorées</p>
               </div>
             </div>
-            {result.associations.length > 0 && (
+            {results.flatMap(r => r.associations).length > 0 && (
               <div className="max-h-40 overflow-y-auto text-xs space-y-1 border rounded p-2">
-                {result.associations.map((a, i) => (
+                {results.flatMap(r => r.associations).map((a, i) => (
                   <div key={i} className="flex justify-between">
                     <span className="truncate">{a.name}</span>
                     {a.city && <span className="text-muted-foreground ml-2 shrink-0">{a.city}</span>}
