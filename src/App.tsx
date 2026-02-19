@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation, Navigate } from "react-router-dom";
 import { AIAssistant } from "@/components/AIAssistant";
 import { AdminOnboarding } from "@/components/AdminOnboarding";
 import { SectionLeaderOnboarding } from "@/components/SectionLeaderOnboarding";
@@ -106,7 +106,7 @@ const AppContent = () => {
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/onboarding-asso" element={<OnboardingAsso />} />
         {/* /hub redirects to /dashboard */}
-        <Route path="/hub" element={<Dashboard />} />
+        <Route path="/hub" element={<Navigate to="/dashboard" replace />} />
         <Route path="/mutualisation" element={<Mutualisation />} />
         <Route path="/adhesion-reseau" element={<AdhesionReseau />} />
         <Route path="/dashboard" element={<Dashboard />} />

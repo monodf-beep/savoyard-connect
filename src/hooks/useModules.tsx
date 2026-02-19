@@ -19,7 +19,7 @@ export const MODULE_REGISTRY: ModuleDefinition[] = [
   { key: "accompagnateur", label: "L'Accompagnateur", description: "Assistant IA pour diagnostiquer et guider votre association", icon: "Sparkles", category: "core", defaultEnabled: true },
   
   // Management modules
-  { key: "members", label: "Membres & Adhésions", description: "CRM des membres, gestion des cotisations et invitations", icon: "UserCheck", category: "management", defaultEnabled: true },
+  { key: "members", label: "Membres & Adhésions", description: "CRM des membres, gestion des cotisations et invitations", icon: "UserCheck", category: "management", defaultEnabled: false },
   { key: "finance", label: "Finance & Comptabilité", description: "Budget, trésorerie, rapports financiers et documents", icon: "PiggyBank", category: "management", defaultEnabled: false },
   { key: "organigramme", label: "RH & Organigramme", description: "Organigramme interactif, fiches de poste et bénévoles", icon: "Users", category: "management", defaultEnabled: true },
   { key: "value-chains", label: "Chaînes de valeur", description: "Modélisez les processus et flux de votre association", icon: "GitBranch", category: "management", defaultEnabled: false },

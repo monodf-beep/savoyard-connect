@@ -41,11 +41,15 @@ const associationItems: NavItem[] = [
   { path: "/projects", labelKey: "nav.internalProjects", icon: FolderKanban, canBePublic: true },
   { path: "/admin", labelKey: "nav.taskManagement", icon: Kanban, gestionnaireOnly: true },
   { path: "/toolbox", labelKey: "nav.toolbox", icon: Briefcase },
+  // Network separator
+  { path: "", labelKey: "nav.sections.network", icon: Globe, isSeparator: true },
   { path: "/annuaire", labelKey: "nav.directoryB2B", icon: Building2 },
   { path: "/experts", labelKey: "nav.experts", icon: GraduationCap },
   { path: "/mutualisation", labelKey: "nav.mutualisation", icon: Handshake },
   { path: "/projets-reseau", labelKey: "nav.projectsNetwork", icon: Rocket },
   { path: "/opportunites", labelKey: "nav.opportunities", icon: TrendingUp },
+  // Admin separator
+  { path: "", labelKey: "nav.sections.administration", icon: Settings, isSeparator: true },
   { path: "/module-store", labelKey: "nav.moduleStore", icon: Package, adminOnly: true },
   { path: "/settings", labelKey: "nav.settings", icon: Settings, adminOnly: true },
 ];
@@ -59,11 +63,23 @@ export const HubSidebar = ({ collapsed, onToggle, isMobile = false }: HubSidebar
 
   const isCollapsed = isMobile ? false : collapsed;
 
-  const navigationItems = associationItems.filter(item => {
+  const filteredItems = associationItems.filter(item => {
+    if (item.isSeparator) return true; // keep separators, filter later
     if (item.adminOnly && !isOwnerOrAdmin && !isAdmin) return false;
     if (item.gestionnaireOnly && !isGestionnaire && !isAdmin) return false;
     if (!isModuleVisibleInSidebar(item.path)) return false;
     return true;
+  });
+
+  // Remove separators that have no visible items after them
+  const navigationItems = filteredItems.filter((item, index) => {
+    if (!item.isSeparator) return true;
+    // Check if there's at least one non-separator item after this before next separator or end
+    for (let i = index + 1; i < filteredItems.length; i++) {
+      if (filteredItems[i].isSeparator) return false;
+      return true; // found a visible item
+    }
+    return false;
   });
 
   const renderNavItem = (item: NavItem) => {
