@@ -1,109 +1,104 @@
 
-# Timeline des reunions integree a la page Projets
+# Refonte Members + Contributors -- Connexion HelloAsso
 
-## Pourquoi pas une page separee
+## Objectif
 
-Une page `/calendrier` cree une rupture : le membre doit naviguer entre deux ecrans pour comprendre "d'ou viennent ces projets". Le calendrier seul n'a pas assez de valeur pour justifier une page entiere -- c'est un outil de contexte, pas une destination.
+Transformer deux pages (une vide avec du mock, une surchargee) en deux outils clairs et connectes aux vraies donnees.
 
-## Ce qu'on construit a la place
+## Page `/members` -- CRM operationnel
 
-Un **bandeau collapsible** en haut de la page Projets, au-dessus du Kanban :
+### Etat actuel
+- 5 faux membres en dur, aucune connexion base de donnees
+- Boutons Import/Export/Ajouter ne font rien
+- 4 stat cards pour des faux chiffres
+
+### Ce qu'on construit
 
 ```text
-+---------------------------------------------------------------+
-|  [v] Dernieres reunions                                        |
-|                                                                |
-|  19 fev  |  Reunion CA           | 5 participants | 3 actions  |
-|           Resume IA en 3 lignes...                             |
-|           [Voir les projets issus]                             |
-|                                                                |
-|  12 fev  |  Commission sport     | 3 participants | 1 action   |
-|           Resume IA en 3 lignes...                             |
-|                                                                |
-+---------------------------------------------------------------+
-|                                                                |
-|  Planifie    |    En cours     |    Termine                    |
-|  [Kanban cards filtered or not]                                |
-+---------------------------------------------------------------+
++--------------------------------------------------+
+| Membres & Adhesions    [Sync HelloAsso] [Export]  |
+| 42 actifs / 58 total -- 3 expirent ce mois       |
++--------------------------------------------------+
+| [Recherche...]  [Statut v]  [Annee v]            |
++--------------------------------------------------+
+| Av | Nom        | Type      | Statut   | Exp.    |
+| MD | M. Dupont  | Adherent  | Actif    | 12/26   |
+| JM | J. Martin  | Bienfait. | Expire   | 01/25   |
++--------------------------------------------------+
 ```
 
-### Comportement
+Changements :
+- Supprimer tout le mock data
+- Requeter `helloasso_members` via `useQuery`
+- Calculer le statut cote client : actif si `membership_date` + 1 an > aujourd'hui, expirant si dans les 30 jours, expire sinon
+- Remplacer les 4 stat cards par une ligne de resume concise
+- Bouton "Sync HelloAsso" qui appelle `supabase.functions.invoke('sync-helloasso-members', { body: { organizationSlug } })`
+- Premiere utilisation : prompt simple pour saisir le slug HelloAsso de l'association (stocke en `localStorage`)
+- Export CSV fonctionnel (generation cote client)
+- Supprimer les boutons Import et Ajouter (non fonctionnels)
+- Ajouter un filtre par annee d'adhesion
 
-- Par defaut : le bandeau est **replie** (juste le titre "Dernieres reunions" + nombre)
-- Deplie : affiche les 5 dernieres reunions avec resume, participants, nombre d'actions generees
-- Cliquer sur "Voir les projets issus" filtre le Kanban pour ne montrer que les projets crees depuis cette transcription
-- Un bouton "Tout afficher" reinitialise le filtre
+---
 
-### Lien reunion-projet
+## Page `/contributors` -- Visualisation des contributions
 
-Pour tracer l'origine, on ajoute un champ `source_meeting_id` a la table `projects`. Quand `process-transcript` cree des projets, il les lie a la reunion correspondante. Ca permet le filtre direct.
+### Etat actuel
+6 sections dont 4 sont du bruit : milestones/gamification, "Devenir Membre" avec prix, carte Mapbox, requetes sur learners/volunteers.
 
-## Plan technique
+### Ce qu'on garde (2 elements utiles)
+- **Grille des contributeurs** avec filtre par annee (voir qui revient d'une annee a l'autre)
+- **Top Donateurs** depuis `helloasso_donors` (fidelite, montants cumules)
 
-### 1. Table `meetings` (migration SQL)
+### Ce qu'on supprime
+- Section "Force Collective" / milestones / barre de progression (gadget sans impact admin)
+- Section "Devenir Membre" avec les options d'adhesion et prix (doublon avec HelloAsso)
+- Carte Mapbox des contributeurs (bruit visuel, pas de cas d'usage concret)
+- Requetes sur `learners`, `volunteers`, `community_milestones`, `membership_options`, `community_settings`, `mapbox-token`
+- Bouton "Parametres" et `ContributorSettingsDialog`
 
-| Colonne | Type | Description |
-|---------|------|-------------|
-| id | uuid PK | |
-| google_event_id | text unique | ID Google Calendar (nullable si pas encore connecte) |
-| title | text | Titre de l'evenement |
-| start_time | timestamptz | Debut |
-| end_time | timestamptz | Fin |
-| attendees | jsonb | Liste [{email, name, rsvp}] |
-| ai_summary | text | Resume IA 3 lignes |
-| transcript_filename | text | Nom du fichier source |
-| association_id | uuid FK | Lien vers l'association |
-| created_at | timestamptz | |
+### Resultat apres nettoyage
 
-RLS : lecture pour tous les membres de l'association.
+```text
++--------------------------------------------------+
+| Contributeurs            [Filtre annee: 2025 v]  |
+| 42 contributeurs cette annee                      |
++--------------------------------------------------+
+| Grille d'avatars des contributeurs                |
+| (15 affiches + "+X autres")                       |
++--------------------------------------------------+
+| Top Donateurs                                     |
+| 1. Marie D. -- 500 EUR (3 dons)                   |
+| 2. Jean M. -- 300 EUR (2 dons)                    |
++--------------------------------------------------+
+```
 
-### 2. Colonne `source_meeting_id` sur `projects`
+---
 
-Ajout d'une colonne nullable `source_meeting_id uuid REFERENCES meetings(id)` a la table `projects`. Permet de filtrer les projets par reunion source.
-
-### 3. Mise a jour de `process-transcript`
-
-Quand une transcription est traitee :
-1. Creer un enregistrement `meetings` avec le titre et la date extraits du fichier
-2. Demander a Gemini un resume en 3 lignes (nouvel outil `generate_meeting_summary`)
-3. Stocker le resume dans `meetings.ai_summary`
-4. Lier chaque projet cree via `source_meeting_id`
-
-### 4. Hook `useMeetings.ts`
-
-- Charge les 10 dernieres reunions de l'association avec le nombre de projets lies
-- Expose une fonction pour filtrer par meeting_id
-
-### 5. Composant `MeetingsTimeline.tsx`
-
-- Bandeau collapsible avec les dernieres reunions
-- Chaque ligne : date, titre, nombre de participants, nombre de projets, resume IA
-- Bouton "Voir les projets" qui emet un callback `onFilterByMeeting(meetingId)`
-- Bouton "Tout afficher" pour reinitialiser
-
-### 6. Integration dans `Projects.tsx`
-
-- Ajout du composant `MeetingsTimeline` au-dessus du Kanban
-- Etat `filterMeetingId` qui filtre `filteredProjects` par `source_meeting_id`
-- Pas de nouvelle route, pas de nouvelle entree sidebar
-
-### 7. Edge function `sync-google-calendar` (inchangee)
-
-Toujours prevue pour plus tard. Pour l'instant, les reunions sont creees automatiquement par l'import de transcription. Quand Google Calendar sera connecte, il enrichira les reunions existantes avec les vrais participants et horaires.
-
-## Fichiers a creer/modifier
+## Fichiers
 
 | Fichier | Action |
-|---------|--------|
-| Migration SQL | Creer table `meetings` + colonne `source_meeting_id` sur `projects` |
-| `src/hooks/useMeetings.ts` | Creer : charger les reunions recentes |
-| `src/components/projects/MeetingsTimeline.tsx` | Creer : bandeau collapsible |
-| `src/pages/Projects.tsx` | Ajouter le bandeau + filtre par meeting |
-| `supabase/functions/process-transcript/index.ts` | Ajouter creation meeting + resume IA + lien projets |
+|---|---|
+| `src/pages/Members.tsx` | Refonte complete : supprimer mock, connecter a `helloasso_members`, calcul statut, bouton sync, export CSV, ligne de resume |
+| `src/pages/Contributors.tsx` | Nettoyer : garder grille + top donateurs, supprimer milestones/adhesion/carte/learners/volunteers |
+| `src/components/contributors/MembersMap.tsx` | Supprimer |
+| `src/components/contributors/ContributorSettingsDialog.tsx` | Supprimer |
 
-## Ce qu'on ne fait PAS
+## Aucune migration base de donnees
 
-- Pas de page `/calendrier` separee
-- Pas d'entree dans la sidebar
-- Pas de sync Google Calendar pour l'instant (sera ajoute quand le compte de service sera configure)
-- Pas de vue calendrier mensuelle -- une simple timeline suffit pour le contexte
+Les tables `helloasso_members` et `helloasso_donors` existent deja avec les bonnes colonnes. L'edge function `sync-helloasso-members` est deployee. Rien a creer cote base.
+
+## Details techniques
+
+### Calcul du statut membre
+```text
+membership_date + 365 jours = date expiration
+- Si expiration > aujourd'hui + 30j : "actif"
+- Si expiration entre aujourd'hui et aujourd'hui + 30j : "expire bientot"
+- Si expiration < aujourd'hui : "expire"
+```
+
+### Slug HelloAsso
+Le bouton "Sync HelloAsso" demande le `organizationSlug`. A la premiere utilisation, un dialog simple demande a l'utilisateur de le saisir. Le slug est stocke en `localStorage` pour les syncs suivantes.
+
+### Export CSV
+Generation cote client a partir des donnees filtrees du tableau. Colonnes : Nom, Prenom, Email, Ville, Type, Date adhesion, Statut.
