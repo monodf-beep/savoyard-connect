@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { Person, Section, VacantPosition } from '../types/organigramme';
 import { SectionCard } from './SectionCard';
 import { DraggableSectionCard } from './DraggableSectionCard';
@@ -15,7 +15,9 @@ import { Button } from './ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from './ui/sheet';
 import { Dialog, DialogContent } from './ui/dialog';
 import { Input } from './ui/input';
-import { Eye, EyeOff, ExpandIcon as Expand, ShrinkIcon as Shrink, UserPlus, FolderPlus, LogIn, LogOut, List, Network, Menu, X, Upload, Plus, Search } from 'lucide-react';
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from './ui/dropdown-menu';
+import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from './ui/tooltip';
+import { Eye, EyeOff, ExpandIcon as Expand, ShrinkIcon as Shrink, UserPlus, FolderPlus, LogIn, LogOut, List, Network, Menu, X, Upload, Plus, Search, LayoutGrid } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useOrganigramme } from '../hooks/useOrganigramme';
 import { supabase } from '../integrations/supabase/client';
@@ -385,17 +387,52 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
   // On mobile initial load, override all sections to collapsed
   const mobileAdjustedSections = React.useMemo(() => {
     if (!isMobile || !mobileCollapsedOverride) return visibleSections;
-    const collapseAll = (sections: Section[]): Section[] => 
+    const collapseAllSections = (sections: Section[]): Section[] => 
       sections.map(s => ({
         ...s,
         isExpanded: false,
-        subsections: s.subsections ? collapseAll(s.subsections) : []
+        subsections: s.subsections ? collapseAllSections(s.subsections) : []
       }));
-    return collapseAll(visibleSections);
+    return collapseAllSections(visibleSections);
   }, [visibleSections, isMobile, mobileCollapsedOverride]);
   
   // Appliquer ensuite le filtre de recherche sur les sections visibles
   const searchFilteredSections = filterSectionsBySearch(mobileAdjustedSections, searchQuery);
+
+  // Déterminer si toutes les sections sont dépliées
+  const allExpanded = useMemo(() => {
+    const check = (sections: Section[]): boolean =>
+      sections.every(s => s.isExpanded && (!s.subsections?.length || check(s.subsections)));
+    return searchFilteredSections.length > 0 && check(searchFilteredSections);
+  }, [searchFilteredSections]);
+
+  // Comptage récursif des membres d'une section
+  const getTotalCount = useCallback((section: Section): number => {
+    let count = section.members.length;
+    if (section.subsections) {
+      section.subsections.forEach(sub => {
+        count += getTotalCount(sub);
+      });
+    }
+    return count;
+  }, []);
+
+  // Scroll vers une section avec dépliage automatique
+  const scrollToSection = useCallback((sectionId: string, parentId?: string) => {
+    if (parentId) {
+      const parentSection = findSectionById(searchFilteredSections, parentId);
+      if (parentSection && !parentSection.isExpanded) {
+        updateSectionExpansion(parentId, true);
+      }
+    }
+    const targetSection = findSectionById(searchFilteredSections, sectionId);
+    if (targetSection && !targetSection.isExpanded) {
+      updateSectionExpansion(sectionId, true);
+    }
+    setTimeout(() => {
+      document.getElementById(`section-${sectionId}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 150);
+  }, [searchFilteredSections, updateSectionExpansion]);
 
   const handlePersonClick = useCallback((person: Person) => {
     // Fermer le panneau des postes vacants s'il est ouvert
@@ -904,28 +941,58 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
             </Button>
           </div>
 
-          {/* Expand/Collapse */}
-          <Button 
-            type="button"
-            onClick={(e) => { e.preventDefault(); e.stopPropagation(); expandAll(); }}
-            variant="ghost"
-            size="sm"
-            className="h-8 px-3"
-          >
-            <Expand className="w-3.5 h-3.5 mr-1" />
-            <span className="text-xs">Tout déplier</span>
-          </Button>
-          
-          <Button 
-            type="button"
-            onClick={(e) => { e.preventDefault(); e.stopPropagation(); collapseAll(); }}
-            variant="ghost"
-            size="sm"
-            className="h-8 px-3"
-          >
-            <Shrink className="w-3.5 h-3.5 mr-1" />
-            <span className="text-xs">Tout replier</span>
-          </Button>
+          {/* Vue d'ensemble dropdown */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm" className="h-8 px-3">
+                <LayoutGrid className="w-3.5 h-3.5 mr-1.5" />
+                <span className="text-xs">Vue d'ensemble</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-64 max-h-80 overflow-y-auto">
+              {searchFilteredSections.map(section => (
+                <React.Fragment key={section.id}>
+                  <DropdownMenuItem 
+                    onClick={() => scrollToSection(section.id)}
+                    className="font-medium cursor-pointer"
+                  >
+                    {section.title}
+                    <span className="ml-auto text-xs text-muted-foreground">
+                      {getTotalCount(section)}
+                    </span>
+                  </DropdownMenuItem>
+                  {section.subsections?.filter(s => !s.isHidden).map(sub => (
+                    <DropdownMenuItem
+                      key={sub.id}
+                      onClick={() => scrollToSection(sub.id, section.id)}
+                      className="pl-6 text-muted-foreground cursor-pointer"
+                    >
+                      {sub.title}
+                      <span className="ml-auto text-xs">{sub.members.length}</span>
+                    </DropdownMenuItem>
+                  ))}
+                </React.Fragment>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          {/* Toggle expand/collapse */}
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 w-8 p-0"
+                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); allExpanded ? collapseAll() : expandAll(); }}
+                >
+                  {allExpanded ? <Shrink className="w-4 h-4" /> : <Expand className="w-4 h-4" />}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>{allExpanded ? 'Tout replier' : 'Tout déplier'}</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
         </div>
       </div>
