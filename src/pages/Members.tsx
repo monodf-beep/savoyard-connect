@@ -1,113 +1,163 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { HubPageLayout } from "@/components/hub/HubPageLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
-import { 
-  Search, 
-  UserPlus, 
-  Download, 
-  Upload,
-  CheckCircle2,
-  XCircle,
-  Clock,
-  Filter,
-} from "lucide-react";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { 
+  Search, Download, CheckCircle2, XCircle, Clock, Filter, RefreshCw, Loader2,
+} from "lucide-react";
+import { toast } from "sonner";
 
-// Mock data for members - in production this would come from Supabase
-const mockMembers = [
-  {
-    id: "1",
-    firstName: "Marie",
-    lastName: "Dupont",
-    email: "marie.dupont@email.com",
-    avatarUrl: null,
-    subscriptionStatus: "active",
-    subscriptionType: "Adhérent",
-    subscriptionEndDate: "2026-12-31",
-    joinedAt: "2024-03-15",
-  },
-  {
-    id: "2",
-    firstName: "Jean",
-    lastName: "Martin",
-    email: "jean.martin@email.com",
-    avatarUrl: null,
-    subscriptionStatus: "active",
-    subscriptionType: "Membre bienfaiteur",
-    subscriptionEndDate: "2026-12-31",
-    joinedAt: "2023-09-01",
-  },
-  {
-    id: "3",
-    firstName: "Sophie",
-    lastName: "Bernard",
-    email: "sophie.bernard@email.com",
-    avatarUrl: null,
-    subscriptionStatus: "expiring",
-    subscriptionType: "Adhérent",
-    subscriptionEndDate: "2026-02-15",
-    joinedAt: "2025-02-15",
-  },
-  {
-    id: "4",
-    firstName: "Pierre",
-    lastName: "Moreau",
-    email: "pierre.moreau@email.com",
-    avatarUrl: null,
-    subscriptionStatus: "expired",
-    subscriptionType: "Adhérent",
-    subscriptionEndDate: "2025-12-31",
-    joinedAt: "2024-01-10",
-  },
-  {
-    id: "5",
-    firstName: "Isabelle",
-    lastName: "Petit",
-    email: "isabelle.petit@email.com",
-    avatarUrl: null,
-    subscriptionStatus: "active",
-    subscriptionType: "Membre d'honneur",
-    subscriptionEndDate: "2027-12-31",
-    joinedAt: "2020-06-20",
-  },
-];
+interface HelloAssoMember {
+  id: string;
+  first_name: string | null;
+  last_name: string | null;
+  email: string | null;
+  city: string | null;
+  membership_date: string | null;
+  membership_type: string | null;
+  amount: number | null;
+  is_hidden: boolean | null;
+}
+
+type MemberStatus = "active" | "expiring" | "expired";
+
+function computeStatus(membershipDate: string | null): MemberStatus {
+  if (!membershipDate) return "expired";
+  const expiration = new Date(membershipDate);
+  expiration.setFullYear(expiration.getFullYear() + 1);
+  const now = new Date();
+  const in30Days = new Date();
+  in30Days.setDate(in30Days.getDate() + 30);
+
+  if (expiration < now) return "expired";
+  if (expiration <= in30Days) return "expiring";
+  return "active";
+}
+
+function formatDate(dateString: string | null) {
+  if (!dateString) return "—";
+  return new Date(dateString).toLocaleDateString("fr-FR", {
+    year: "numeric", month: "short", day: "numeric",
+  });
+}
+
+function exportCSV(members: (HelloAssoMember & { status: MemberStatus })[]) {
+  const headers = ["Prénom", "Nom", "Email", "Ville", "Type", "Date adhésion", "Statut"];
+  const rows = members.map(m => [
+    m.first_name || "", m.last_name || "", m.email || "", m.city || "",
+    m.membership_type || "", m.membership_date || "",
+    m.status === "active" ? "Actif" : m.status === "expiring" ? "Expire bientôt" : "Expiré",
+  ]);
+  const csv = [headers, ...rows].map(r => r.map(c => `"${c}"`).join(",")).join("\n");
+  const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `membres_${new Date().toISOString().slice(0, 10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
 
 const Members = () => {
   const { t } = useTranslation();
+  const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [yearFilter, setYearFilter] = useState("all");
+  const [slugDialogOpen, setSlugDialogOpen] = useState(false);
+  const [slugInput, setSlugInput] = useState(() => localStorage.getItem("helloasso_slug") || "");
 
-  const filteredMembers = mockMembers.filter(member => {
-    const matchesSearch = 
-      member.firstName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      member.lastName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      member.email.toLowerCase().includes(searchQuery.toLowerCase());
-    
-    const matchesStatus = statusFilter === "all" || member.subscriptionStatus === statusFilter;
-    
-    return matchesSearch && matchesStatus;
+  // Fetch members from Supabase
+  const { data: rawMembers = [], isLoading } = useQuery({
+    queryKey: ["helloasso-members"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("helloasso_members")
+        .select("*")
+        .order("membership_date", { ascending: false });
+      if (error) throw error;
+      return data as HelloAssoMember[];
+    },
   });
 
-  const getStatusBadge = (status: string) => {
+  // Enrich with computed status
+  const members = rawMembers
+    .filter(m => !m.is_hidden)
+    .map(m => ({ ...m, status: computeStatus(m.membership_date) }));
+
+  // Available years
+  const years = [...new Set(
+    members.map(m => m.membership_date ? new Date(m.membership_date).getFullYear() : null).filter(Boolean)
+  )].sort((a, b) => (b || 0) - (a || 0));
+
+  // Filters
+  const filteredMembers = members.filter(member => {
+    const matchesSearch =
+      (member.first_name || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (member.last_name || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (member.email || "").toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesStatus = statusFilter === "all" || member.status === statusFilter;
+    const matchesYear = yearFilter === "all" || 
+      (member.membership_date && new Date(member.membership_date).getFullYear().toString() === yearFilter);
+    return matchesSearch && matchesStatus && matchesYear;
+  });
+
+  // Stats
+  const activeCount = members.filter(m => m.status === "active").length;
+  const expiringCount = members.filter(m => m.status === "expiring").length;
+
+  // Sync mutation
+  const syncMutation = useMutation({
+    mutationFn: async (slug: string) => {
+      const { data, error } = await supabase.functions.invoke("sync-helloasso-members", {
+        body: { organizationSlug: slug },
+      });
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (data) => {
+      toast.success(`Synchronisé : ${data.members_synced} membres, ${data.donors_synced} donateurs`);
+      queryClient.invalidateQueries({ queryKey: ["helloasso-members"] });
+      queryClient.invalidateQueries({ queryKey: ["helloasso-donors"] });
+    },
+    onError: (error: any) => {
+      toast.error(`Erreur de synchronisation : ${error.message}`);
+    },
+  });
+
+  const handleSync = () => {
+    const savedSlug = localStorage.getItem("helloasso_slug");
+    if (savedSlug) {
+      syncMutation.mutate(savedSlug);
+    } else {
+      setSlugDialogOpen(true);
+    }
+  };
+
+  const confirmSlugAndSync = () => {
+    if (!slugInput.trim()) return;
+    localStorage.setItem("helloasso_slug", slugInput.trim());
+    setSlugDialogOpen(false);
+    syncMutation.mutate(slugInput.trim());
+  };
+
+  const getStatusBadge = (status: MemberStatus) => {
     switch (status) {
       case "active":
         return (
@@ -130,74 +180,44 @@ const Members = () => {
             {t("members.status.expired")}
           </Badge>
         );
-      default:
-        return null;
     }
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("fr-FR", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
-  };
-
-  // Stats
-  const activeCount = mockMembers.filter(m => m.subscriptionStatus === "active").length;
-  const expiringCount = mockMembers.filter(m => m.subscriptionStatus === "expiring").length;
-  const expiredCount = mockMembers.filter(m => m.subscriptionStatus === "expired").length;
-
   return (
-    <HubPageLayout breadcrumb={t("nav.membersSubscriptions")}>
+    <HubPageLayout breadcrumb={t("nav.membersSubscriptions")} loading={isLoading}>
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
         <div>
           <h1 className="text-2xl font-bold">{t("members.title")}</h1>
-          <p className="text-muted-foreground">{t("members.subtitle")}</p>
+          <p className="text-sm text-muted-foreground mt-1">
+            {activeCount} actifs / {members.length} total
+            {expiringCount > 0 && ` — ${expiringCount} expirent ${t("common.thisMonth")}`}
+          </p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm">
-            <Upload className="h-4 w-4 mr-2" />
-            {t("members.import")}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleSync}
+            disabled={syncMutation.isPending}
+          >
+            {syncMutation.isPending ? (
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            ) : (
+              <RefreshCw className="h-4 w-4 mr-2" />
+            )}
+            Sync HelloAsso
           </Button>
-          <Button variant="outline" size="sm">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => exportCSV(filteredMembers)}
+            disabled={filteredMembers.length === 0}
+          >
             <Download className="h-4 w-4 mr-2" />
             {t("members.export")}
           </Button>
-          <Button size="sm">
-            <UserPlus className="h-4 w-4 mr-2" />
-            {t("members.addMember")}
-          </Button>
         </div>
-      </div>
-
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-2xl font-bold">{mockMembers.length}</div>
-            <p className="text-sm text-muted-foreground">{t("members.stats.total")}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-2xl font-bold text-green-600">{activeCount}</div>
-            <p className="text-sm text-muted-foreground">{t("members.stats.active")}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-2xl font-bold text-yellow-600">{expiringCount}</div>
-            <p className="text-sm text-muted-foreground">{t("members.stats.expiring")}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-2xl font-bold text-red-600">{expiredCount}</div>
-            <p className="text-sm text-muted-foreground">{t("members.stats.expired")}</p>
-          </CardContent>
-        </Card>
       </div>
 
       {/* Filters */}
@@ -225,6 +245,17 @@ const Members = () => {
                 <SelectItem value="expired">{t("members.filters.expired")}</SelectItem>
               </SelectContent>
             </Select>
+            <Select value={yearFilter} onValueChange={setYearFilter}>
+              <SelectTrigger className="w-full md:w-36">
+                <SelectValue placeholder="Année" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Toutes</SelectItem>
+                {years.map(year => (
+                  <SelectItem key={year} value={String(year)}>{year}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </CardContent>
       </Card>
@@ -245,42 +276,42 @@ const Members = () => {
                 <TableHead>{t("members.table.type")}</TableHead>
                 <TableHead>{t("members.table.status")}</TableHead>
                 <TableHead>{t("members.table.endDate")}</TableHead>
-                <TableHead className="text-right">{t("members.table.actions")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredMembers.map((member) => (
-                <TableRow key={member.id}>
-                  <TableCell>
-                    <div className="flex items-center gap-3">
-                      <Avatar className="h-9 w-9">
-                        <AvatarImage src={member.avatarUrl || ""} />
-                        <AvatarFallback className="bg-primary/10 text-primary text-xs">
-                          {member.firstName[0]}{member.lastName[0]}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <p className="font-medium">{member.firstName} {member.lastName}</p>
-                        <p className="text-sm text-muted-foreground">{member.email}</p>
+              {filteredMembers.map((member) => {
+                const expirationDate = member.membership_date
+                  ? (() => { const d = new Date(member.membership_date); d.setFullYear(d.getFullYear() + 1); return d.toISOString(); })()
+                  : null;
+                return (
+                  <TableRow key={member.id}>
+                    <TableCell>
+                      <div className="flex items-center gap-3">
+                        <Avatar className="h-9 w-9">
+                          <AvatarFallback className="bg-primary/10 text-primary text-xs">
+                            {member.first_name?.[0]}{member.last_name?.[0]}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <p className="font-medium">{member.first_name} {member.last_name}</p>
+                          <p className="text-sm text-muted-foreground">{member.email || member.city || ""}</p>
+                        </div>
                       </div>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant="secondary">{member.subscriptionType}</Badge>
-                  </TableCell>
-                  <TableCell>{getStatusBadge(member.subscriptionStatus)}</TableCell>
-                  <TableCell>{formatDate(member.subscriptionEndDate)}</TableCell>
-                  <TableCell className="text-right">
-                    <Button variant="ghost" size="sm">
-                      {t("common.edit")}
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="secondary">{member.membership_type || "Adhésion"}</Badge>
+                    </TableCell>
+                    <TableCell>{getStatusBadge(member.status)}</TableCell>
+                    <TableCell>{formatDate(expirationDate)}</TableCell>
+                  </TableRow>
+                );
+              })}
               {filteredMembers.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
-                    {t("members.noResults")}
+                  <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
+                    {members.length === 0
+                      ? "Synchronisez HelloAsso pour importer vos membres"
+                      : t("members.noResults")}
                   </TableCell>
                 </TableRow>
               )}
@@ -288,6 +319,40 @@ const Members = () => {
           </Table>
         </CardContent>
       </Card>
+
+      {/* Slug Dialog */}
+      <Dialog open={slugDialogOpen} onOpenChange={setSlugDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Configurer HelloAsso</DialogTitle>
+            <DialogDescription>
+              Entrez le slug de votre organisation HelloAsso (visible dans l'URL de votre page).
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 pt-2">
+            <div className="space-y-2">
+              <Label>Slug de l'organisation</Label>
+              <Input
+                placeholder="mon-association"
+                value={slugInput}
+                onChange={(e) => setSlugInput(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && confirmSlugAndSync()}
+              />
+              <p className="text-xs text-muted-foreground">
+                Ex: helloasso.com/associations/<strong>mon-association</strong>
+              </p>
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setSlugDialogOpen(false)}>
+                Annuler
+              </Button>
+              <Button onClick={confirmSlugAndSync} disabled={!slugInput.trim()}>
+                Synchroniser
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </HubPageLayout>
   );
 };
