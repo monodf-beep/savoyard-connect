@@ -42,14 +42,12 @@ const associationItems: NavItem[] = [
   { path: "/projects", labelKey: "nav.internalProjects", icon: FolderKanban, canBePublic: true },
   { path: "/admin", labelKey: "nav.taskManagement", icon: Kanban, gestionnaireOnly: true },
   { path: "/toolbox", labelKey: "nav.toolbox", icon: Briefcase },
-  // Network separator
   { path: "", labelKey: "nav.sections.network", icon: Globe, isSeparator: true },
   { path: "/annuaire", labelKey: "nav.directoryB2B", icon: Building2 },
   { path: "/experts", labelKey: "nav.experts", icon: GraduationCap },
   { path: "/mutualisation", labelKey: "nav.mutualisation", icon: Handshake },
   { path: "/projets-reseau", labelKey: "nav.projectsNetwork", icon: Rocket },
   { path: "/opportunites", labelKey: "nav.opportunities", icon: TrendingUp },
-  // Admin separator
   { path: "", labelKey: "nav.sections.administration", icon: Settings, isSeparator: true },
   { path: "/module-store", labelKey: "nav.moduleStore", icon: Package, adminOnly: true },
   { path: "/settings", labelKey: "nav.settings", icon: Settings, adminOnly: true },
@@ -76,35 +74,38 @@ export const HubSidebar = ({ collapsed, onToggle, isMobile = false }: HubSidebar
   const isCollapsed = isMobile ? false : (collapsed && !hovered);
 
   const filteredItems = associationItems.filter(item => {
-    if (item.isSeparator) return true; // keep separators, filter later
+    if (item.isSeparator) return true;
     if (item.adminOnly && !isOwnerOrAdmin && !isAdmin) return false;
     if (item.gestionnaireOnly && !isGestionnaire && !isAdmin) return false;
     if (!isModuleVisibleInSidebar(item.path)) return false;
     return true;
   });
 
-  // Remove separators that have no visible items after them
   const navigationItems = filteredItems.filter((item, index) => {
     if (!item.isSeparator) return true;
-    // Check if there's at least one non-separator item after this before next separator or end
     for (let i = index + 1; i < filteredItems.length; i++) {
       if (filteredItems[i].isSeparator) return false;
-      return true; // found a visible item
+      return true;
     }
     return false;
   });
 
+  // Fixed height for every nav row = h-9 (36px). Separators = h-6 (24px).
   const renderNavItem = (item: NavItem) => {
     if (item.isSeparator) {
+      // Fixed height separator — always 24px
       return (
-        <div key={item.labelKey} className={cn("transition-all duration-200", isCollapsed ? "py-1.5" : "pt-3 pb-1")}>
-          {isCollapsed ? (
-            <div className="mx-1.5 border-t border-border" />
-          ) : (
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground px-2">
-              {t(item.labelKey)}
-            </p>
-          )}
+        <div key={item.labelKey} className="h-6 flex items-center px-2.5 mt-1">
+          <div className={cn(
+            "border-t border-border transition-all duration-200",
+            isCollapsed ? "w-full" : "w-0 opacity-0"
+          )} />
+          <p className={cn(
+            "text-[10px] font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap overflow-hidden transition-all duration-200",
+            isCollapsed ? "w-0 opacity-0" : "opacity-100"
+          )}>
+            {t(item.labelKey)}
+          </p>
         </div>
       );
     }
@@ -112,19 +113,17 @@ export const HubSidebar = ({ collapsed, onToggle, isMobile = false }: HubSidebar
     const isActive = location.pathname === item.path;
     const Icon = item.icon;
     
+    // Fixed height link — always h-9
     const linkContent = (
       <Link
         to={item.disabled ? "#" : item.path}
         className={cn(
-          "flex items-center rounded-md text-sm font-medium transition-all duration-200",
+          "flex items-center h-9 rounded-md text-sm font-medium transition-all duration-200 px-2.5 gap-2.5",
           isActive && !item.disabled
             ? "bg-primary/10 text-primary"
             : item.disabled
             ? "text-muted-foreground/50 cursor-not-allowed"
             : "text-muted-foreground hover:bg-muted hover:text-foreground",
-          isCollapsed
-            ? "h-9 w-9 mx-auto justify-center"
-            : "gap-2.5 px-2.5 py-2"
         )}
         onClick={(e) => {
           if (item.disabled) e.preventDefault();
@@ -135,31 +134,32 @@ export const HubSidebar = ({ collapsed, onToggle, isMobile = false }: HubSidebar
         <span className={cn(
           "flex-1 text-[13px] whitespace-nowrap overflow-hidden transition-all duration-200",
           item.disabled && "opacity-50",
-          isCollapsed ? "w-0 opacity-0 hidden" : "w-auto opacity-100"
+          isCollapsed ? "w-0 opacity-0" : "opacity-100"
         )}>
           {t(item.labelKey)}
         </span>
-        {!isCollapsed && item.canBePublic && (
-          <Globe className="h-3 w-3 text-secondary opacity-60 flex-shrink-0" />
-        )}
+        <Globe className={cn(
+          "h-3 w-3 text-secondary flex-shrink-0 transition-all duration-200",
+          isCollapsed || !item.canBePublic ? "w-0 opacity-0" : "opacity-60"
+        )} />
       </Link>
     );
 
-    if (isCollapsed || item.disabled) {
-      return (
-        <Tooltip key={item.path + item.labelKey}>
-          <TooltipTrigger asChild>{linkContent}</TooltipTrigger>
-          <TooltipContent side="right" className="bg-popover border border-border shadow-lg">
-            <p className="flex items-center gap-2">
-              {item.disabled ? t(item.tooltip || "nav.comingSoon") : t(item.labelKey)}
-              {item.canBePublic && <Globe className="h-3 w-3 text-secondary" />}
-            </p>
-          </TooltipContent>
-        </Tooltip>
-      );
-    }
+    const wrappedLink = isCollapsed || item.disabled ? (
+      <Tooltip key={item.path + item.labelKey}>
+        <TooltipTrigger asChild>{linkContent}</TooltipTrigger>
+        <TooltipContent side="right" className="bg-popover border border-border shadow-lg">
+          <p className="flex items-center gap-2">
+            {item.disabled ? t(item.tooltip || "nav.comingSoon") : t(item.labelKey)}
+            {item.canBePublic && <Globe className="h-3 w-3 text-secondary" />}
+          </p>
+        </TooltipContent>
+      </Tooltip>
+    ) : (
+      <div key={item.path + item.labelKey}>{linkContent}</div>
+    );
 
-    return <div key={item.path + item.labelKey}>{linkContent}</div>;
+    return wrappedLink;
   };
 
   if (isMobile) {
@@ -179,7 +179,7 @@ export const HubSidebar = ({ collapsed, onToggle, isMobile = false }: HubSidebar
   return (
     <aside 
       className={cn(
-        "fixed left-0 top-16 z-40 h-[calc(100vh-4rem)] border-r border-border bg-card transition-[width] duration-200 ease-in-out",
+        "fixed left-0 top-16 z-40 h-[calc(100vh-4rem)] border-r border-border bg-card transition-[width] duration-200 ease-in-out overflow-hidden",
         "border-l-4 border-l-secondary",
         isCollapsed ? "w-14" : "w-56",
         hovered && collapsed && "shadow-xl"
@@ -187,85 +187,77 @@ export const HubSidebar = ({ collapsed, onToggle, isMobile = false }: HubSidebar
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      <div className="flex h-full flex-col overflow-hidden">
-        {/* Association header - always rendered */}
-        <div className={cn("border-b border-border bg-secondary/5 transition-all duration-200", isCollapsed ? "px-0 py-2.5" : "px-2.5 py-2")}>
-          <div className={cn("flex items-center overflow-hidden", isCollapsed ? "justify-center" : "gap-2")}>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <div className={cn("flex items-center justify-center flex-shrink-0", isCollapsed && "h-9 w-9 mx-auto")}>
-                  <Building2 className="h-4 w-4 text-secondary" />
-                </div>
-              </TooltipTrigger>
-              {isCollapsed && (
-                <TooltipContent side="right" className="bg-popover border border-border shadow-lg">
-                  <p>{currentAssociation?.name || t("nav.sections.myAssociation")}</p>
-                </TooltipContent>
-              )}
-            </Tooltip>
-            <div className={cn(
-              "overflow-hidden whitespace-nowrap transition-all duration-200",
-              isCollapsed ? "w-0 opacity-0 hidden" : "w-auto opacity-100"
-            )}>
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-secondary">
-                {t("nav.sections.myAssociation")}
+      <div className="flex h-full flex-col">
+        {/* Association header — fixed height h-12 */}
+        <div className="h-12 flex items-center gap-2.5 px-2.5 border-b border-border bg-secondary/5 overflow-hidden">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="flex items-center justify-center flex-shrink-0 h-9 w-9 rounded-md">
+                <Building2 className="h-4 w-4 text-secondary" />
+              </div>
+            </TooltipTrigger>
+            {isCollapsed && (
+              <TooltipContent side="right" className="bg-popover border border-border shadow-lg">
+                <p>{currentAssociation?.name || t("nav.sections.myAssociation")}</p>
+              </TooltipContent>
+            )}
+          </Tooltip>
+          <div className={cn(
+            "min-w-0 overflow-hidden transition-all duration-200",
+            isCollapsed ? "w-0 opacity-0" : "flex-1 opacity-100"
+          )}>
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-secondary whitespace-nowrap">
+              {t("nav.sections.myAssociation")}
+            </p>
+            {currentAssociation && (
+              <p className="text-sm font-medium text-foreground truncate leading-tight">
+                {currentAssociation.name}
               </p>
-              {currentAssociation && (
-                <p className="text-sm font-medium text-foreground truncate">
-                  {currentAssociation.name}
-                </p>
-              )}
-            </div>
+            )}
           </div>
         </div>
 
-        <nav className={cn("flex-1 overflow-y-auto py-2 transition-all duration-200", isCollapsed ? "px-0.5" : "px-2")}>
-          <div className={cn(isCollapsed ? "flex flex-col items-center gap-0.5" : "space-y-0.5")}>{navigationItems.map(renderNavItem)}</div>
+        {/* Nav items */}
+        <nav className="flex-1 overflow-y-auto px-1.5 py-1.5">
+          <div className="space-y-0.5">{navigationItems.map(renderNavItem)}</div>
         </nav>
 
-        {/* Public indicator - always rendered */}
-        <div className={cn("border-t border-border transition-all duration-200", isCollapsed ? "px-0 py-2" : "px-2.5 py-1.5")}>
-          <div className={cn("flex items-center overflow-hidden", isCollapsed ? "justify-center" : "gap-1.5")}>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <div className={cn("flex items-center justify-center flex-shrink-0", isCollapsed && "h-9 w-9 mx-auto")}>
-                  <Globe className="h-3.5 w-3.5 text-secondary" />
-                </div>
-              </TooltipTrigger>
-              {isCollapsed && (
-                <TooltipContent side="right" className="bg-popover border border-border shadow-lg">
-                  <p>{t("nav.publicIndicator")}</p>
-                </TooltipContent>
-              )}
-            </Tooltip>
-            <span className={cn(
-              "text-[10px] text-muted-foreground whitespace-nowrap overflow-hidden transition-all duration-200",
-              isCollapsed ? "w-0 opacity-0 hidden" : "w-auto opacity-100"
-            )}>
-              {t("nav.publicIndicator")}
-            </span>
-          </div>
+        {/* Public indicator — fixed height h-8 */}
+        <div className="h-8 flex items-center gap-2 px-2.5 border-t border-border overflow-hidden">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="flex items-center justify-center flex-shrink-0">
+                <Globe className="h-3.5 w-3.5 text-secondary" />
+              </div>
+            </TooltipTrigger>
+            {isCollapsed && (
+              <TooltipContent side="right" className="bg-popover border border-border shadow-lg">
+                <p>{t("nav.publicIndicator")}</p>
+              </TooltipContent>
+            )}
+          </Tooltip>
+          <span className={cn(
+            "text-[10px] text-muted-foreground whitespace-nowrap overflow-hidden transition-all duration-200",
+            isCollapsed ? "w-0 opacity-0" : "opacity-100"
+          )}>
+            {t("nav.publicIndicator")}
+          </span>
         </div>
 
-        {/* Collapse button - always rendered */}
-        <div className="border-t border-border p-2">
+        {/* Collapse button — fixed height h-10 */}
+        <div className="h-10 flex items-center px-1.5 border-t border-border">
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
                 variant="ghost"
                 size="sm"
-                className={cn(
-                  "text-muted-foreground hover:text-foreground transition-all duration-200",
-                  isCollapsed
-                    ? "h-9 w-9 mx-auto justify-center p-0"
-                    : "h-7 w-full justify-start gap-2 px-2"
-                )}
+                className="h-8 w-full justify-start gap-2 px-2.5 text-muted-foreground hover:text-foreground overflow-hidden"
                 onClick={onToggle}
               >
-                {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+                {isCollapsed ? <ChevronRight className="h-4 w-4 flex-shrink-0" /> : <ChevronLeft className="h-4 w-4 flex-shrink-0" />}
                 <span className={cn(
                   "text-xs whitespace-nowrap overflow-hidden transition-all duration-200",
-                  isCollapsed ? "w-0 opacity-0 hidden" : "w-auto opacity-100"
+                  isCollapsed ? "w-0 opacity-0" : "opacity-100"
                 )}>
                   {t("common.collapse")}
                 </span>
