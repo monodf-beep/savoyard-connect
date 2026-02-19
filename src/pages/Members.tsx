@@ -2,6 +2,8 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useAssociation } from "@/hooks/useAssociation";
+import { useAuth } from "@/hooks/useAuth";
 import { HubPageLayout } from "@/components/hub/HubPageLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -19,7 +21,7 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { 
-  Search, Download, CheckCircle2, XCircle, Clock, Filter, RefreshCw, Loader2,
+  Search, Download, CheckCircle2, XCircle, Clock, Filter, RefreshCw, Loader2, Shield, ShieldCheck,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -33,6 +35,13 @@ interface HelloAssoMember {
   membership_type: string | null;
   amount: number | null;
   is_hidden: boolean | null;
+}
+
+interface FederationMember {
+  id: string;
+  email: string;
+  status: string;
+  helloasso_member_id: string | null;
 }
 
 type MemberStatus = "active" | "expiring" | "expired";
@@ -77,11 +86,34 @@ function exportCSV(members: (HelloAssoMember & { status: MemberStatus })[]) {
 const Members = () => {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
+  const { currentAssociation } = useAssociation();
+  const { isAdmin } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [yearFilter, setYearFilter] = useState("all");
   const [slugDialogOpen, setSlugDialogOpen] = useState(false);
-  const [slugInput, setSlugInput] = useState(() => localStorage.getItem("helloasso_slug") || "");
+  const [slugInput, setSlugInput] = useState("");
+
+  const associationId = currentAssociation?.id;
+
+  // Fetch helloasso_slug from association
+  const { data: assoData } = useQuery({
+    queryKey: ["association-details", associationId],
+    queryFn: async () => {
+      if (!associationId) return null;
+      const { data, error } = await supabase
+        .from("associations")
+        .select("*")
+        .eq("id", associationId)
+        .single();
+      if (error) throw error;
+      return data as any;
+    },
+    enabled: !!associationId,
+  });
+
+  const helloassoSlug = assoData?.helloasso_slug as string | null;
+  const isFederationMember = assoData?.is_federation_member as boolean | false;
 
   // Fetch members from Supabase
   const { data: rawMembers = [], isLoading } = useQuery({
@@ -95,6 +127,29 @@ const Members = () => {
       return data as HelloAssoMember[];
     },
   });
+
+  // Fetch federation_members for this association
+  const { data: federationMembers = [] } = useQuery({
+    queryKey: ["federation-members", associationId],
+    queryFn: async () => {
+      if (!associationId) return [];
+      const { data, error } = await (supabase as any)
+        .from("federation_members")
+        .select("id, email, status, helloasso_member_id")
+        .eq("association_id", associationId);
+      if (error) throw error;
+      return (data || []) as FederationMember[];
+    },
+    enabled: !!associationId,
+  });
+
+  // Build a lookup: helloasso_member_id -> federation status
+  const fedStatusByMemberId = new Map<string, string>();
+  for (const fm of federationMembers) {
+    if (fm.helloasso_member_id) {
+      fedStatusByMemberId.set(fm.helloasso_member_id, fm.status);
+    }
+  }
 
   // Enrich with computed status
   const members = rawMembers
@@ -121,6 +176,7 @@ const Members = () => {
   // Stats
   const activeCount = members.filter(m => m.status === "active").length;
   const expiringCount = members.filter(m => m.status === "expiring").length;
+  const fedActiveCount = federationMembers.filter(fm => fm.status === "active").length;
 
   // Sync mutation
   const syncMutation = useMutation({
@@ -141,20 +197,60 @@ const Members = () => {
     },
   });
 
+  // Save slug to DB mutation
+  const saveSlugMutation = useMutation({
+    mutationFn: async (slug: string) => {
+      if (!associationId) throw new Error("Aucune association sélectionnée");
+      const { error } = await supabase
+        .from("associations")
+        .update({ helloasso_slug: slug } as any)
+        .eq("id", associationId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["association-details", associationId] });
+    },
+  });
+
+  // Toggle federation membership (admin only)
+  const toggleFederationMutation = useMutation({
+    mutationFn: async () => {
+      if (!associationId) throw new Error("Aucune association sélectionnée");
+      const newValue = !isFederationMember;
+      const { error } = await supabase
+        .from("associations")
+        .update({
+          is_federation_member: newValue,
+          federation_joined_at: newValue ? new Date().toISOString() : null,
+        } as any)
+        .eq("id", associationId);
+      if (error) throw error;
+      return newValue;
+    },
+    onSuccess: (newValue) => {
+      toast.success(newValue ? "Association conventionnée avec la fédération" : "Convention retirée");
+      queryClient.invalidateQueries({ queryKey: ["association-details", associationId] });
+    },
+    onError: (error: any) => {
+      toast.error(`Erreur : ${error.message}`);
+    },
+  });
+
   const handleSync = () => {
-    const savedSlug = localStorage.getItem("helloasso_slug");
-    if (savedSlug) {
-      syncMutation.mutate(savedSlug);
+    if (helloassoSlug) {
+      syncMutation.mutate(helloassoSlug);
     } else {
+      setSlugInput("");
       setSlugDialogOpen(true);
     }
   };
 
   const confirmSlugAndSync = () => {
     if (!slugInput.trim()) return;
-    localStorage.setItem("helloasso_slug", slugInput.trim());
+    const slug = slugInput.trim();
+    saveSlugMutation.mutate(slug);
     setSlugDialogOpen(false);
-    syncMutation.mutate(slugInput.trim());
+    syncMutation.mutate(slug);
   };
 
   const getStatusBadge = (status: MemberStatus) => {
@@ -183,6 +279,25 @@ const Members = () => {
     }
   };
 
+  const getFederationBadge = (memberId: string) => {
+    const fedStatus = fedStatusByMemberId.get(memberId);
+    if (!fedStatus) return <span className="text-muted-foreground text-xs">—</span>;
+    if (fedStatus === "active") {
+      return (
+        <Badge className="bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">
+          <ShieldCheck className="h-3 w-3 mr-1" />
+          Actif
+        </Badge>
+      );
+    }
+    return (
+      <Badge variant="outline" className="text-muted-foreground">
+        <Shield className="h-3 w-3 mr-1" />
+        {fedStatus === "pending" ? "En attente" : fedStatus}
+      </Badge>
+    );
+  };
+
   return (
     <HubPageLayout breadcrumb={t("nav.membersSubscriptions")} loading={isLoading}>
       {/* Header */}
@@ -194,7 +309,23 @@ const Members = () => {
             {expiringCount > 0 && ` — ${expiringCount} expirent ${t("common.thisMonth")}`}
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
+          {/* Federation convention toggle - admin only */}
+          {isAdmin && (
+            <Button
+              variant={isFederationMember ? "default" : "outline"}
+              size="sm"
+              onClick={() => toggleFederationMutation.mutate()}
+              disabled={toggleFederationMutation.isPending}
+            >
+              {toggleFederationMutation.isPending ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <ShieldCheck className="h-4 w-4 mr-2" />
+              )}
+              {isFederationMember ? "Conventionnée" : "Non conventionnée"}
+            </Button>
+          )}
           <Button
             variant="outline"
             size="sm"
@@ -219,6 +350,24 @@ const Members = () => {
           </Button>
         </div>
       </div>
+
+      {/* Federation info card */}
+      {isFederationMember && (
+        <Card className="mb-6 border-blue-200 dark:border-blue-800 bg-blue-50/50 dark:bg-blue-950/20">
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-3">
+              <ShieldCheck className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+              <div>
+                <p className="font-medium text-sm">Association conventionnée avec la fédération</p>
+                <p className="text-xs text-muted-foreground">
+                  {fedActiveCount} adhérent{fedActiveCount > 1 ? "s" : ""} ont activé leur adhésion fédération
+                  {assoData?.federation_joined_at && ` — Convention depuis le ${formatDate(assoData.federation_joined_at)}`}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Filters */}
       <Card className="mb-6">
@@ -275,6 +424,7 @@ const Members = () => {
                 <TableHead>{t("members.table.name")}</TableHead>
                 <TableHead>{t("members.table.type")}</TableHead>
                 <TableHead>{t("members.table.status")}</TableHead>
+                {isFederationMember && <TableHead>Fédération</TableHead>}
                 <TableHead>{t("members.table.endDate")}</TableHead>
               </TableRow>
             </TableHeader>
@@ -302,13 +452,16 @@ const Members = () => {
                       <Badge variant="secondary">{member.membership_type || "Adhésion"}</Badge>
                     </TableCell>
                     <TableCell>{getStatusBadge(member.status)}</TableCell>
+                    {isFederationMember && (
+                      <TableCell>{getFederationBadge(member.id)}</TableCell>
+                    )}
                     <TableCell>{formatDate(expirationDate)}</TableCell>
                   </TableRow>
                 );
               })}
               {filteredMembers.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
+                  <TableCell colSpan={isFederationMember ? 5 : 4} className="text-center py-8 text-muted-foreground">
                     {members.length === 0
                       ? "Synchronisez HelloAsso pour importer vos membres"
                       : t("members.noResults")}
