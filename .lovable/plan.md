@@ -1,130 +1,100 @@
 
 
-# Diagnostic critique : Annuaire B2B
+# Scraping des associations culturelles pour l'annuaire
 
-## Problemes identifies
+## Objectif
 
-### 1. Le nom "B2B" est incomprehensible
+Scraper les associations culturelles de 5 zones et les injecter dans la table `associations` de Supabase pour peupler l'annuaire.
 
-Les associations ne sont pas des entreprises. "B2B" (Business to Business) est du jargon startup qui n'a aucun sens pour un president d'association de 55 ans en Savoie. Le terme apparait 15+ fois dans les fichiers de traduction FR et IT.
+## Sources identifiees
 
-**Action** : Renommer partout en "Annuaire Associations" / "Annuario Associazioni".
+| Source | Zone | Format | Methode |
+|---|---|---|---|
+| **data.gouv.fr (RNA)** | Savoie (73), Haute-Savoie (74), Alpes-Maritimes (06/Nice) | CSV telechargeables | Telecharger le CSV, filtrer par objet "culture" et departement |
+| **net1901.org** | Savoie (73), Haute-Savoie (74), Nice (06) | HTML pagine | Firecrawl scrape des pages de listing |
+| **RUNTS (servizicivili.gov.it)** | Piemonte, Valle d'Aosta | Registre national italien (API/HTML) | Firecrawl search + scrape |
+| **regione.piemonte.it** | Piemonte | PDF du registre des personnes morales | Firecrawl scrape |
 
-### 2. Deux sidebars = usine a gaz
+## Contrainte technique : `owner_id`
 
-Sur desktop, l'utilisateur voit :
-- La **sidebar principale** de l'app (HubSidebar, ~250px)
-- La **sidebar filtres** de l'annuaire (DirectoryFilters, 320px dans un `aside`)
+La table `associations` a un champ `owner_id` NOT NULL (uuid, reference a auth.users). Les associations scrapees n'ont pas de proprietaire. 
 
-Sur un ecran 1366px, il reste ~800px pour le contenu. C'est etouffant et ca donne une impression de complexite.
+**Solution** : Creer un utilisateur "systeme" dans auth.users via l'interface Supabase, ou utiliser votre propre user_id comme owner par defaut. Les associations scrapees seront marquees `is_public = true` et `is_active = true` mais sans owner fonctionnel. Alternative : rendre `owner_id` nullable par migration.
 
-**Action** : Supprimer la sidebar filtres. Mettre la recherche et les filtres silos en ligne au-dessus de la carte.
+## Architecture technique
 
-### 3. Toggle Carte/Grille : deux vues pour rien (encore)
+### 1. Edge Function `scrape-associations`
 
-Meme probleme que les chaines de valeur : un toggle entre carte Mapbox et grille de cartes. La carte EST la valeur differenciante de l'annuaire (visualiser les associations alpines par geographie). La grille de cartes est une liste LinkedIn-like generique qui n'apporte rien de plus.
+Une seule edge function qui orchestre le scraping multi-sources :
 
-**Action** : Supprimer le mode grille. Garder uniquement la carte.
+- **Etape 1** : Firecrawl Search pour trouver des associations culturelles par zone
+- **Etape 2** : Firecrawl Scrape pour extraire les details de chaque association trouvee
+- **Etape 3** : OpenAI pour normaliser/structurer les donnees extraites (nom, ville, description, coordonnees GPS)
+- **Etape 4** : Upsert dans la table `associations` avec deduplication par nom + ville
 
-### 4. "Ignorer les frontieres" contredit la mission
+### 2. Strategie par source
 
-Le switch "Ignorer les frontieres" est l'inverse exact de ce que le projet veut faire. La mission est de **forcer les interactions transfrontalieres**. Par defaut, les zones sont filtrees par pays -- donc l'utilisateur voit SOIT la France SOIT l'Italie. Il faut activer manuellement un toggle pour voir les deux.
+**data.gouv.fr (RNA)** :
+- Le RNA est un fichier CSV de ~4M lignes. Trop gros pour Firecrawl.
+- Mieux : utiliser l'API RNA de data.gouv.fr qui permet de filtrer par departement et objet social.
+- URL : `https://tabular-api.data.gouv.fr/api/resources/...` ou bien scraper les pages de resultats filtrees.
+- Alternative pragmatique : utiliser Firecrawl Search avec query `"association culturelle Savoie"` etc.
 
-C'est l'inverse de ce qu'il faut : par defaut, **tout doit etre visible**. Les frontieres doivent etre ignorees par conception, pas par option.
+**net1901.org** :
+- URLs structurees : `https://www.net1901.org/associations.html?go=1&id_theme=150&num_dpt=73` (theme 150 = culture)
+- Scraper page par page avec Firecrawl, extraire nom + ville + objet
+- Pagination a gerer
 
-**Action** : Supprimer le toggle "Ignorer les frontieres". Supprimer les checkboxes de zones. Par defaut, toutes les associations de toutes les zones sont affichees. Le filtre se fait uniquement par recherche textuelle et par silo (domaine d'activite).
+**Italie (RUNTS + Piemonte)** :
+- Le Registro Unico Nazionale del Terzo Settore (RUNTS) remplace les registres regionaux
+- Consultable sur servizicivili.gov.it mais acces complexe
+- Alternative : Firecrawl Search `"associazione culturale Valle d'Aosta"` et `"associazione culturale Piemonte"`
 
-### 5. Les messages vont dans le vide
+### 3. Schema de donnees inserees
 
-Le formulaire de contact envoie des messages dans la table `directory_contacts`. Mais il n'existe **aucune interface pour lire ces messages**. Pas d'inbox, pas de notification, rien. L'utilisateur envoie un message et pense que ca fonctionne, mais personne ne le verra jamais.
-
-**Action pour maintenant** : Remplacer le formulaire de messagerie par un simple lien vers le profil public de l'association (qui affiche deja email, LinkedIn, Instagram, site web). C'est plus honnete et plus direct. Le systeme de messagerie interne pourra etre ajoute plus tard quand une vraie inbox sera construite.
-
-### 6. La modale de contact duplique le profil
-
-Quand on clique sur un marqueur de la carte, une modale (`AssociationModal`) s'ouvre avec : nom, description, badges zones, liens sociaux, formulaire de contact. C'est exactement le meme contenu que la page profil (`/annuaire/:id`). Deux chemins pour la meme info.
-
-**Action** : Supprimer `AssociationModal`. Quand on clique un marqueur, on navigue directement vers `/annuaire/:id`.
-
-### 7. `cover_image_url` n'est pas requete
-
-Le hook `useDirectory` selectionne : `id, name, description, logo_url, primary_zone, secondary_zone, silo, city, latitude, longitude, linkedin_url, instagram_url, created_at`. Le champ `cover_image_url` n'est PAS dans le SELECT. Mais `AssociationCard` essaie de l'afficher. Il sera toujours `undefined`. C'est du code mort visuel.
-
-**Action** : Comme on supprime la vue grille (et donc AssociationCard), ce probleme disparait naturellement.
-
-### 8. Rien ne force l'interaction transfrontaliere
-
-L'annuaire est **passif** : on browse, on filtre, eventuellement on regarde un profil. Il n'y a aucun mecanisme pour pousser les associations a se connecter entre elles. Pas de suggestions, pas de mise en relation, pas de "cette association en Piemont a les memes activites que vous en Savoie".
-
-**Action** : Ajouter une banniere simple "Associations proches de vous" sous la carte, qui montre 3-4 associations d'un **pays different** mais du **meme silo** que l'association de l'utilisateur connecte. C'est un "nudge" vers la cooperation transfrontaliere, sans complexite.
-
----
-
-## Solution : carte plein ecran + filtres inline + suggestions transfrontalieres
-
-### Nouvelle architecture de la page
+Pour chaque association scrapee :
 
 ```text
-+------------------------------------------------------------+
-| Annuaire Associations                                       |
-| Trouvez des associations partenaires dans les Alpes          |
-+------------------------------------------------------------+
-| [Recherche...]  [Sport] [Culture] [Terroir] [Autre] [Tous] |
-|                                            12 associations  |
-+------------------------------------------------------------+
-|                                                              |
-|            CARTE MAPBOX PLEIN ECRAN                          |
-|     (marqueurs colores par silo, popups au clic,             |
-|      clic sur popup -> /annuaire/:id)                        |
-|                                                              |
-+------------------------------------------------------------+
-| Associations suggerees pour vous          (si connecte)      |
-| [Card 1 - Piemont]  [Card 2 - Savoie]  [Card 3 - Aoste]   |
-+------------------------------------------------------------+
+name:          Nom de l'association
+description:   Objet social / description
+silo:          'culture'
+primary_zone:  'savoie' | 'vallee-aoste' | 'piemont' | 'alpes-maritimes'
+city:          Ville du siege
+latitude:      Coordonnees GPS (geocodees via Mapbox si absentes)
+longitude:     Coordonnees GPS
+is_public:     true
+is_active:     true
+owner_id:      ID admin systeme (a definir)
 ```
 
-### Ce qu'on supprime
+### 4. Interface admin pour lancer le scraping
 
-| Fichier / Element | Raison |
-|---|---|
-| `DirectoryFilters.tsx` | Remplace par filtres inline (recherche + badges silo) directement dans la page |
-| `AssociationModal.tsx` | Duplique le profil, remplace par navigation vers `/annuaire/:id` |
-| `AssociationCard.tsx` | Plus de vue grille, les cartes ne servent que pour les suggestions (composant simplifie inline) |
-| Toggle Carte/Grille | Une seule vue : la carte |
-| Toggle "Ignorer les frontieres" | Supprime -- toutes les associations visibles par defaut |
-| Checkboxes de zones | Supprime -- pas de filtrage par frontiere |
-| Formulaire de contact (dans AssociationModal + AssociationProfile) | Remplace par liens directs (email, LinkedIn, site web) tant qu'il n'y a pas d'inbox |
-
-### Ce qu'on garde
-
-- `DirectoryMap.tsx` : le composant carte Mapbox (intact, juste on le rend pleine largeur)
-- `AssociationProfile.tsx` : la page profil `/annuaire/:id` (on retire juste le formulaire de contact, remplace par liens directs)
-- `useDirectory.ts` : le hook de requete (on simplifie en supprimant le parametre `ignoreBorders` et `zones`)
-- `types/directory.ts` : les types et constantes (on garde `SILO_INFO`, on garde `GEOGRAPHIC_ZONES` pour les couleurs de badges sur le profil)
-
-### Ce qu'on ajoute
-
-**Suggestions transfrontalieres** : un bloc en bas de page qui, pour un utilisateur connecte, affiche 3-4 associations :
-- Du **meme silo** que son association
-- D'un **pays different** (si l'utilisateur est FR, on montre des IT et vice-versa)
-- Presentees comme des cartes compactes (logo + nom + ville + silo badge)
-- Avec un lien "Voir le profil"
-
-C'est la fonctionnalite qui repond directement a l'objectif "forcer les interactions entre Piemont et Savoie".
+Un bouton dans la page Annuaire (visible uniquement pour les admins) qui :
+- Permet de choisir la zone et la source
+- Lance l'edge function
+- Affiche la progression et le nombre d'associations importees
 
 ## Fichiers concernes
 
 | Fichier | Action |
 |---|---|
-| `src/pages/DirectoryHub.tsx` | Refonte : filtres inline, carte pleine largeur, suggestions transfrontalieres en bas |
-| `src/components/directory/DirectoryFilters.tsx` | Supprimer (remplace par filtres inline dans la page) |
-| `src/components/directory/AssociationModal.tsx` | Supprimer (navigation directe vers profil) |
-| `src/components/directory/AssociationCard.tsx` | Supprimer (plus de vue grille) |
-| `src/components/directory/DirectoryMap.tsx` | Simplifier : popups avec bouton "Voir le profil" au lieu de `onMarkerClick` callback |
-| `src/hooks/useDirectory.ts` | Simplifier : supprimer `ignoreBorders` et `zones`, garder `silo` et `searchQuery` |
-| `src/types/directory.ts` | Inchange |
-| `src/pages/AssociationProfile.tsx` | Retirer le formulaire de contact, afficher les liens directs (email, site, reseaux) a la place |
-| `src/i18n/locales/fr.ts` | Renommer "Annuaire B2B" en "Annuaire Associations" partout |
-| `src/i18n/locales/it.ts` | Renommer "Annuario B2B" en "Annuario Associazioni" partout |
-| `src/components/hub/HubSidebar.tsx` | Mettre a jour le label de la sidebar |
+| `supabase/functions/scrape-associations/index.ts` | Creer : edge function de scraping multi-sources |
+| `supabase/config.toml` | Ajouter la config de la nouvelle function |
+| `src/pages/DirectoryHub.tsx` | Ajouter un bouton "Importer des associations" pour les admins |
+| `src/components/directory/ImportAssociationsDialog.tsx` | Creer : dialog d'import avec choix de zone/source |
+| Migration SQL (optionnel) | Rendre `owner_id` nullable ou creer un owner systeme |
+
+## Prerequis
+
+- **FIRECRAWL_API_KEY** : deja configure
+- **OPENAI_API_KEY** : deja configure (pour normalisation des donnees)
+- **MAPBOX_PUBLIC_TOKEN** : deja configure (pour geocoding des villes sans coordonnees)
+
+## Limites et risques
+
+- net1901.org peut bloquer le scraping (rate limiting)
+- Les registres italiens sont souvent en PDF ou derriere des formulaires complexes
+- Le geocoding des villes italiennes peut etre imprecis
+- Le volume peut etre important (des centaines d'associations culturelles par zone)
+- **Recommandation** : commencer par Firecrawl Search (le plus simple), puis affiner avec les sources specifiques si les resultats sont insuffisants
 
