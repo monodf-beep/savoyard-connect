@@ -97,14 +97,14 @@ export const HubSidebar = ({ collapsed, onToggle, isMobile = false }: HubSidebar
   const renderNavItem = (item: NavItem) => {
     if (item.isSeparator) {
       return (
-        <div key={item.labelKey} className={cn("pt-3 pb-1", isCollapsed && "pt-2 pb-0.5")}>
-          {isCollapsed ? (
-            <div className="mx-2 border-t border-border" />
-          ) : (
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground px-2">
-              {t(item.labelKey)}
-            </p>
-          )}
+        <div key={item.labelKey} className="pt-3 pb-1 transition-all duration-200">
+          <div className={cn("mx-2 border-t border-border transition-opacity duration-200", !isCollapsed && "opacity-0 h-0 overflow-hidden")} />
+          <p className={cn(
+            "text-[10px] font-semibold uppercase tracking-wider text-muted-foreground px-2 transition-all duration-200 whitespace-nowrap overflow-hidden",
+            isCollapsed ? "opacity-0 max-h-0" : "opacity-100 max-h-6"
+          )}>
+            {t(item.labelKey)}
+          </p>
         </div>
       );
     }
@@ -116,13 +116,13 @@ export const HubSidebar = ({ collapsed, onToggle, isMobile = false }: HubSidebar
       <Link
         to={item.disabled ? "#" : item.path}
         className={cn(
-          "flex items-center gap-2.5 rounded-md px-2.5 py-2 text-sm font-medium transition-all",
+          "flex items-center gap-2.5 rounded-md px-2.5 py-2 text-sm font-medium transition-all duration-200",
           isActive && !item.disabled
             ? "bg-primary/10 text-primary"
             : item.disabled
             ? "text-muted-foreground/50 cursor-not-allowed"
             : "text-muted-foreground hover:bg-muted hover:text-foreground",
-          isCollapsed && "justify-center px-2 py-2"
+          isCollapsed && "justify-center px-2"
         )}
         onClick={(e) => {
           if (item.disabled) e.preventDefault();
@@ -130,13 +130,18 @@ export const HubSidebar = ({ collapsed, onToggle, isMobile = false }: HubSidebar
         }}
       >
         <Icon className={cn("h-4 w-4 flex-shrink-0", item.disabled && "opacity-50")} />
-        {!isCollapsed && (
-          <span className={cn("flex-1 text-[13px]", item.disabled && "opacity-50")}>
-            {t(item.labelKey)}
-          </span>
-        )}
-        {!isCollapsed && item.canBePublic && (
-          <Globe className="h-3 w-3 text-secondary opacity-60" />
+        <span className={cn(
+          "flex-1 text-[13px] whitespace-nowrap overflow-hidden transition-all duration-200",
+          item.disabled && "opacity-50",
+          isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100"
+        )}>
+          {t(item.labelKey)}
+        </span>
+        {item.canBePublic && (
+          <Globe className={cn(
+            "h-3 w-3 text-secondary transition-all duration-200 flex-shrink-0",
+            isCollapsed ? "opacity-0 w-0" : "opacity-60"
+          )} />
         )}
       </Link>
     );
@@ -175,7 +180,7 @@ export const HubSidebar = ({ collapsed, onToggle, isMobile = false }: HubSidebar
   return (
     <aside 
       className={cn(
-        "fixed left-0 top-16 z-40 h-[calc(100vh-4rem)] border-r border-border bg-card transition-all duration-200",
+        "fixed left-0 top-16 z-40 h-[calc(100vh-4rem)] border-r border-border bg-card transition-[width] duration-200 ease-in-out",
         "border-l-4 border-l-secondary",
         isCollapsed ? "w-14" : "w-56",
         hovered && collapsed && "shadow-xl"
@@ -183,30 +188,34 @@ export const HubSidebar = ({ collapsed, onToggle, isMobile = false }: HubSidebar
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      <div className="flex h-full flex-col">
-        <div className={cn("border-b border-border bg-secondary/5 transition-all duration-200", isCollapsed ? "px-2 py-2" : "px-3 py-2.5")}>
-          {isCollapsed ? (
+      <div className="flex h-full flex-col overflow-hidden">
+        {/* Association header - always rendered */}
+        <div className="border-b border-border bg-secondary/5 px-2.5 py-2 transition-all duration-200">
+          <div className="flex items-center gap-2 overflow-hidden">
+            <Building2 className="h-4 w-4 text-secondary flex-shrink-0" />
+            <div className={cn(
+              "overflow-hidden whitespace-nowrap transition-all duration-200",
+              isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100"
+            )}>
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-secondary">
+                {t("nav.sections.myAssociation")}
+              </p>
+              {currentAssociation && (
+                <p className="text-sm font-medium text-foreground truncate">
+                  {currentAssociation.name}
+                </p>
+              )}
+            </div>
+          </div>
+          {isCollapsed && (
             <Tooltip>
               <TooltipTrigger asChild>
-                <div className="flex justify-center">
-                  <Building2 className="h-4 w-4 text-secondary" />
-                </div>
+                <div className="absolute inset-0" />
               </TooltipTrigger>
               <TooltipContent side="right" className="bg-popover border border-border shadow-lg">
                 <p>{currentAssociation?.name || t("nav.sections.myAssociation")}</p>
               </TooltipContent>
             </Tooltip>
-          ) : (
-            <>
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-secondary">
-                {t("nav.sections.myAssociation")}
-              </p>
-              {currentAssociation && (
-                <p className="text-sm font-medium text-foreground truncate mt-0.5">
-                  {currentAssociation.name}
-                </p>
-              )}
-            </>
           )}
         </div>
 
@@ -214,44 +223,48 @@ export const HubSidebar = ({ collapsed, onToggle, isMobile = false }: HubSidebar
           <div className="space-y-0.5">{navigationItems.map(renderNavItem)}</div>
         </nav>
 
-        <div className={cn("border-t border-border transition-all duration-200", isCollapsed ? "px-2 py-1.5 flex justify-center" : "px-3 py-1.5")}>
-          {isCollapsed ? (
+        {/* Public indicator - always rendered */}
+        <div className="border-t border-border px-2.5 py-1.5 transition-all duration-200">
+          <div className="flex items-center gap-1.5 overflow-hidden">
+            <Globe className="h-3 w-3 text-secondary flex-shrink-0" />
+            <span className={cn(
+              "text-[10px] text-muted-foreground whitespace-nowrap overflow-hidden transition-all duration-200",
+              isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100"
+            )}>
+              {t("nav.publicIndicator")}
+            </span>
+          </div>
+          {isCollapsed && (
             <Tooltip>
               <TooltipTrigger asChild>
-                <Globe className="h-3 w-3 text-secondary" />
+                <div className="absolute inset-0" />
               </TooltipTrigger>
               <TooltipContent side="right" className="bg-popover border border-border shadow-lg">
                 <p>{t("nav.publicIndicator")}</p>
               </TooltipContent>
             </Tooltip>
-          ) : (
-            <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
-              <Globe className="h-2.5 w-2.5 text-secondary" />
-              <span>{t("nav.publicIndicator")}</span>
-            </div>
           )}
         </div>
 
+        {/* Collapse button - always rendered */}
         <div className="border-t border-border p-2">
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
                 variant="ghost"
                 size="sm"
-                className={cn(
-                  "h-7 text-muted-foreground hover:text-foreground",
-                  isCollapsed ? "w-full justify-center" : "w-full justify-start gap-2 px-2"
-                )}
+                className="h-7 w-full text-muted-foreground hover:text-foreground justify-start gap-2 px-2"
                 onClick={onToggle}
               >
-                {isCollapsed ? (
-                  <ChevronRight className="h-4 w-4" />
-                ) : (
-                  <>
-                    <ChevronLeft className="h-4 w-4" />
-                    <span className="text-xs">{t("common.collapse")}</span>
-                  </>
-                )}
+                <span className="flex-shrink-0">
+                  {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+                </span>
+                <span className={cn(
+                  "text-xs whitespace-nowrap overflow-hidden transition-all duration-200",
+                  isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100"
+                )}>
+                  {t("common.collapse")}
+                </span>
               </Button>
             </TooltipTrigger>
             {isCollapsed && (
