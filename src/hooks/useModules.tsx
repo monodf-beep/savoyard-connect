@@ -27,7 +27,7 @@ export const MODULE_REGISTRY: ModuleDefinition[] = [
   { key: "projects", label: "Projets & Tâches", description: "Kanban unifié pour projets, tâches et suivi d'avancement", icon: "FolderKanban", category: "management", defaultEnabled: true },
   
   // Network modules (ex-Hub)
-  { key: "annuaire", label: "Annuaire B2B", description: "Trouvez et contactez d'autres associations du réseau", icon: "Building2", category: "network", defaultEnabled: false },
+  { key: "annuaire", label: "Annuaire Associations", description: "Trouvez et contactez d'autres associations du réseau", icon: "Building2", category: "network", defaultEnabled: false },
   { key: "experts", label: "Experts partenaires", description: "Accédez à des experts juridiques, comptables, RH...", icon: "GraduationCap", category: "network", defaultEnabled: false },
   { key: "mutualisation", label: "Mutualisation", description: "Partagez des ressources humaines et matérielles", icon: "Handshake", category: "network", defaultEnabled: false },
   { key: "projets-reseau", label: "Projets Réseau", description: "Collaborez sur des projets inter-associations", icon: "Rocket", category: "network", defaultEnabled: false },

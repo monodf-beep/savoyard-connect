@@ -27,6 +27,8 @@ export interface Association {
   created_at: string;
   city: string | null;
   description: string | null;
+  silo: string | null;
+  primary_zone: string | null;
 }
 
 interface AssociationContextType {
@@ -84,7 +86,7 @@ export const AssociationProvider = ({ children }: { children: ReactNode }) => {
           joined_at,
           association:associations (
             id, name, logo_url, siret, rna, naf_ape,
-            instagram_url, linkedin_url, is_active, created_at, city, description
+            instagram_url, linkedin_url, is_active, created_at, city, description, silo, primary_zone
           )
         `)
         .eq("user_id", user.id)

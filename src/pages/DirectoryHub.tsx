@@ -1,199 +1,145 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
 import { HubPageLayout } from '@/components/hub/HubPageLayout';
-import { DirectoryFilters } from '@/components/directory/DirectoryFilters';
-import { AssociationCard } from '@/components/directory/AssociationCard';
-import { AssociationModal } from '@/components/directory/AssociationModal';
 import { DirectoryMap } from '@/components/directory/DirectoryMap';
-import { useDirectory, useUserGeolocation } from '@/hooks/useDirectory';
-import { DirectoryAssociation, GeographicZone } from '@/types/directory';
+import { useDirectory, useUserGeolocation, useCrossBorderSuggestions } from '@/hooks/useDirectory';
+import { DirectoryAssociation, SILO_INFO, SiloType, GEOGRAPHIC_ZONES } from '@/types/directory';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { 
-  Users, 
-  Filter,
-  LayoutGrid,
-  Map,
-  Search,
-} from 'lucide-react';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-
-const DIRECTORY_VIEW_MODE_KEY = 'directory-view-mode';
+import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Input } from '@/components/ui/input';
+import { Search, Users, MapPin, ArrowRight } from 'lucide-react';
+import { useAssociation } from '@/hooks/useAssociation';
 
 const DirectoryHub = () => {
-  const { t } = useTranslation();
-  const [selectedZones, setSelectedZones] = useState<GeographicZone[]>([]);
+  const { t, i18n } = useTranslation();
+  const lang = i18n.language === 'it' ? 'it' : 'fr';
   const [selectedSilo, setSelectedSilo] = useState('all');
-  const [ignoreBorders, setIgnoreBorders] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedAssociation, setSelectedAssociation] = useState<DirectoryAssociation | null>(null);
-  const [modalOpen, setModalOpen] = useState(false);
-  
-  // Restore viewMode from localStorage, default to 'map'
-  const [viewMode, setViewMode] = useState<'grid' | 'map'>(() => {
-    const saved = localStorage.getItem(DIRECTORY_VIEW_MODE_KEY);
-    return (saved === 'grid' || saved === 'map') ? saved : 'map';
-  });
-
-  // Persist viewMode changes
-  useEffect(() => {
-    localStorage.setItem(DIRECTORY_VIEW_MODE_KEY, viewMode);
-  }, [viewMode]);
+  const { currentAssociation } = useAssociation();
 
   const { data: userLocation } = useUserGeolocation();
   
   const { data: associations, isLoading } = useDirectory({
-    zones: selectedZones,
     silo: selectedSilo,
-    ignoreBorders,
     searchQuery,
   });
 
-  const handleContactAssociation = (association: DirectoryAssociation) => {
-    setSelectedAssociation(association);
-    setModalOpen(true);
-  };
+  const { data: suggestions } = useCrossBorderSuggestions(
+    currentAssociation?.silo,
+    currentAssociation?.primary_zone
+  );
 
   return (
-    <HubPageLayout breadcrumb={t("nav.directoryB2B")}>
+    <HubPageLayout breadcrumb={t("nav.directory")}>
       {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold mb-2">{t('directory.hero.title')}</h1>
-        <p className="text-muted-foreground">{t('directory.hero.subtitle')}</p>
+      <div className="mb-4">
+        <h1 className="text-2xl font-bold mb-1">{t('directory.hero.title')}</h1>
+        <p className="text-muted-foreground text-sm">{t('directory.hero.subtitle')}</p>
       </div>
 
-      <div className="flex flex-col lg:flex-row gap-6">
-        {/* Filters - Desktop */}
-        <aside className="hidden lg:block w-80 flex-shrink-0">
-          <div className="sticky top-24">
-            <DirectoryFilters
-              selectedZones={selectedZones}
-              onZonesChange={setSelectedZones}
-              selectedSilo={selectedSilo}
-              onSiloChange={setSelectedSilo}
-              ignoreBorders={ignoreBorders}
-              onIgnoreBordersChange={setIgnoreBorders}
-              searchQuery={searchQuery}
-              onSearchChange={setSearchQuery}
-              userLocation={userLocation || null}
-            />
-          </div>
-        </aside>
-
-        {/* Main Content */}
-        <main className="flex-1 min-w-0">
-          {/* Mobile: Filters Sheet + View Toggle */}
-          <div className="lg:hidden flex items-center justify-between mb-4">
-            <p className="text-sm text-muted-foreground">
-              {associations?.length || 0} {t('directory.results')}
-            </p>
-            <div className="flex items-center gap-2">
-              <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as 'grid' | 'map')}>
-                <TabsList className="h-9">
-                  <TabsTrigger value="map" className="h-7 px-3">
-                    <Map className="h-4 w-4" />
-                  </TabsTrigger>
-                  <TabsTrigger value="grid" className="h-7 px-3">
-                    <LayoutGrid className="h-4 w-4" />
-                  </TabsTrigger>
-                </TabsList>
-              </Tabs>
-              <Sheet>
-                <SheetTrigger asChild>
-                  <Button variant="outline" size="sm">
-                    <Filter className="h-4 w-4 mr-2" />
-                    {t('directory.filters.title')}
-                  </Button>
-                </SheetTrigger>
-                <SheetContent side="left" className="w-full sm:max-w-md p-0">
-                  <div className="p-6">
-                    <DirectoryFilters
-                      selectedZones={selectedZones}
-                      onZonesChange={setSelectedZones}
-                      selectedSilo={selectedSilo}
-                      onSiloChange={setSelectedSilo}
-                      ignoreBorders={ignoreBorders}
-                      onIgnoreBordersChange={setIgnoreBorders}
-                      searchQuery={searchQuery}
-                      onSearchChange={setSearchQuery}
-                      userLocation={userLocation || null}
-                    />
-                  </div>
-                </SheetContent>
-              </Sheet>
-            </div>
-          </div>
-
-          {/* Desktop: Stats + View Toggle */}
-          <div className="hidden lg:flex items-center justify-between mb-6">
-            <p className="text-sm text-muted-foreground">
-              {associations?.length || 0} {t('directory.results')}
-            </p>
-            <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as 'grid' | 'map')}>
-              <TabsList>
-                <TabsTrigger value="map">
-                  <Map className="h-4 w-4 mr-2" />
-                  {t('directory.viewModes.map')}
-                </TabsTrigger>
-                <TabsTrigger value="grid">
-                  <LayoutGrid className="h-4 w-4 mr-2" />
-                  {t('directory.viewModes.grid')}
-                </TabsTrigger>
-              </TabsList>
-            </Tabs>
-          </div>
-
-          {/* Content */}
-          {isLoading ? (
-            viewMode === 'map' ? (
-              <Skeleton className="h-[500px] rounded-xl" />
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {[...Array(6)].map((_, i) => (
-                  <Skeleton key={i} className="h-64 rounded-xl" />
-                ))}
-              </div>
-            )
-          ) : viewMode === 'map' ? (
-            <div className="h-[500px] lg:h-[600px]">
-              <DirectoryMap
-                associations={associations || []}
-                userLocation={userLocation || null}
-                onMarkerClick={handleContactAssociation}
-              />
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {associations && associations.length > 0 ? (
-                associations.map((assoc) => (
-                  <AssociationCard
-                    key={assoc.id}
-                    association={assoc}
-                    userLocation={userLocation || null}
-                  />
-                ))
-              ) : (
-                <Card className="col-span-2">
-                  <CardContent className="text-center py-16">
-                    <Users className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
-                    <p className="text-muted-foreground">{t('directory.noResults')}</p>
-                  </CardContent>
-                </Card>
-              )}
-            </div>
-          )}
-        </main>
+      {/* Inline Filters */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mb-4">
+        <div className="relative flex-1 w-full sm:max-w-xs">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder={t('directory.filters.searchPlaceholder')}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-10 h-9"
+          />
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <Badge
+            variant={selectedSilo === 'all' ? 'default' : 'outline'}
+            className="cursor-pointer hover:bg-primary/10 text-xs"
+            onClick={() => setSelectedSilo('all')}
+          >
+            {t('directory.filters.allDomains')}
+          </Badge>
+          {Object.entries(SILO_INFO).map(([key, info]) => (
+            <Badge
+              key={key}
+              variant={selectedSilo === key ? 'default' : 'outline'}
+              className="cursor-pointer hover:bg-primary/10 text-xs"
+              style={selectedSilo === key ? { backgroundColor: info.color } : undefined}
+              onClick={() => setSelectedSilo(key)}
+            >
+              {lang === 'it' ? info.labelIt : info.labelFr}
+            </Badge>
+          ))}
+          <span className="text-xs text-muted-foreground ml-1">
+            {associations?.length || 0} {t('directory.results')}
+          </span>
+        </div>
       </div>
 
-      {/* Association Modal */}
-      <AssociationModal
-        association={selectedAssociation}
-        open={modalOpen}
-        onOpenChange={setModalOpen}
-        userLocation={userLocation || null}
-      />
+      {/* Map */}
+      {isLoading ? (
+        <Skeleton className="h-[500px] rounded-xl" />
+      ) : (
+        <div className="h-[500px] lg:h-[600px]">
+          <DirectoryMap
+            associations={associations || []}
+            userLocation={userLocation || null}
+          />
+        </div>
+      )}
+
+      {/* Cross-border suggestions */}
+      {suggestions && suggestions.length > 0 && (
+        <div className="mt-6">
+          <h2 className="text-lg font-semibold mb-3 flex items-center gap-2">
+            <Users className="h-5 w-5 text-primary" />
+            {lang === 'it' ? 'Associazioni suggerite per te' : 'Associations suggérées pour vous'}
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {suggestions.map((assoc) => {
+              const siloInfo = assoc.silo ? SILO_INFO[assoc.silo as SiloType] : null;
+              const zoneInfo = GEOGRAPHIC_ZONES.find(z => z.id === assoc.primary_zone);
+              const initials = assoc.name.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
+
+              return (
+                <Link key={assoc.id} to={`/annuaire/${assoc.id}`} className="block">
+                  <Card className="hover:shadow-md transition-shadow h-full">
+                    <CardContent className="p-4 flex items-start gap-3">
+                      <Avatar className="h-10 w-10 rounded-lg flex-shrink-0">
+                        <AvatarImage src={assoc.logo_url || undefined} alt={assoc.name} />
+                        <AvatarFallback className="rounded-lg bg-primary/10 text-primary text-xs font-bold">
+                          {initials}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="min-w-0 flex-1">
+                        <p className="font-medium text-sm truncate">{assoc.name}</p>
+                        {assoc.city && (
+                          <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
+                            <MapPin className="h-3 w-3" />
+                            {assoc.city}
+                          </p>
+                        )}
+                        <div className="flex items-center gap-1.5 mt-2">
+                          {zoneInfo && (
+                            <Badge variant="outline" className="text-[10px] px-1.5 py-0" style={{ borderColor: zoneInfo.color, color: zoneInfo.color }}>
+                              {zoneInfo.name[lang]}
+                            </Badge>
+                          )}
+                          {siloInfo && (
+                            <Badge className="text-[10px] px-1.5 py-0 text-white" style={{ backgroundColor: siloInfo.color }}>
+                              {lang === 'it' ? siloInfo.labelIt : siloInfo.labelFr}
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      )}
     </HubPageLayout>
   );
 };

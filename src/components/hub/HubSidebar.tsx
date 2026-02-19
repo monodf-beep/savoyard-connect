@@ -42,7 +42,7 @@ const associationItems: NavItem[] = [
   { path: "/projects", labelKey: "nav.internalProjects", icon: FolderKanban, canBePublic: true },
   { path: "/toolbox", labelKey: "nav.toolbox", icon: Briefcase },
   { path: "", labelKey: "nav.sections.network", icon: Globe, isSeparator: true },
-  { path: "/annuaire", labelKey: "nav.directoryB2B", icon: Building2 },
+  { path: "/annuaire", labelKey: "nav.directory", icon: Building2 },
   { path: "/experts", labelKey: "nav.experts", icon: GraduationCap },
   { path: "/mutualisation", labelKey: "nav.mutualisation", icon: Handshake },
   { path: "/projets-reseau", labelKey: "nav.projectsNetwork", icon: Rocket },

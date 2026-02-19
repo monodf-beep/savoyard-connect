@@ -24,8 +24,8 @@ export const it = {
     signup: "Crea account",
     logout: "Esci",
     dashboard: "Dashboard",
-    directory: "Annuario B2B",
-    directoryB2B: "Annuario B2B",
+    directory: "Annuario Associazioni",
+    directoryB2B: "Annuario Associazioni",
     resources: "Risorse",
     resourcesShared: "Risorse condivise",
     projects: "Progetti",
@@ -159,7 +159,7 @@ export const it = {
     memberPlan: { title: "Account Membro", description: "Accesso completo alla mutualizzazione" },
     features: {
       internalManagement: "Gestione interna", orgChart: "Organigramma", projectKanban: "Progetti Kanban",
-      financeTracking: "Monitoraggio finanziario", b2bDirectory: "Directory B2B", sharedEmployment: "Impieghi condivisi",
+      financeTracking: "Monitoraggio finanziario", b2bDirectory: "Annuario Associazioni", sharedEmployment: "Impieghi condivisi",
       coFundedProjects: "Progetti cofinanziati", expertDiscounts: "Tariffe esperti -20%",
       grantAlerts: "Avvisi sovvenzioni", prioritySupport: "Supporto prioritario",
     },
@@ -229,7 +229,7 @@ export const it = {
   pillars: {
     title: "I 4 Pilastri dell'Hub",
     directory: {
-      title: "Annuario B2B Qualificato",
+      title: "Annuario Associazioni",
       description: "Trova partner compatibili per geografia, settore e esigenze",
     },
     resources: {
@@ -718,7 +718,7 @@ export const it = {
   // Annuario / Directory
   directory: {
     hero: {
-      badge: "Annuario B2B transfrontaliero",
+      badge: "Annuario transfrontaliero",
       title: "Trova associazioni partner",
       subtitle: "Esplora la nostra rete di associazioni alpine. Filtra per zona geografica, settore di attività e trova partner nelle vicinanze.",
       locationActive: "Geolocalizzazione attiva",
@@ -862,7 +862,7 @@ export const it = {
   legal: {
     lastUpdated: "Ultimo aggiornamento",
     mentions: { title: "Note Legali", editor: { title: "Editore", content: "Associacion - Associazione." }, director: { title: "Direttore", content: "Il presidente." }, hosting: { title: "Hosting", content: "Lovable (Supabase)." }, intellectual: { title: "Proprietà intellettuale", content: "Tutti i contenuti sono protetti." }, contact: { title: "Contatto" } },
-    terms: { title: "Condizioni d'Uso", object: { title: "Oggetto", content: "Le presenti CGU regolano l'uso della piattaforma." }, registration: { title: "Registrazione", content: "Aperta a tutte le associazioni." }, services: { title: "Servizi", content: "Strumenti di gestione, annuario B2B, mutualizzazione." }, responsibilities: { title: "Responsabilità", content: "L'utente è responsabile delle informazioni pubblicate." }, intellectual: { title: "Proprietà intellettuale", content: "I contenuti restano proprietà degli utenti." }, termination: { title: "Risoluzione", content: "L'utente può eliminare il suo account." }, jurisdiction: { title: "Giurisdizione", content: "Tribunali francesi." } },
+    terms: { title: "Condizioni d'Uso", object: { title: "Oggetto", content: "Le presenti CGU regolano l'uso della piattaforma." }, registration: { title: "Registrazione", content: "Aperta a tutte le associazioni." }, services: { title: "Servizi", content: "Strumenti di gestione, annuario associazioni, mutualizzazione." }, responsibilities: { title: "Responsabilità", content: "L'utente è responsabile delle informazioni pubblicate." }, intellectual: { title: "Proprietà intellettuale", content: "I contenuti restano proprietà degli utenti." }, termination: { title: "Risoluzione", content: "L'utente può eliminare il suo account." }, jurisdiction: { title: "Giurisdizione", content: "Tribunali francesi." } },
     privacy: { title: "Privacy Policy", collection: { title: "Dati raccolti", content: "Nome, email, dati associazione." }, purpose: { title: "Finalità", content: "Fornire il servizio." }, storage: { title: "Conservazione", content: "Durante l'iscrizione + 3 anni." }, rights: { title: "I tuoi diritti (GDPR)", content: "Hai i seguenti diritti:", access: "Accesso", rectification: "Rettifica", erasure: "Cancellazione", portability: "Portabilità", opposition: "Opposizione" }, cookies: { title: "Cookie", content: "Usiamo cookie essenziali." }, contact: { title: "Contatto DPO", content: "Email:" } },
   },
 

@@ -9,29 +9,19 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Textarea } from '@/components/ui/textarea';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useToast } from '@/hooks/use-toast';
-import { useAuth } from '@/hooks/useAuth';
 import { useUserGeolocation } from '@/hooks/useDirectory';
 import { 
   MapPin, 
   Linkedin, 
   Instagram,
   Globe,
-  Send,
-  LogIn,
-  Loader2,
   ArrowLeft,
   Building2,
   Calendar,
-  MessageSquare,
   Mail,
-  ExternalLink,
   FolderKanban,
   Users,
-  Eye,
-  EyeOff,
 } from 'lucide-react';
 import { GEOGRAPHIC_ZONES, SILO_INFO, SiloType, calculateDistance, GeographicZone } from '@/types/directory';
 
@@ -85,11 +75,7 @@ export default function AssociationProfile() {
   const { id } = useParams<{ id: string }>();
   const { t, i18n } = useTranslation();
   const lang = i18n.language === 'it' ? 'it' : 'fr';
-  const { user } = useAuth();
-  const { toast } = useToast();
   const { data: userLocation } = useUserGeolocation();
-  const [message, setMessage] = useState('');
-  const [sending, setSending] = useState(false);
   const [activeTab, setActiveTab] = useState('about');
 
   // Fetch association data
@@ -206,45 +192,7 @@ export default function AssociationProfile() {
     .join('')
     .toUpperCase();
 
-  const handleSendMessage = async () => {
-    if (!message.trim() || !user) return;
 
-    setSending(true);
-    try {
-      const { data: userAssoc } = await supabase
-        .from('associations')
-        .select('id')
-        .eq('owner_id', user.id)
-        .single();
-
-      const { error } = await supabase
-        .from('directory_contacts')
-        .insert({
-          requester_association_id: userAssoc?.id || null,
-          target_association_id: association.id,
-          message: message,
-          contact_type: 'message',
-        });
-
-      if (error) throw error;
-
-      toast({
-        title: t('directory.modal.messageSent'),
-        description: t('directory.modal.messageSuccess'),
-      });
-
-      setMessage('');
-    } catch (error) {
-      console.error('Error sending message:', error);
-      toast({
-        title: t('directory.modal.error'),
-        description: t('directory.modal.errorDescription'),
-        variant: 'destructive',
-      });
-    } finally {
-      setSending(false);
-    }
-  };
 
   return (
     <HubPageLayout breadcrumb={breadcrumbContent}>
@@ -428,56 +376,52 @@ export default function AssociationProfile() {
                 )}
               </div>
 
-              {/* Contact Sidebar */}
+              {/* Contact Links */}
               <div className="space-y-6">
                 <Card>
                   <CardHeader>
                     <CardTitle className="text-lg flex items-center gap-2">
-                      <MessageSquare className="h-5 w-5" />
+                      <Mail className="h-5 w-5" />
                       {t('directory.modal.contactTitle')}
                     </CardTitle>
                   </CardHeader>
-                  <CardContent>
-                    {user ? (
-                      <div className="space-y-4">
-                        <Textarea
-                          placeholder={t('directory.modal.messagePlaceholder')}
-                          value={message}
-                          onChange={(e) => setMessage(e.target.value)}
-                          rows={4}
-                        />
-                        <Button
-                          onClick={handleSendMessage}
-                          disabled={!message.trim() || sending}
-                          className="w-full"
-                        >
-                          {sending ? (
-                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                          ) : (
-                            <Send className="h-4 w-4 mr-2" />
-                          )}
-                          {t('directory.modal.sendMessage')}
-                        </Button>
-                      </div>
-                    ) : (
-                      <div className="text-center space-y-4 py-4">
-                        <p className="text-sm text-muted-foreground">
-                          {t('directory.modal.loginRequired')}
-                        </p>
-                        <div className="flex flex-col gap-2">
-                          <Button asChild>
-                            <Link to="/signup">
-                              {t('directory.modal.createAccount')}
-                            </Link>
-                          </Button>
-                          <Button variant="outline" asChild>
-                            <Link to="/login">
-                              <LogIn className="h-4 w-4 mr-2" />
-                              {t('directory.modal.login')}
-                            </Link>
-                          </Button>
-                        </div>
-                      </div>
+                  <CardContent className="space-y-3">
+                    {association.public_email && (
+                      <Button variant="outline" className="w-full justify-start" asChild>
+                        <a href={`mailto:${association.public_email}`}>
+                          <Mail className="h-4 w-4 mr-2" />
+                          {association.public_email}
+                        </a>
+                      </Button>
+                    )}
+                    {association.website_url && (
+                      <Button variant="outline" className="w-full justify-start" asChild>
+                        <a href={association.website_url} target="_blank" rel="noopener noreferrer">
+                          <Globe className="h-4 w-4 mr-2" />
+                          {t('directory.profile.website')}
+                        </a>
+                      </Button>
+                    )}
+                    {association.linkedin_url && (
+                      <Button variant="outline" className="w-full justify-start" asChild>
+                        <a href={association.linkedin_url} target="_blank" rel="noopener noreferrer">
+                          <Linkedin className="h-4 w-4 mr-2" />
+                          LinkedIn
+                        </a>
+                      </Button>
+                    )}
+                    {association.instagram_url && (
+                      <Button variant="outline" className="w-full justify-start" asChild>
+                        <a href={association.instagram_url} target="_blank" rel="noopener noreferrer">
+                          <Instagram className="h-4 w-4 mr-2" />
+                          Instagram
+                        </a>
+                      </Button>
+                    )}
+                    {!association.public_email && !association.website_url && !association.linkedin_url && !association.instagram_url && (
+                      <p className="text-sm text-muted-foreground text-center py-4">
+                        {t('directory.profile.noDescription')}
+                      </p>
                     )}
                   </CardContent>
                 </Card>
