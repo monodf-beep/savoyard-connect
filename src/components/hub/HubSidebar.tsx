@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { 
   LayoutDashboard, Users, FolderKanban, Briefcase, PiggyBank, Settings, 
   ChevronLeft, ChevronRight, GraduationCap, Sparkles, Globe, Building2,
-  UserCheck, Kanban, Handshake, GitBranch, TrendingUp, Rocket, Package,
+  UserCheck, Kanban, Handshake, GitBranch, TrendingUp, Rocket, Package, Pin, PinOff,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -138,10 +138,6 @@ export const HubSidebar = ({ collapsed, onToggle, isMobile = false }: HubSidebar
         )}>
           {t(item.labelKey)}
         </span>
-        <Globe className={cn(
-          "h-3 w-3 text-secondary flex-shrink-0 transition-all duration-200",
-          isCollapsed || !item.canBePublic ? "w-0 opacity-0" : "opacity-60"
-        )} />
       </Link>
     );
 
@@ -192,7 +188,7 @@ export const HubSidebar = ({ collapsed, onToggle, isMobile = false }: HubSidebar
         <div className="h-12 flex items-center gap-2.5 px-2.5 border-b border-border bg-secondary/5 overflow-hidden">
           <Tooltip>
             <TooltipTrigger asChild>
-              <div className="flex items-center justify-center flex-shrink-0 h-9 w-9 rounded-md">
+              <div className="flex-shrink-0">
                 <Building2 className="h-4 w-4 text-secondary" />
               </div>
             </TooltipTrigger>
@@ -222,29 +218,9 @@ export const HubSidebar = ({ collapsed, onToggle, isMobile = false }: HubSidebar
           <div className="space-y-0.5">{navigationItems.map(renderNavItem)}</div>
         </nav>
 
-        {/* Public indicator — fixed height h-8 */}
-        <div className="h-8 flex items-center gap-2 px-2.5 border-t border-border overflow-hidden">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div className="flex items-center justify-center flex-shrink-0">
-                <Globe className="h-3.5 w-3.5 text-secondary" />
-              </div>
-            </TooltipTrigger>
-            {isCollapsed && (
-              <TooltipContent side="right" className="bg-popover border border-border shadow-lg">
-                <p>{t("nav.publicIndicator")}</p>
-              </TooltipContent>
-            )}
-          </Tooltip>
-          <span className={cn(
-            "text-[10px] text-muted-foreground whitespace-nowrap overflow-hidden transition-all duration-200",
-            isCollapsed ? "w-0 opacity-0" : "opacity-100"
-          )}>
-            {t("nav.publicIndicator")}
-          </span>
-        </div>
+        {/* Public indicator removed per UX simplification */}
 
-        {/* Collapse button — fixed height h-10 */}
+        {/* Pin/unpin button — fixed height h-10 */}
         <div className="h-10 flex items-center px-1.5 border-t border-border">
           <Tooltip>
             <TooltipTrigger asChild>
@@ -254,18 +230,18 @@ export const HubSidebar = ({ collapsed, onToggle, isMobile = false }: HubSidebar
                 className="h-8 w-full justify-start gap-2 px-2.5 text-muted-foreground hover:text-foreground overflow-hidden"
                 onClick={onToggle}
               >
-                {isCollapsed ? <ChevronRight className="h-4 w-4 flex-shrink-0" /> : <ChevronLeft className="h-4 w-4 flex-shrink-0" />}
+                {collapsed ? <Pin className="h-4 w-4 flex-shrink-0" /> : <PinOff className="h-4 w-4 flex-shrink-0" />}
                 <span className={cn(
                   "text-xs whitespace-nowrap overflow-hidden transition-all duration-200",
                   isCollapsed ? "w-0 opacity-0" : "opacity-100"
                 )}>
-                  {t("common.collapse")}
+                  {collapsed ? "Épingler" : "Désépingler"}
                 </span>
               </Button>
             </TooltipTrigger>
             {isCollapsed && (
               <TooltipContent side="right" className="bg-popover border border-border shadow-lg">
-                <p>{t("common.expand")}</p>
+                <p>Épingler</p>
               </TooltipContent>
             )}
           </Tooltip>
