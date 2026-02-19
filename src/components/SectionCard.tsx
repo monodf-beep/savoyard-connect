@@ -154,42 +154,36 @@ export const SectionCard: React.FC<SectionCardProps> = ({
           />
         )}
         
-        <div className="mb-6" id={`section-${section.id}`}>
+        <div className="mb-4" id={`section-${section.id}`}>
           <div 
             className={`section-header ${section.type} ${hasContent ? 'cursor-pointer' : 'cursor-default'} group hover:shadow-sm`}
             onClick={hasContent ? handleToggle : undefined}
           >
-            <div className="flex items-center gap-3 flex-1">
+            <div className="flex items-center gap-2 flex-1 min-w-0">
               {(section.subsections && section.subsections.length > 0) ? (
-                section.isExpanded ? <ChevronDown className="w-5 h-5 text-muted-foreground" /> : <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                section.isExpanded ? <ChevronDown className="w-4 h-4 text-muted-foreground flex-shrink-0" /> : <ChevronRight className="w-4 h-4 text-muted-foreground flex-shrink-0" />
               ) : (
-                <Users className="w-5 h-5 text-muted-foreground" />
+                <Users className="w-4 h-4 text-muted-foreground flex-shrink-0" />
               )}
-              <div className="flex-1">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <h3 className="font-semibold text-lg text-foreground">{section.title}</h3>
-                    {section.leader && (
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <span className="text-xs font-semibold flex items-center gap-1 bg-primary text-primary-foreground px-2 py-0.5 rounded-full shadow-sm">
-                              <Star className="w-3 h-3 fill-current" />
-                              {section.leader.firstName} {section.leader.lastName}
-                            </span>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>Responsable de la section</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                    )}
-                  </div>
-                  <span className="text-sm font-medium text-muted-foreground ml-4 bg-muted/50 px-3 py-1 rounded-full">
-                    {totalMemberCount} membre{totalMemberCount > 1 ? 's' : ''}
-                  </span>
-                </div>
-              </div>
+              <h3 className="font-semibold text-base text-foreground truncate">{section.title}</h3>
+              {section.leader && (
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="text-xs font-semibold flex items-center gap-1 bg-primary text-primary-foreground px-2 py-0.5 rounded-full shadow-sm flex-shrink-0">
+                        <Star className="w-3 h-3 fill-current" />
+                        {section.leader.firstName} {section.leader.lastName}
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Responsable de la section</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
+              <span className="text-xs font-medium text-primary ml-auto flex-shrink-0">
+                {totalMemberCount} membre{totalMemberCount > 1 ? 's' : ''}
+              </span>
             </div>
             {isAdmin && (
               <DropdownMenu>
