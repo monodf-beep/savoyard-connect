@@ -222,91 +222,91 @@ export const SectionCard: React.FC<SectionCardProps> = ({
               <span className="text-xs font-medium text-primary ml-auto flex-shrink-0">
                 {totalMemberCount} membre{totalMemberCount > 1 ? 's' : ''}
               </span>
-            </div>
-            {isAdmin && (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    className="opacity-0 group-hover:opacity-100 transition-opacity ml-2"
-                  >
-                    <MoreVertical className="w-4 h-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
-                  {onEditSection && (
-                    <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onEditSection(section); }}>
-                      <Edit className="w-4 h-4 mr-2" />
-                      Modifier la section
-                    </DropdownMenuItem>
-                  )}
-                  {onDeleteSection && (
-                    <DropdownMenuItem 
-                      onClick={(e) => { 
-                        e.stopPropagation(); 
-                        if (confirm('Êtes-vous sûr de vouloir supprimer cette section ?')) {
-                          onDeleteSection(section.id);
-                        }
-                      }}
-                      className="text-destructive focus:text-destructive focus:bg-destructive/10"
+              {isAdmin && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="opacity-0 group-hover:opacity-100 transition-opacity h-7 w-7 p-0 flex-shrink-0"
                     >
-                      <Trash2 className="w-4 h-4 mr-2" />
-                      Supprimer la section
-                    </DropdownMenuItem>
-                  )}
-                  {(onEditSection || onDeleteSection) && <DropdownMenuSeparator />}
-                  <DropdownMenuLabel className="text-xs text-muted-foreground">
-                    Niveau actuel : {getCurrentLevel()}
-                  </DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  
-                  {!section.parentId ? (
-                    <DropdownMenuItem disabled>
-                      Déjà au niveau racine (N0)
-                    </DropdownMenuItem>
-                  ) : (
-                    <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleMoveToSection(null); }}>
-                      → Déplacer vers Racine (N0)
-                    </DropdownMenuItem>
-                  )}
-                  
-                  <DropdownMenuSeparator />
-                  <DropdownMenuLabel className="text-xs font-semibold">Déplacer sous :</DropdownMenuLabel>
-                  
-                  {rootSections.length > 0 ? (
-                    rootSections.map(rootSection => (
-                      <DropdownMenuItem 
-                        key={rootSection.id}
-                        onClick={(e) => { e.stopPropagation(); handleMoveToSection(rootSection.id); }}
-                        disabled={section.parentId === rootSection.id}
-                      >
-                        {section.parentId === rootSection.id ? '✓ ' : '→ '}{rootSection.title} (N-1)
+                      <MoreVertical className="w-4 h-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-56">
+                    {onEditSection && (
+                      <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onEditSection(section); }}>
+                        <Edit className="w-4 h-4 mr-2" />
+                        Modifier la section
                       </DropdownMenuItem>
-                    ))
-                  ) : (
-                    <DropdownMenuItem disabled>
-                      Aucune section racine disponible
-                    </DropdownMenuItem>
-                  )}
-                  
-                  {n1Sections.length > 0 && (
-                    <>
-                      <DropdownMenuSeparator />
-                      {n1Sections.map(n1Section => (
+                    )}
+                    {onDeleteSection && (
+                      <DropdownMenuItem 
+                        onClick={(e) => { 
+                          e.stopPropagation(); 
+                          if (confirm('Êtes-vous sûr de vouloir supprimer cette section ?')) {
+                            onDeleteSection(section.id);
+                          }
+                        }}
+                        className="text-destructive focus:text-destructive focus:bg-destructive/10"
+                      >
+                        <Trash2 className="w-4 h-4 mr-2" />
+                        Supprimer la section
+                      </DropdownMenuItem>
+                    )}
+                    {(onEditSection || onDeleteSection) && <DropdownMenuSeparator />}
+                    <DropdownMenuLabel className="text-xs text-muted-foreground">
+                      Niveau actuel : {getCurrentLevel()}
+                    </DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    
+                    {!section.parentId ? (
+                      <DropdownMenuItem disabled>
+                        Déjà au niveau racine (N0)
+                      </DropdownMenuItem>
+                    ) : (
+                      <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleMoveToSection(null); }}>
+                        → Déplacer vers Racine (N0)
+                      </DropdownMenuItem>
+                    )}
+                    
+                    <DropdownMenuSeparator />
+                    <DropdownMenuLabel className="text-xs font-semibold">Déplacer sous :</DropdownMenuLabel>
+                    
+                    {rootSections.length > 0 ? (
+                      rootSections.map(rootSection => (
                         <DropdownMenuItem 
-                          key={n1Section.id}
-                          onClick={(e) => { e.stopPropagation(); handleMoveToSection(n1Section.id); }}
-                          disabled={section.parentId === n1Section.id}
+                          key={rootSection.id}
+                          onClick={(e) => { e.stopPropagation(); handleMoveToSection(rootSection.id); }}
+                          disabled={section.parentId === rootSection.id}
                         >
-                          {section.parentId === n1Section.id ? '✓ ' : '→ '}{n1Section.title} (N-2)
+                          {section.parentId === rootSection.id ? '✓ ' : '→ '}{rootSection.title} (N-1)
                         </DropdownMenuItem>
-                      ))}
-                    </>
-                  )}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            )}
+                      ))
+                    ) : (
+                      <DropdownMenuItem disabled>
+                        Aucune section racine disponible
+                      </DropdownMenuItem>
+                    )}
+                    
+                    {n1Sections.length > 0 && (
+                      <>
+                        <DropdownMenuSeparator />
+                        {n1Sections.map(n1Section => (
+                          <DropdownMenuItem 
+                            key={n1Section.id}
+                            onClick={(e) => { e.stopPropagation(); handleMoveToSection(n1Section.id); }}
+                            disabled={section.parentId === n1Section.id}
+                          >
+                            {section.parentId === n1Section.id ? '✓ ' : '→ '}{n1Section.title} (N-2)
+                          </DropdownMenuItem>
+                        ))}
+                      </>
+                    )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
+            </div>
           </div>
 
           {section.isExpanded && hasContent && (
