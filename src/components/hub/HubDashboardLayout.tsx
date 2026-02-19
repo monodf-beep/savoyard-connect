@@ -19,7 +19,7 @@ import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { 
-  ChevronRight, Users, FolderKanban, Zap, Settings, FileText, Calendar,
+  ChevronRight, Users, FolderKanban, Calendar,
   CheckCircle2, Clock, ArrowRight, ClipboardList,
 } from "lucide-react";
 
