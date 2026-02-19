@@ -1,39 +1,88 @@
 
-# Simplification de l'en-tete de l'organigramme
 
-## Probleme
+# Simplification de la page Projets (avec conservation de la Boite a Idees)
 
-L'en-tete actuel occupe 4 lignes avant le contenu :
-1. Titre "Organigramme" + icone info + badge "29 membres" + bouton "Postes vacants"
-2. Description "Vue complete de la structure organisationnelle"
-3. Barre de controles (recherche + toggle vue + Vue d'ensemble + expand/collapse)
-4. Hint "Glissez-deposez..." (admin)
+## Philosophie
 
-## Solution
+Garder la Boite a Idees comme composant autonome (embeddable sur un site externe), mais la simplifier radicalement et la sortir de la sidebar pour liberer l'espace projet.
 
-Fusionner en 2 lignes maximum :
-- **Ligne 1** : Titre "Organigramme" + badge membres + bouton postes vacants (deja dans Index.tsx, inchange)
-- **Ligne 2** : Barre de controles uniquement (recherche + toggle vue + Vue d'ensemble + expand/collapse)
+---
 
-Supprimer :
-- La description "Vue complete de la structure organisationnelle" (dans Index.tsx si elle existe, ou dans HubPageLayout)
-- Le hint "Glissez-deposez..." (admin le sait deja)
+## Ce qui change
 
-## Detail technique
+### 1. Page Projets : layout pleine largeur
 
-### Fichier : `src/pages/Index.tsx`
+**Avant** : Kanban (60%) + Sidebar IdeaBox (380px) cote a cote
+**Apres** : Kanban 100% largeur, puis section Boite a Idees en dessous (pliable)
 
-Verifier et supprimer toute description sous le titre. Actuellement le fichier ne montre pas de description explicite, donc c'est probablement dans `HubPageLayout`. Je vais verifier et supprimer la prop ou le texte correspondant.
+- Supprimer le toggle Grille/Kanban (garder Kanban seul)
+- Supprimer le filtre par statut (inutile avec le Kanban qui filtre visuellement)
+- Supprimer `ProjectGridCard.tsx` (plus utilise)
+- Supprimer `ProjectDetailDrawer.tsx` (n'affiche que titre/description/statut, sans action possible -- inutile)
+- Le clic sur une carte projet ouvre directement le formulaire d'edition (admin) ou ne fait rien (non-admin, les infos sont deja visibles sur la carte)
 
-### Fichier : `src/components/Organigramme.tsx`
+**Fichier** : `src/pages/Projects.tsx`
 
-1. **Supprimer le hint drag-and-drop** (lignes 1019-1022) : le bloc `isAdmin && <div>Glissez-deposez...</div>` est retire.
+### 2. Boite a Idees : simplification du vote
 
-2. **Reduire le margin du header** : `mb-3 md:mb-6` devient `mb-2 md:mb-3` (ligne 734) pour rapprocher la toolbar du contenu.
+**Avant** : 3 onglets (Soumettre / Voter / Classement), systeme de 25 points avec +/- par idee
+**Apres** : Un seul ecran avec :
+- Liste des idees triees par votes, chaque idee a un bouton "upvote" (pouce, 1 vote = 1 clic, toggle on/off)
+- Un champ texte + bouton en bas pour soumettre une nouvelle idee
+- Plus de systeme de points, plus d'onglets
 
-## Fichiers modifies
+Le composant reste autonome et embeddable. On ajoute une prop optionnelle `embedded?: boolean` pour masquer le padding/border quand utilise en iframe.
 
-| Fichier | Modification |
-|---------|-------------|
-| `src/components/Organigramme.tsx` | Supprimer le hint drag-and-drop (lignes 1019-1022), reduire les marges du header |
-| `src/pages/Index.tsx` | Aucune modification necessaire (pas de description visible) |
+**Fichier** : `src/components/projects/IdeaBox.tsx`
+
+### 3. Formulaire projet unique
+
+Fusionner `ProjectForm` et `SimpleProjectForm` en un seul formulaire simple :
+- Champs : Titre, Description, Section, Statut (4 champs)
+- Supprimer : Roadmap, Documents par URL, Cover image URL, Funding toggle et sous-champs, Dates debut/fin
+- Le financement est gere depuis la page Finance existante
+
+**Fichiers** : `src/components/ProjectForm.tsx` (simplifier), `src/components/projects/SimpleProjectForm.tsx` (supprimer)
+
+### 4. Integration dans la page
+
+La Boite a Idees apparait sous le Kanban dans un `Collapsible` :
+- Header : "Boite a Idees" avec icone ampoule + chevron
+- Ouverte par defaut
+- Peut etre fermee pour se concentrer sur les projets
+
+---
+
+## Fichiers impactes
+
+| Fichier | Action |
+|---------|--------|
+| `src/pages/Projects.tsx` | Refactorer : layout plein ecran, retirer sidebar, ajouter IdeaBox en section pliable, retirer vue grille et toggle, retirer drawer |
+| `src/components/projects/IdeaBox.tsx` | Refonte : vote simple upvote/toggle, un seul ecran, prop `embedded` |
+| `src/components/ProjectForm.tsx` | Simplifier : garder 4 champs (titre, description, section, statut) |
+| `src/components/projects/SimpleProjectForm.tsx` | Supprimer |
+| `src/components/projects/ProjectGridCard.tsx` | Supprimer |
+| `src/components/projects/ProjectDetailDrawer.tsx` | Supprimer |
+
+---
+
+## Section technique
+
+### Vote simplifie (IdeaBox)
+
+Logique actuelle : chaque utilisateur distribue 25 points entre les idees (insert/update `idea_votes` avec `points`).
+
+Nouvelle logique : chaque utilisateur peut voter 1 fois par idee (toggle). La table `idea_votes` reste, mais `points` sera toujours 1 ou supprime. Le `votes_count` sur `ideas` continue de fonctionner.
+
+### Prop embedded
+
+```tsx
+interface IdeaBoxProps {
+  embedded?: boolean; // masque bordures/padding pour usage iframe
+}
+```
+
+### Suppression du ProjectDetailDrawer
+
+Le clic sur une carte Kanban ouvrira le formulaire projet en mode edition (si admin) ou affichera un Dialog lecture seule minimal (titre + description + statut) inline dans le meme composant.
+
