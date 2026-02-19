@@ -1,120 +1,61 @@
 
-# Simplification de la toolbar desktop
 
-## Changements
+# Afficher les avatars des sous-sections dans les en-tetes des sections parentes
 
-### 1. Fusionner "Tout deplier" / "Tout replier" en un seul bouton toggle
+## Probleme
 
-Remplacer les deux boutons par un seul bouton discret qui alterne entre les deux etats :
-- Si au moins une section est repliee : affiche l'icone "Expand" et fait `expandAll()` au clic
-- Si toutes les sections sont depliees : affiche l'icone "Shrink" et fait `collapseAll()` au clic
-- Pas de texte, juste une icone (variante `ghost`, taille `icon` ou `sm`) avec un tooltip optionnel
-- On determine l'etat via un `useMemo` qui verifie recursivement si toutes les sections visibles sont `isExpanded === true`
+Quand une section parente comme "Commissions" ou "Groupes de travail" est repliee, aucun avatar n'apparait dans l'en-tete car ces sections n'ont pas de membres directs -- les membres sont dans les sous-sections. Seules "Bureau" et "Conseil d'administration" affichent des avatars car elles ont des membres directs.
 
-### 2. Renommer "Aller a..." en "Vue d'ensemble"
+## Solution
 
-Le bouton dropdown s'appelle "Vue d'ensemble" au lieu de "Aller a..." :
-- Icone `LayoutGrid` ou `Map` de lucide-react
-- Le dropdown liste les sections racines (en gras) avec leurs sous-sections indentees et le nombre de membres
-- Clic sur un item = scroll fluide + depliage automatique
-
-### Resultat visuel de la toolbar
-
-```text
-[Rechercher...]  [Ligne|Membres]  [Vue d'ensemble v]  [⊞] 
-                                                        ^
-                                                   toggle deplier/replier (icone seule)
-```
-
-La barre passe de 4 boutons + champ de recherche a 2 boutons + 1 icone + champ de recherche. Beaucoup plus epuree.
+Modifier `SectionCard.tsx` pour collecter recursivement tous les membres (y compris ceux des sous-sections) et les afficher dans l'avatar stack quand la section est repliee. Ainsi "Commissions" affichera les avatars de tous les membres de toutes ses sous-commissions.
 
 ## Detail technique
 
-### Fichier modifie : `src/components/Organigramme.tsx`
+### Fichier : `src/components/SectionCard.tsx`
 
-**Imports a ajouter** :
-- `DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator` depuis `@/components/ui/dropdown-menu`
-- `Avatar, AvatarImage, AvatarFallback` depuis `@/components/ui/avatar`
-- `Tooltip, TooltipContent, TooltipTrigger, TooltipProvider` depuis `@/components/ui/tooltip`
-- Icones : `LayoutGrid` ou `MapPin` depuis lucide-react
+1. **Ajouter une fonction `getAllMembers`** qui collecte recursivement tous les membres d'une section et ses sous-sections :
 
-**Nouveau `useMemo`** (~5 lignes) :
-```text
-const allExpanded = useMemo(() => {
-  const check = (sections: Section[]): boolean =>
-    sections.every(s => s.isExpanded && (!s.subsections || check(s.subsections)));
-  return check(searchFilteredSections);
-}, [searchFilteredSections]);
+```typescript
+const getAllMembers = (s: Section): Person[] => {
+  let all = [...s.members];
+  if (s.subsections) {
+    s.subsections.forEach(sub => {
+      all = all.concat(getAllMembers(sub));
+    });
+  }
+  return all;
+};
+const allMembers = getAllMembers(section);
 ```
 
-**Fonction `scrollToSection`** (~10 lignes) :
-- Accepte `sectionId` et optionnel `parentId`
-- Deplie le parent si fourni via `toggleSection`
-- Deplie la section cible
-- `setTimeout(150ms)` puis `scrollIntoView({ behavior: 'smooth', block: 'start' })`
+2. **Remplacer `section.members` par `allMembers`** dans les 2 blocs d'affichage d'avatars (section repliee) :
+   - Ligne 184 : condition `section.members.length > 0` devient `allMembers.length > 0`
+   - Ligne 186 : `section.members.slice(0, 8)` devient `allMembers.slice(0, 8)`
+   - Ligne 198-201 : `section.members.length` devient `allMembers.length`
+   - Ligne 411 : idem pour la version mobile
+   - Lignes 413, 425-429 : idem
 
-**Remplacer les 2 boutons expand/collapse** (lignes 907-928) par un seul bouton icone :
-```text
-<Tooltip>
-  <TooltipTrigger asChild>
-    <Button
-      variant="ghost"
-      size="sm"
-      className="h-8 w-8 p-0"
-      onClick={() => allExpanded ? collapseAll() : expandAll()}
-    >
-      {allExpanded ? <Shrink className="w-4 h-4" /> : <Expand className="w-4 h-4" />}
-    </Button>
-  </TooltipTrigger>
-  <TooltipContent>{allExpanded ? 'Tout replier' : 'Tout deplier'}</TooltipContent>
-</Tooltip>
+3. **Aussi afficher le leader si present** : si une section parente a un `leader` et que les sous-sections ont aussi des leaders, ceux-ci seront naturellement inclus car ils sont dans les `members` des sous-sections.
+
+4. **Deduplication** : filtrer les doublons par `id` (une personne peut apparaitre dans plusieurs sous-sections) :
+
+```typescript
+const allMembers = [...new Map(getAllMembers(section).map(m => [m.id, m])).values()];
 ```
 
-**Ajouter le dropdown "Vue d'ensemble"** juste avant le bouton toggle :
+## Resultat attendu
+
 ```text
-<DropdownMenu>
-  <DropdownMenuTrigger asChild>
-    <Button variant="outline" size="sm" className="h-8 px-3">
-      <LayoutGrid className="w-3.5 h-3.5 mr-1.5" />
-      <span className="text-xs">Vue d'ensemble</span>
-    </Button>
-  </DropdownMenuTrigger>
-  <DropdownMenuContent align="end" className="w-64 max-h-80 overflow-y-auto">
-    {searchFilteredSections.map(section => (
-      <React.Fragment key={section.id}>
-        <DropdownMenuItem 
-          onClick={() => scrollToSection(section.id)}
-          className="font-medium"
-        >
-          {section.title}
-          <span className="ml-auto text-xs text-muted-foreground">
-            {getTotalCount(section)}
-          </span>
-        </DropdownMenuItem>
-        {section.subsections?.filter(s => !s.isHidden).map(sub => (
-          <DropdownMenuItem
-            key={sub.id}
-            onClick={() => scrollToSection(sub.id, section.id)}
-            className="pl-6 text-muted-foreground"
-          >
-            {sub.title}
-            <span className="ml-auto text-xs">{sub.members.length}</span>
-          </DropdownMenuItem>
-        ))}
-      </React.Fragment>
-    ))}
-  </DropdownMenuContent>
-</DropdownMenu>
+> Commissions   [avatar1 avatar2 avatar3 avatar4 avatar5 +17]
+> Groupes de travail   [avatar1 avatar2 avatar3 +8]
 ```
 
-**Fonction utilitaire `getTotalCount`** (~5 lignes) : comptage recursif des membres (existe deja dans le code mobile, a extraire en helper local).
-
-### Mobile
-
-Dans le Sheet mobile existant, les boutons "Tout deplier" / "Tout replier" restent tels quels (ils sont deja dans un menu secondaire, pas envahissants).
+Les sections parentes affichent desormais un apercu de tous leurs membres, meme quand les membres sont repartis dans les sous-sections.
 
 ## Fichiers modifies
 
 | Fichier | Modification |
 |---------|-------------|
-| `src/components/Organigramme.tsx` | Remplacer 2 boutons par 1 toggle icone, ajouter dropdown "Vue d'ensemble", imports, `scrollToSection`, `allExpanded`, `getTotalCount` |
+| `src/components/SectionCard.tsx` | Ajouter `getAllMembers` recursif, remplacer `section.members` par `allMembers` dans les 2 blocs d'avatar stack (desktop ligne 184-203, mobile ligne 411-430) |
+
