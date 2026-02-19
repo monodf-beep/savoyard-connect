@@ -7,6 +7,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Globe } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 const languages = [
   { code: 'fr', name: 'Français', flag: '🇫🇷' },
@@ -26,19 +27,22 @@ export const LanguageToggle = () => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="sm" className="gap-2">
-          <span className="text-lg">{currentLanguage.flag}</span>
-          <span className="text-sm">{currentLanguage.code.toUpperCase()}</span>
+        <Button variant="outline" size="sm" className="gap-1.5 h-8 px-2.5 text-xs font-medium border-border bg-background hover:bg-accent">
+          <Globe className="h-3.5 w-3.5 text-muted-foreground" />
+          <span>{currentLanguage.code.toUpperCase()}</span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="bg-popover">
+      <DropdownMenuContent align="end" className="min-w-[140px]">
         {languages.map((lang) => (
           <DropdownMenuItem
             key={lang.code}
             onClick={() => handleLanguageChange(lang.code)}
-            className={`gap-2 cursor-pointer ${i18n.language === lang.code ? 'bg-accent' : ''}`}
+            className={cn(
+              'gap-2 cursor-pointer text-sm',
+              i18n.language === lang.code && 'bg-accent font-medium'
+            )}
           >
-            <span className="text-lg">{lang.flag}</span>
+            <span className="text-base">{lang.flag}</span>
             <span>{lang.name}</span>
           </DropdownMenuItem>
         ))}
