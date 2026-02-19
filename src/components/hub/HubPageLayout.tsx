@@ -26,7 +26,7 @@ export const HubPageLayout = ({
 }: HubPageLayoutProps) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { currentAssociation, associations, setCurrentAssociation } = useAssociation();
 
@@ -120,8 +120,8 @@ export const HubPageLayout = ({
         </Sheet>
 
         <main className={cn(
-          "flex-1 transition-all duration-300 overflow-auto",
-          sidebarCollapsed ? "md:ml-14" : "md:ml-56"
+          "flex-1 transition-all duration-200 overflow-auto",
+          "md:ml-14"
         )}>
           <div className={cn("p-4 md:p-6 lg:p-8", fullWidth && "max-w-none")}>
             {(title || subtitle || headerActions) && (

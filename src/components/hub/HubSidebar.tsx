@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/hooks/useAuth";
@@ -60,8 +61,9 @@ export const HubSidebar = ({ collapsed, onToggle, isMobile = false }: HubSidebar
   const { isAdmin } = useAuth();
   const { currentAssociation, isOwnerOrAdmin, isGestionnaire } = useAssociation();
   const { isModuleVisibleInSidebar } = useModules();
+  const [hovered, setHovered] = useState(false);
 
-  const isCollapsed = isMobile ? false : collapsed;
+  const isCollapsed = isMobile ? false : (collapsed && !hovered);
 
   const filteredItems = associationItems.filter(item => {
     if (item.isSeparator) return true; // keep separators, filter later
@@ -160,10 +162,13 @@ export const HubSidebar = ({ collapsed, onToggle, isMobile = false }: HubSidebar
   return (
     <aside 
       className={cn(
-        "fixed left-0 top-16 z-40 h-[calc(100vh-4rem)] border-r border-border bg-card transition-all duration-300",
+        "fixed left-0 top-16 z-40 h-[calc(100vh-4rem)] border-r border-border bg-card transition-all duration-200",
         "border-l-4 border-l-secondary",
-        isCollapsed ? "w-14" : "w-56"
+        isCollapsed ? "w-14" : "w-56",
+        hovered && collapsed && "shadow-xl"
       )}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
     >
       <div className="flex h-full flex-col">
         {!isCollapsed && (
