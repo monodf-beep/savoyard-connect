@@ -15,10 +15,9 @@ serve(async (req) => {
   try {
     const { transcript, filename, secret } = await req.json();
 
-    // Verify webhook secret
+    // Verify webhook secret or JWT
     const expectedSecret = Deno.env.get("TRANSCRIPT_WEBHOOK_SECRET");
     if (!expectedSecret || secret !== expectedSecret) {
-      // Also check Authorization header for manual import (JWT-based)
       const authHeader = req.headers.get("Authorization");
       if (!authHeader?.startsWith("Bearer ")) {
         return new Response(JSON.stringify({ error: "Unauthorized" }), {
@@ -26,17 +25,13 @@ serve(async (req) => {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
-
-      // Validate JWT for manual import
       const supabaseAuth = createClient(
         Deno.env.get("SUPABASE_URL")!,
         Deno.env.get("SUPABASE_ANON_KEY")!,
         { global: { headers: { Authorization: authHeader } } }
       );
-      const { data: claims, error: claimsError } = await supabaseAuth.auth.getClaims(
-        authHeader.replace("Bearer ", "")
-      );
-      if (claimsError || !claims?.claims) {
+      const { data: userData, error: userError } = await supabaseAuth.auth.getUser();
+      if (userError || !userData?.user) {
         return new Response(JSON.stringify({ error: "Unauthorized" }), {
           status: 401,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -51,7 +46,6 @@ serve(async (req) => {
       );
     }
 
-    // Use service role to read sections and people
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
@@ -66,7 +60,6 @@ serve(async (req) => {
     const sections = sectionsRes.data || [];
     const people = peopleRes.data || [];
 
-    // Build context for AI
     const sectionsContext = sections
       .map((s) => `- "${s.title}" (id: ${s.id})`)
       .join("\n");
@@ -76,6 +69,7 @@ serve(async (req) => {
 
     const systemPrompt = `Tu es un assistant qui analyse des transcriptions de réunions d'association.
 Tu dois extraire les actions concrètes, tâches et projets décidés pendant la réunion.
+Tu dois aussi générer un résumé factuel de la réunion en 3 lignes maximum.
 
 Voici les sections/commissions de l'association :
 ${sectionsContext}
@@ -90,7 +84,7 @@ Pour chaque action identifiée, tu dois :
 4. Identifier la section concernée parmi les sections existantes
 5. Si tu ne trouves pas de correspondance exacte, mets null pour l'ID et indique le nom tel que mentionné
 
-Utilise l'outil extract_action_items pour retourner les actions.`;
+Utilise l'outil extract_action_items pour retourner les actions ET le résumé de la réunion.`;
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
@@ -114,7 +108,7 @@ Utilise l'outil extract_action_items pour retourner les actions.`;
             { role: "system", content: systemPrompt },
             {
               role: "user",
-              content: `Analyse cette transcription de réunion et extrais toutes les actions/projets décidés :\n\n${transcript}`,
+              content: `Analyse cette transcription de réunion et extrais toutes les actions/projets décidés, ainsi qu'un résumé en 3 lignes :\n\n${transcript}`,
             },
           ],
           tools: [
@@ -123,53 +117,49 @@ Utilise l'outil extract_action_items pour retourner les actions.`;
               function: {
                 name: "extract_action_items",
                 description:
-                  "Extraire les actions et projets identifiés dans la transcription",
+                  "Extraire les actions, projets et le résumé de la réunion",
                 parameters: {
                   type: "object",
                   properties: {
+                    meeting_title: {
+                      type: "string",
+                      description: "Titre de la réunion (ex: 'Réunion CA du 15 février')",
+                    },
+                    meeting_summary: {
+                      type: "string",
+                      description: "Résumé factuel de la réunion en 3 lignes maximum",
+                    },
+                    attendees: {
+                      type: "array",
+                      items: {
+                        type: "object",
+                        properties: {
+                          name: { type: "string", description: "Nom du participant" },
+                          email: { type: "string", nullable: true },
+                        },
+                        required: ["name"],
+                        additionalProperties: false,
+                      },
+                      description: "Liste des participants identifiés dans la transcription",
+                    },
                     actions: {
                       type: "array",
                       items: {
                         type: "object",
                         properties: {
-                          title: {
-                            type: "string",
-                            description: "Titre concis de l'action/projet",
-                          },
-                          description: {
-                            type: "string",
-                            description: "Description détaillée de ce qui doit être fait",
-                          },
-                          responsible_person_id: {
-                            type: "string",
-                            nullable: true,
-                            description: "UUID de la personne responsable (null si non identifiée)",
-                          },
-                          responsible_name: {
-                            type: "string",
-                            description: "Nom de la personne responsable tel que mentionné",
-                          },
-                          section_id: {
-                            type: "string",
-                            nullable: true,
-                            description: "UUID de la section concernée (null si non identifiée)",
-                          },
-                          section_name: {
-                            type: "string",
-                            description: "Nom de la section concernée tel que mentionné",
-                          },
+                          title: { type: "string", description: "Titre concis de l'action/projet" },
+                          description: { type: "string", description: "Description détaillée" },
+                          responsible_person_id: { type: "string", nullable: true },
+                          responsible_name: { type: "string" },
+                          section_id: { type: "string", nullable: true },
+                          section_name: { type: "string" },
                         },
-                        required: [
-                          "title",
-                          "description",
-                          "responsible_name",
-                          "section_name",
-                        ],
+                        required: ["title", "description", "responsible_name", "section_name"],
                         additionalProperties: false,
                       },
                     },
                   },
-                  required: ["actions"],
+                  required: ["meeting_title", "meeting_summary", "attendees", "actions"],
                   additionalProperties: false,
                 },
               },
@@ -186,7 +176,6 @@ Utilise l'outil extract_action_items pour retourner les actions.`;
     if (!aiResponse.ok) {
       const errText = await aiResponse.text();
       console.error("AI Gateway error:", aiResponse.status, errText);
-
       if (aiResponse.status === 429) {
         return new Response(
           JSON.stringify({ error: "Trop de requêtes, réessayez dans quelques instants" }),
@@ -199,7 +188,6 @@ Utilise l'outil extract_action_items pour retourner les actions.`;
           { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
-
       return new Response(
         JSON.stringify({ error: "Erreur lors de l'analyse IA" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -218,28 +206,56 @@ Utilise l'outil extract_action_items pour retourner les actions.`;
 
     const extracted = JSON.parse(toolCall.function.arguments);
     const actions = extracted.actions || [];
+    const meetingTitle = extracted.meeting_title || filename || "Réunion sans titre";
+    const meetingSummary = extracted.meeting_summary || null;
+    const attendees = extracted.attendees || [];
+
+    // Create meeting record
+    const { data: meetingRecord, error: meetingError } = await supabase
+      .from("meetings")
+      .insert({
+        title: meetingTitle,
+        ai_summary: meetingSummary,
+        attendees: attendees,
+        transcript_filename: filename || null,
+        start_time: new Date().toISOString(),
+      })
+      .select("id")
+      .single();
+
+    if (meetingError) {
+      console.error("Error creating meeting:", meetingError);
+    }
+
+    const meetingId = meetingRecord?.id || null;
 
     if (actions.length === 0) {
       return new Response(
-        JSON.stringify({ success: true, projects_created: 0, actions: [], message: "Aucune action identifiée" }),
+        JSON.stringify({
+          success: true,
+          projects_created: 0,
+          actions: [],
+          meeting_id: meetingId,
+          meeting_summary: meetingSummary,
+          attendees,
+          message: "Aucune action identifiée",
+        }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // If called via webhook (secret), auto-create projects
-    // If called via JWT (manual import), just return extracted actions for preview
     const isWebhook = secret === expectedSecret;
 
     if (isWebhook) {
-      // Auto-create projects with pending status
       const projectsToInsert = actions
-        .filter((a: any) => a.section_id) // Only create if section is identified
+        .filter((a: any) => a.section_id)
         .map((a: any) => ({
           title: a.title,
           description: a.description,
           section_id: a.section_id,
           status: "planned",
           approval_status: "pending",
+          source_meeting_id: meetingId,
         }));
 
       if (projectsToInsert.length > 0) {
@@ -261,15 +277,24 @@ Utilise l'outil extract_action_items pour retourner les actions.`;
           success: true,
           projects_created: projectsToInsert.length,
           skipped: actions.length - projectsToInsert.length,
+          meeting_id: meetingId,
+          meeting_summary: meetingSummary,
           filename: filename || "unknown",
         }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // Manual import: return actions for preview
+    // Manual import: return actions for preview, include meeting info
     return new Response(
-      JSON.stringify({ success: true, actions }),
+      JSON.stringify({
+        success: true,
+        actions,
+        meeting_id: meetingId,
+        meeting_title: meetingTitle,
+        meeting_summary: meetingSummary,
+        attendees,
+      }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {

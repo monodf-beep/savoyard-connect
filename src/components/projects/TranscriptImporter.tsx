@@ -34,6 +34,14 @@ interface TranscriptImporterProps {
   sectionMap: Record<string, string>;
 }
 
+interface AnalysisResult {
+  actions: ExtractedAction[];
+  meeting_id?: string;
+  meeting_title?: string;
+  meeting_summary?: string;
+  attendees?: Array<{ name: string; email?: string }>;
+}
+
 export const TranscriptImporter = ({
   open,
   onOpenChange,
@@ -49,6 +57,8 @@ export const TranscriptImporter = ({
   const [step, setStep] = useState<'input' | 'preview'>('input');
   const [copied, setCopied] = useState(false);
   const [isLoadingPdf, setIsLoadingPdf] = useState(false);
+  const [meetingId, setMeetingId] = useState<string | null>(null);
+  const [meetingSummary, setMeetingSummary] = useState<string | null>(null);
 
   const webhookUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/process-transcript`;
 
@@ -136,6 +146,8 @@ function onFileCreated(e) {
 
       if (data?.actions && data.actions.length > 0) {
         setActions(data.actions.map((a: ExtractedAction) => ({ ...a, selected: true })));
+        setMeetingId(data.meeting_id || null);
+        setMeetingSummary(data.meeting_summary || null);
         setStep('preview');
       } else {
         toast({
@@ -176,6 +188,7 @@ function onFileCreated(e) {
           status: 'planned' as const,
           approval_status: 'pending',
           created_by: user?.id,
+          source_meeting_id: meetingId,
         }))
       );
 
@@ -204,6 +217,8 @@ function onFileCreated(e) {
     setTranscript('');
     setActions([]);
     setStep('input');
+    setMeetingId(null);
+    setMeetingSummary(null);
     onOpenChange(false);
   };
 

@@ -815,6 +815,56 @@ export type Database = {
           },
         ]
       }
+      meetings: {
+        Row: {
+          ai_summary: string | null
+          association_id: string | null
+          attendees: Json | null
+          created_at: string
+          end_time: string | null
+          google_event_id: string | null
+          id: string
+          start_time: string | null
+          title: string
+          transcript_filename: string | null
+          updated_at: string
+        }
+        Insert: {
+          ai_summary?: string | null
+          association_id?: string | null
+          attendees?: Json | null
+          created_at?: string
+          end_time?: string | null
+          google_event_id?: string | null
+          id?: string
+          start_time?: string | null
+          title: string
+          transcript_filename?: string | null
+          updated_at?: string
+        }
+        Update: {
+          ai_summary?: string | null
+          association_id?: string | null
+          attendees?: Json | null
+          created_at?: string
+          end_time?: string | null
+          google_event_id?: string | null
+          id?: string
+          start_time?: string | null
+          title?: string
+          transcript_filename?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "meetings_association_id_fkey"
+            columns: ["association_id"]
+            isOneToOne: false
+            referencedRelation: "associations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       membership_options: {
         Row: {
           benefits: string[] | null
@@ -1017,6 +1067,7 @@ export type Database = {
           manual_cash_total: number | null
           roadmap: string | null
           section_id: string
+          source_meeting_id: string | null
           start_date: string | null
           status: Database["public"]["Enums"]["project_status"]
           supporter_count: number | null
@@ -1041,6 +1092,7 @@ export type Database = {
           manual_cash_total?: number | null
           roadmap?: string | null
           section_id: string
+          source_meeting_id?: string | null
           start_date?: string | null
           status?: Database["public"]["Enums"]["project_status"]
           supporter_count?: number | null
@@ -1065,6 +1117,7 @@ export type Database = {
           manual_cash_total?: number | null
           roadmap?: string | null
           section_id?: string
+          source_meeting_id?: string | null
           start_date?: string | null
           status?: Database["public"]["Enums"]["project_status"]
           supporter_count?: number | null
@@ -1077,6 +1130,13 @@ export type Database = {
             columns: ["section_id"]
             isOneToOne: false
             referencedRelation: "sections"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "projects_source_meeting_id_fkey"
+            columns: ["source_meeting_id"]
+            isOneToOne: false
+            referencedRelation: "meetings"
             referencedColumns: ["id"]
           },
         ]
