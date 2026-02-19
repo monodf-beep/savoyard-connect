@@ -156,7 +156,6 @@ export const GlobalHeader = ({ breadcrumb, onMobileMenuToggle }: GlobalHeaderPro
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" className="relative h-9 w-9">
               <Bell className="h-5 w-5" />
-              <Badge className="absolute -top-1 -right-1 h-4 w-4 p-0 flex items-center justify-center bg-accent text-accent-foreground text-[10px]">2</Badge>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-72 md:w-80 bg-popover border border-border shadow-lg">
@@ -199,37 +198,6 @@ export const GlobalHeader = ({ breadcrumb, onMobileMenuToggle }: GlobalHeaderPro
             <div className="sm:hidden px-2 py-1.5"><LanguageToggle /></div>
             <DropdownMenuSeparator />
             
-            <div className="px-2 py-1.5">
-              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                {t("nav.sections.myAssociations")}
-                {associations.length > 1 && (
-                  <Badge variant="secondary" className="text-[10px] px-1.5 py-0">{associations.length}</Badge>
-                )}
-              </p>
-            </div>
-            {associations.map((membership) => (
-              <DropdownMenuItem 
-                key={membership.id}
-                className="flex items-center gap-2 p-2 cursor-pointer"
-                onClick={() => handleSelectAssociation(membership)}
-              >
-                <Avatar className="h-6 w-6">
-                  <AvatarImage src={membership.association.logo_url || undefined} />
-                  <AvatarFallback className="bg-secondary/20 text-secondary text-[8px]">
-                    {getInitials(membership.association.name)}
-                  </AvatarFallback>
-                </Avatar>
-                <span className="flex-1 truncate text-sm">{membership.association.name}</span>
-                {currentAssociation?.id === membership.association_id && (
-                  <Check className="h-4 w-4 text-primary flex-shrink-0" />
-                )}
-              </DropdownMenuItem>
-            ))}
-            <DropdownMenuItem asChild className="cursor-pointer">
-              <Link to="/onboarding-asso" className="flex items-center gap-2 text-muted-foreground">
-                <Plus className="h-4 w-4" />{t("nav.createAssociation")}
-              </Link>
-            </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem className="cursor-pointer text-destructive focus:text-destructive" onClick={handleSignOut}>
               <LogOut className="h-4 w-4 mr-2" />{t("nav.logout")}

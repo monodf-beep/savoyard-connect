@@ -53,10 +53,9 @@ const initialJobPostings: JobPosting[] = [
 
 const Jobs = () => {
   const { t } = useTranslation();
-  const { isAdmin: authIsAdmin } = useAuth();
+  const { isAdmin } = useAuth();
   const { currentAssociation } = useAssociation();
   const [jobPostings, setJobPostings] = useState<JobPosting[]>(initialJobPostings);
-  const [isAdmin, setIsAdmin] = useState(false);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedJobPosting, setSelectedJobPosting] = useState<JobPosting | null>(null);
 
@@ -85,10 +84,6 @@ const Jobs = () => {
   const handleAddJobPosting = () => {
     setSelectedJobPosting(null);
     setIsFormOpen(true);
-  };
-
-  const toggleAdminMode = () => {
-    setIsAdmin(prev => !prev);
   };
 
   return (
@@ -141,32 +136,6 @@ const Jobs = () => {
         </div>
         
         <div className="flex items-center gap-2">
-          {isAdmin && (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-8 w-8">
-                  <Info className="w-4 h-4 text-primary" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent className="max-w-xs">
-                <p className="font-semibold mb-1">Mode Admin activé</p>
-                <p className="text-sm">• Cliquez sur "Ajouter une mission" pour créer une opportunité</p>
-                <p className="text-sm">• Cliquez sur une carte pour modifier/supprimer</p>
-              </TooltipContent>
-            </Tooltip>
-          )}
-          
-          {authIsAdmin && (
-            <Button
-              onClick={toggleAdminMode}
-              variant={isAdmin ? "default" : "outline"}
-              size="sm"
-            >
-              <Settings className="w-4 h-4 mr-2" />
-              Admin
-            </Button>
-          )}
-          
           {isAdmin && (
             <Button onClick={handleAddJobPosting}>
               <Plus className="w-4 h-4 mr-2" />
