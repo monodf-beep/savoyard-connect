@@ -1,88 +1,134 @@
 
 
-# Simplification de la page Projets (avec conservation de la Boite a Idees)
+# Automatisation complete : Visio -> Drive -> Projets
 
-## Philosophie
+## Comment ca marche
 
-Garder la Boite a Idees comme composant autonome (embeddable sur un site externe), mais la simplifier radicalement et la sortir de la sidebar pour liberer l'espace projet.
+1. Vous faites une visio Google Meet avec Gemini
+2. Gemini genere une transcription et la sauvegarde automatiquement dans un dossier Google Drive
+3. Un petit script Google (a copier-coller une seule fois dans le dossier Drive) detecte le nouveau fichier et envoie son contenu a votre application
+4. L'application analyse la transcription avec l'IA, extrait les actions et cree automatiquement les projets en attente d'approbation
+5. L'admin voit les nouveaux projets apparaitre dans le Kanban avec le badge "En attente"
 
----
+## Ce que vous devez configurer (une seule fois)
 
-## Ce qui change
+1. Ouvrir Google Drive > le dossier ou Gemini sauvegarde les transcriptions
+2. Ouvrir Extensions > Apps Script
+3. Coller le script fourni par l'app (disponible dans une section "Configuration" sur la page Projets)
+4. Cliquer "Deployer" et autoriser
 
-### 1. Page Projets : layout pleine largeur
-
-**Avant** : Kanban (60%) + Sidebar IdeaBox (380px) cote a cote
-**Apres** : Kanban 100% largeur, puis section Boite a Idees en dessous (pliable)
-
-- Supprimer le toggle Grille/Kanban (garder Kanban seul)
-- Supprimer le filtre par statut (inutile avec le Kanban qui filtre visuellement)
-- Supprimer `ProjectGridCard.tsx` (plus utilise)
-- Supprimer `ProjectDetailDrawer.tsx` (n'affiche que titre/description/statut, sans action possible -- inutile)
-- Le clic sur une carte projet ouvre directement le formulaire d'edition (admin) ou ne fait rien (non-admin, les infos sont deja visibles sur la carte)
-
-**Fichier** : `src/pages/Projects.tsx`
-
-### 2. Boite a Idees : simplification du vote
-
-**Avant** : 3 onglets (Soumettre / Voter / Classement), systeme de 25 points avec +/- par idee
-**Apres** : Un seul ecran avec :
-- Liste des idees triees par votes, chaque idee a un bouton "upvote" (pouce, 1 vote = 1 clic, toggle on/off)
-- Un champ texte + bouton en bas pour soumettre une nouvelle idee
-- Plus de systeme de points, plus d'onglets
-
-Le composant reste autonome et embeddable. On ajoute une prop optionnelle `embedded?: boolean` pour masquer le padding/border quand utilise en iframe.
-
-**Fichier** : `src/components/projects/IdeaBox.tsx`
-
-### 3. Formulaire projet unique
-
-Fusionner `ProjectForm` et `SimpleProjectForm` en un seul formulaire simple :
-- Champs : Titre, Description, Section, Statut (4 champs)
-- Supprimer : Roadmap, Documents par URL, Cover image URL, Funding toggle et sous-champs, Dates debut/fin
-- Le financement est gere depuis la page Finance existante
-
-**Fichiers** : `src/components/ProjectForm.tsx` (simplifier), `src/components/projects/SimpleProjectForm.tsx` (supprimer)
-
-### 4. Integration dans la page
-
-La Boite a Idees apparait sous le Kanban dans un `Collapsible` :
-- Header : "Boite a Idees" avec icone ampoule + chevron
-- Ouverte par defaut
-- Peut etre fermee pour se concentrer sur les projets
+C'est tout. Apres ca, chaque nouvelle transcription sera automatiquement traitee.
 
 ---
 
-## Fichiers impactes
+## Ce qui sera construit
+
+### 1. Edge function `process-transcript` (webhook public)
+
+- Endpoint public (pas de JWT) mais protege par un **token secret** dans les headers
+- Recoit le texte brut de la transcription
+- Charge les sections et personnes existantes depuis la base
+- Envoie a Gemini (Lovable AI) avec tool calling pour extraire les actions
+- Cree directement les projets en base avec `approval_status = 'pending'`
+- Retourne un resume des projets crees
+
+### 2. Edge function `get-transcript-config`
+
+- Endpoint protege par JWT (admin seulement)
+- Retourne le script Google Apps Script pre-rempli avec l'URL du webhook et le token secret
+- L'admin n'a qu'a copier-coller
+
+### 3. Secret `TRANSCRIPT_WEBHOOK_SECRET`
+
+- Un token genere aleatoirement pour securiser le webhook
+- Stocke comme secret Supabase
+
+### 4. Section "Configuration automatique" sur la page Projets
+
+- Visible uniquement pour les admins
+- Un bouton "Configurer l'import automatique"
+- Affiche un dialog avec :
+  - Le script Google Apps Script a copier-coller
+  - Les instructions pas a pas (avec captures d'ecran textuelles)
+  - Un bouton "Tester la connexion"
+
+### 5. Import manuel (fallback)
+
+- Bouton "Importer une visio" toujours present pour coller manuellement une transcription si besoin
+- Meme pipeline d'analyse IA, mais avec apercu avant creation
+
+---
+
+## Fichiers a creer/modifier
 
 | Fichier | Action |
 |---------|--------|
-| `src/pages/Projects.tsx` | Refactorer : layout plein ecran, retirer sidebar, ajouter IdeaBox en section pliable, retirer vue grille et toggle, retirer drawer |
-| `src/components/projects/IdeaBox.tsx` | Refonte : vote simple upvote/toggle, un seul ecran, prop `embedded` |
-| `src/components/ProjectForm.tsx` | Simplifier : garder 4 champs (titre, description, section, statut) |
-| `src/components/projects/SimpleProjectForm.tsx` | Supprimer |
-| `src/components/projects/ProjectGridCard.tsx` | Supprimer |
-| `src/components/projects/ProjectDetailDrawer.tsx` | Supprimer |
+| `supabase/functions/process-transcript/index.ts` | Creer : webhook + analyse IA + creation projets |
+| `supabase/config.toml` | Ajouter process-transcript avec verify_jwt = false |
+| `src/components/projects/TranscriptImporter.tsx` | Creer : dialog import manuel + config automatique |
+| `src/pages/Projects.tsx` | Ajouter les boutons d'import et de configuration |
 
 ---
 
-## Section technique
+## Details techniques
 
-### Vote simplifie (IdeaBox)
+### Webhook `process-transcript`
 
-Logique actuelle : chaque utilisateur distribue 25 points entre les idees (insert/update `idea_votes` avec `points`).
-
-Nouvelle logique : chaque utilisateur peut voter 1 fois par idee (toggle). La table `idea_votes` reste, mais `points` sera toujours 1 ou supprime. Le `votes_count` sur `ideas` continue de fonctionner.
-
-### Prop embedded
-
-```tsx
-interface IdeaBoxProps {
-  embedded?: boolean; // masque bordures/padding pour usage iframe
+Recoit un POST avec :
+```json
+{
+  "transcript": "texte complet de la transcription...",
+  "filename": "Reunion_2026-02-19.txt",
+  "secret": "le-token-secret"
 }
 ```
 
-### Suppression du ProjectDetailDrawer
+Traitement :
+1. Verifie le secret contre `TRANSCRIPT_WEBHOOK_SECRET`
+2. Charge sections et people depuis Supabase (via service role)
+3. Appelle Gemini avec tool calling `extract_action_items`
+4. Pour chaque action : matche personne et section, insere un projet `pending`
+5. Retourne `{ success: true, projects_created: 5 }`
 
-Le clic sur une carte Kanban ouvrira le formulaire projet en mode edition (si admin) ou affichera un Dialog lecture seule minimal (titre + description + statut) inline dans le meme composant.
+### Script Google Apps Script (fourni a l'admin)
+
+```text
+function onFileCreated(e) {
+  var file = DriveApp.getFileById(e.source.getId());
+  var text = file.getBlob().getDataAsString();
+  UrlFetchApp.fetch("WEBHOOK_URL", {
+    method: "post",
+    contentType: "application/json",
+    payload: JSON.stringify({
+      transcript: text,
+      filename: file.getName(),
+      secret: "TOKEN_SECRET"
+    })
+  });
+}
+```
+
+Ce script est genere dynamiquement par l'app avec l'URL et le token deja remplis.
+
+### Prompt Gemini (tool calling)
+
+Contexte fourni : liste des sections avec ID + liste des personnes avec ID.
+Outil `extract_action_items` avec schema :
+```text
+actions: [{
+  title: string,
+  description: string,
+  responsible_person_id: string | null,
+  responsible_name: string,
+  section_id: string | null,
+  section_name: string
+}]
+```
+
+### Securite
+
+- Le webhook est protege par un token secret (pas de JWT car appele depuis Google)
+- Le token est stocke comme secret Supabase et integre dans le script Apps Script
+- Les projets crees sont toujours en `pending` -- l'admin doit les approuver
+- L'import manuel reste protege par JWT + role admin
 
