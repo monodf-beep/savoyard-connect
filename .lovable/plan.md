@@ -1,134 +1,109 @@
 
+# Timeline des reunions integree a la page Projets
 
-# Automatisation complete : Visio -> Drive -> Projets
+## Pourquoi pas une page separee
 
-## Comment ca marche
+Une page `/calendrier` cree une rupture : le membre doit naviguer entre deux ecrans pour comprendre "d'ou viennent ces projets". Le calendrier seul n'a pas assez de valeur pour justifier une page entiere -- c'est un outil de contexte, pas une destination.
 
-1. Vous faites une visio Google Meet avec Gemini
-2. Gemini genere une transcription et la sauvegarde automatiquement dans un dossier Google Drive
-3. Un petit script Google (a copier-coller une seule fois dans le dossier Drive) detecte le nouveau fichier et envoie son contenu a votre application
-4. L'application analyse la transcription avec l'IA, extrait les actions et cree automatiquement les projets en attente d'approbation
-5. L'admin voit les nouveaux projets apparaitre dans le Kanban avec le badge "En attente"
+## Ce qu'on construit a la place
 
-## Ce que vous devez configurer (une seule fois)
+Un **bandeau collapsible** en haut de la page Projets, au-dessus du Kanban :
 
-1. Ouvrir Google Drive > le dossier ou Gemini sauvegarde les transcriptions
-2. Ouvrir Extensions > Apps Script
-3. Coller le script fourni par l'app (disponible dans une section "Configuration" sur la page Projets)
-4. Cliquer "Deployer" et autoriser
+```text
++---------------------------------------------------------------+
+|  [v] Dernieres reunions                                        |
+|                                                                |
+|  19 fev  |  Reunion CA           | 5 participants | 3 actions  |
+|           Resume IA en 3 lignes...                             |
+|           [Voir les projets issus]                             |
+|                                                                |
+|  12 fev  |  Commission sport     | 3 participants | 1 action   |
+|           Resume IA en 3 lignes...                             |
+|                                                                |
++---------------------------------------------------------------+
+|                                                                |
+|  Planifie    |    En cours     |    Termine                    |
+|  [Kanban cards filtered or not]                                |
++---------------------------------------------------------------+
+```
 
-C'est tout. Apres ca, chaque nouvelle transcription sera automatiquement traitee.
+### Comportement
 
----
+- Par defaut : le bandeau est **replie** (juste le titre "Dernieres reunions" + nombre)
+- Deplie : affiche les 5 dernieres reunions avec resume, participants, nombre d'actions generees
+- Cliquer sur "Voir les projets issus" filtre le Kanban pour ne montrer que les projets crees depuis cette transcription
+- Un bouton "Tout afficher" reinitialise le filtre
 
-## Ce qui sera construit
+### Lien reunion-projet
 
-### 1. Edge function `process-transcript` (webhook public)
+Pour tracer l'origine, on ajoute un champ `source_meeting_id` a la table `projects`. Quand `process-transcript` cree des projets, il les lie a la reunion correspondante. Ca permet le filtre direct.
 
-- Endpoint public (pas de JWT) mais protege par un **token secret** dans les headers
-- Recoit le texte brut de la transcription
-- Charge les sections et personnes existantes depuis la base
-- Envoie a Gemini (Lovable AI) avec tool calling pour extraire les actions
-- Cree directement les projets en base avec `approval_status = 'pending'`
-- Retourne un resume des projets crees
+## Plan technique
 
-### 2. Edge function `get-transcript-config`
+### 1. Table `meetings` (migration SQL)
 
-- Endpoint protege par JWT (admin seulement)
-- Retourne le script Google Apps Script pre-rempli avec l'URL du webhook et le token secret
-- L'admin n'a qu'a copier-coller
+| Colonne | Type | Description |
+|---------|------|-------------|
+| id | uuid PK | |
+| google_event_id | text unique | ID Google Calendar (nullable si pas encore connecte) |
+| title | text | Titre de l'evenement |
+| start_time | timestamptz | Debut |
+| end_time | timestamptz | Fin |
+| attendees | jsonb | Liste [{email, name, rsvp}] |
+| ai_summary | text | Resume IA 3 lignes |
+| transcript_filename | text | Nom du fichier source |
+| association_id | uuid FK | Lien vers l'association |
+| created_at | timestamptz | |
 
-### 3. Secret `TRANSCRIPT_WEBHOOK_SECRET`
+RLS : lecture pour tous les membres de l'association.
 
-- Un token genere aleatoirement pour securiser le webhook
-- Stocke comme secret Supabase
+### 2. Colonne `source_meeting_id` sur `projects`
 
-### 4. Section "Configuration automatique" sur la page Projets
+Ajout d'une colonne nullable `source_meeting_id uuid REFERENCES meetings(id)` a la table `projects`. Permet de filtrer les projets par reunion source.
 
-- Visible uniquement pour les admins
-- Un bouton "Configurer l'import automatique"
-- Affiche un dialog avec :
-  - Le script Google Apps Script a copier-coller
-  - Les instructions pas a pas (avec captures d'ecran textuelles)
-  - Un bouton "Tester la connexion"
+### 3. Mise a jour de `process-transcript`
 
-### 5. Import manuel (fallback)
+Quand une transcription est traitee :
+1. Creer un enregistrement `meetings` avec le titre et la date extraits du fichier
+2. Demander a Gemini un resume en 3 lignes (nouvel outil `generate_meeting_summary`)
+3. Stocker le resume dans `meetings.ai_summary`
+4. Lier chaque projet cree via `source_meeting_id`
 
-- Bouton "Importer une visio" toujours present pour coller manuellement une transcription si besoin
-- Meme pipeline d'analyse IA, mais avec apercu avant creation
+### 4. Hook `useMeetings.ts`
 
----
+- Charge les 10 dernieres reunions de l'association avec le nombre de projets lies
+- Expose une fonction pour filtrer par meeting_id
+
+### 5. Composant `MeetingsTimeline.tsx`
+
+- Bandeau collapsible avec les dernieres reunions
+- Chaque ligne : date, titre, nombre de participants, nombre de projets, resume IA
+- Bouton "Voir les projets" qui emet un callback `onFilterByMeeting(meetingId)`
+- Bouton "Tout afficher" pour reinitialiser
+
+### 6. Integration dans `Projects.tsx`
+
+- Ajout du composant `MeetingsTimeline` au-dessus du Kanban
+- Etat `filterMeetingId` qui filtre `filteredProjects` par `source_meeting_id`
+- Pas de nouvelle route, pas de nouvelle entree sidebar
+
+### 7. Edge function `sync-google-calendar` (inchangee)
+
+Toujours prevue pour plus tard. Pour l'instant, les reunions sont creees automatiquement par l'import de transcription. Quand Google Calendar sera connecte, il enrichira les reunions existantes avec les vrais participants et horaires.
 
 ## Fichiers a creer/modifier
 
 | Fichier | Action |
 |---------|--------|
-| `supabase/functions/process-transcript/index.ts` | Creer : webhook + analyse IA + creation projets |
-| `supabase/config.toml` | Ajouter process-transcript avec verify_jwt = false |
-| `src/components/projects/TranscriptImporter.tsx` | Creer : dialog import manuel + config automatique |
-| `src/pages/Projects.tsx` | Ajouter les boutons d'import et de configuration |
+| Migration SQL | Creer table `meetings` + colonne `source_meeting_id` sur `projects` |
+| `src/hooks/useMeetings.ts` | Creer : charger les reunions recentes |
+| `src/components/projects/MeetingsTimeline.tsx` | Creer : bandeau collapsible |
+| `src/pages/Projects.tsx` | Ajouter le bandeau + filtre par meeting |
+| `supabase/functions/process-transcript/index.ts` | Ajouter creation meeting + resume IA + lien projets |
 
----
+## Ce qu'on ne fait PAS
 
-## Details techniques
-
-### Webhook `process-transcript`
-
-Recoit un POST avec :
-```json
-{
-  "transcript": "texte complet de la transcription...",
-  "filename": "Reunion_2026-02-19.txt",
-  "secret": "le-token-secret"
-}
-```
-
-Traitement :
-1. Verifie le secret contre `TRANSCRIPT_WEBHOOK_SECRET`
-2. Charge sections et people depuis Supabase (via service role)
-3. Appelle Gemini avec tool calling `extract_action_items`
-4. Pour chaque action : matche personne et section, insere un projet `pending`
-5. Retourne `{ success: true, projects_created: 5 }`
-
-### Script Google Apps Script (fourni a l'admin)
-
-```text
-function onFileCreated(e) {
-  var file = DriveApp.getFileById(e.source.getId());
-  var text = file.getBlob().getDataAsString();
-  UrlFetchApp.fetch("WEBHOOK_URL", {
-    method: "post",
-    contentType: "application/json",
-    payload: JSON.stringify({
-      transcript: text,
-      filename: file.getName(),
-      secret: "TOKEN_SECRET"
-    })
-  });
-}
-```
-
-Ce script est genere dynamiquement par l'app avec l'URL et le token deja remplis.
-
-### Prompt Gemini (tool calling)
-
-Contexte fourni : liste des sections avec ID + liste des personnes avec ID.
-Outil `extract_action_items` avec schema :
-```text
-actions: [{
-  title: string,
-  description: string,
-  responsible_person_id: string | null,
-  responsible_name: string,
-  section_id: string | null,
-  section_name: string
-}]
-```
-
-### Securite
-
-- Le webhook est protege par un token secret (pas de JWT car appele depuis Google)
-- Le token est stocke comme secret Supabase et integre dans le script Apps Script
-- Les projets crees sont toujours en `pending` -- l'admin doit les approuver
-- L'import manuel reste protege par JWT + role admin
-
+- Pas de page `/calendrier` separee
+- Pas d'entree dans la sidebar
+- Pas de sync Google Calendar pour l'instant (sera ajoute quand le compte de service sera configure)
+- Pas de vue calendrier mensuelle -- une simple timeline suffit pour le contexte
