@@ -31,6 +31,7 @@ interface ProjectsKanbanProps {
   onStatusChange: (projectId: string, newStatus: 'planned' | 'in_progress' | 'completed') => void;
   onProjectClick: (project: Project) => void;
   isAdmin: boolean;
+  sectionMap?: Record<string, string>;
 }
 
 const statusConfig = {
@@ -60,11 +61,13 @@ const KanbanColumn = ({
   projects, 
   onProjectClick,
   isAdmin,
+  sectionMap,
 }: { 
   status: 'planned' | 'in_progress' | 'completed';
   projects: Project[];
   onProjectClick: (project: Project) => void;
   isAdmin: boolean;
+  sectionMap?: Record<string, string>;
 }) => {
   const { setNodeRef, isOver } = useDroppable({
     id: status,
@@ -101,6 +104,7 @@ const KanbanColumn = ({
               project={project}
               onClick={() => onProjectClick(project)}
               isAdmin={isAdmin}
+              sectionName={sectionMap?.[project.section_id]}
             />
           ))}
         </SortableContext>
@@ -120,10 +124,12 @@ const SortableProjectCard = ({
   project, 
   onClick,
   isAdmin,
+  sectionName,
 }: { 
   project: Project;
   onClick: () => void;
   isAdmin: boolean;
+  sectionName?: string;
 }) => {
   const {
     attributes,
@@ -150,6 +156,7 @@ const SortableProjectCard = ({
         onClick={onClick}
         dragHandleProps={isAdmin ? { ...attributes, ...listeners } : undefined}
         isAdmin={isAdmin}
+        sectionName={sectionName}
       />
     </div>
   );
@@ -161,11 +168,13 @@ const KanbanProjectCard = ({
   onClick,
   dragHandleProps,
   isAdmin,
+  sectionName,
 }: { 
   project: Project;
   onClick: () => void;
   dragHandleProps?: any;
   isAdmin: boolean;
+  sectionName?: string;
 }) => {
   const totalFunded = (project.ha_net_total || 0) + (project.manual_cash_total || 0);
   const fundingGoal = project.funding_goal || 0;
@@ -175,7 +184,7 @@ const KanbanProjectCard = ({
     <Card 
       className={cn(
         "cursor-pointer hover:shadow-md transition-all group relative",
-        project.approval_status === 'pending' && "border-orange-500/30"
+        project.approval_status === 'pending' && "border-destructive/30"
       )}
       onClick={onClick}
     >
@@ -190,8 +199,11 @@ const KanbanProjectCard = ({
       )}
       
       <CardContent className={cn("p-3", isAdmin && "pl-6")}>
-        <h4 className="font-medium text-sm line-clamp-2 mb-1">{project.title}</h4>
+        <h4 className="font-medium text-sm line-clamp-2 mb-0.5">{project.title}</h4>
         
+        {sectionName && (
+          <p className="text-[11px] text-muted-foreground mb-1">{sectionName}</p>
+        )}
         {project.description && (
           <p className="text-xs text-muted-foreground line-clamp-2 mb-2">
             {project.description}
@@ -199,7 +211,7 @@ const KanbanProjectCard = ({
         )}
 
         {project.approval_status === 'pending' && (
-          <Badge variant="outline" className="text-[10px] bg-orange-500/10 text-orange-600 border-orange-500/30 mb-2">
+          <Badge variant="outline" className="text-[10px] bg-destructive/10 text-destructive border-destructive/30 mb-2">
             En attente
           </Badge>
         )}
@@ -238,6 +250,7 @@ export const ProjectsKanban = ({
   onStatusChange, 
   onProjectClick,
   isAdmin,
+  sectionMap,
 }: ProjectsKanbanProps) => {
   const [activeProject, setActiveProject] = React.useState<Project | null>(null);
 
@@ -302,18 +315,21 @@ export const ProjectsKanban = ({
           projects={plannedProjects}
           onProjectClick={onProjectClick}
           isAdmin={isAdmin}
+          sectionMap={sectionMap}
         />
         <KanbanColumn
           status="in_progress"
           projects={inProgressProjects}
           onProjectClick={onProjectClick}
           isAdmin={isAdmin}
+          sectionMap={sectionMap}
         />
         <KanbanColumn
           status="completed"
           projects={completedProjects}
           onProjectClick={onProjectClick}
           isAdmin={isAdmin}
+          sectionMap={sectionMap}
         />
       </div>
 
