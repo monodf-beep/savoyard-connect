@@ -1,14 +1,13 @@
 import { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from './ui/dialog';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Textarea } from './ui/textarea';
 import { Label } from './ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
-import { Switch } from './ui/switch';
 import { Project } from '@/pages/Projects';
 import { Section } from '@/types/organigramme';
-import { Plus, X } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 
 interface ProjectFormProps {
   project?: Project;
@@ -19,64 +18,35 @@ interface ProjectFormProps {
 }
 
 export const ProjectForm = ({ project, sections, open, onOpenChange, onSave }: ProjectFormProps) => {
-  const [formData, setFormData] = useState<Partial<Project> & { is_funding_project?: boolean; funding_goal?: number; funding_deadline?: string; cover_image_url?: string }>({
+  const [formData, setFormData] = useState<Partial<Project>>({
     title: '',
     description: '',
     section_id: '',
     status: 'planned',
-    start_date: '',
-    end_date: '',
-    roadmap: '',
-    documents: [],
-    is_funding_project: false,
-    funding_goal: 0,
-    funding_deadline: '',
-    cover_image_url: '',
   });
-
-  const [newDocument, setNewDocument] = useState({ name: '', url: '' });
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (project) {
-      setFormData({ ...project, is_funding_project: (project as any).is_funding_project ?? false, funding_goal: (project as any).funding_goal ?? 0, funding_deadline: (project as any).funding_deadline ?? '', cover_image_url: (project as any).cover_image_url ?? '' });
-    } else {
       setFormData({
-        title: '',
-        description: '',
-        section_id: '',
-        status: 'planned',
-        start_date: '',
-        end_date: '',
-        roadmap: '',
-        documents: [],
-        is_funding_project: false,
-        funding_goal: 0,
-        funding_deadline: '',
-        cover_image_url: '',
+        title: project.title,
+        description: project.description || '',
+        section_id: project.section_id,
+        status: project.status,
       });
+    } else {
+      setFormData({ title: '', description: '', section_id: '', status: 'planned' });
     }
   }, [project]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onSave(formData);
-  };
-
-  const handleAddDocument = () => {
-    if (newDocument.name && newDocument.url) {
-      setFormData({
-        ...formData,
-        documents: [...(formData.documents || []), newDocument],
-      });
-      setNewDocument({ name: '', url: '' });
+    setSaving(true);
+    try {
+      await onSave(formData);
+    } finally {
+      setSaving(false);
     }
-  };
-
-  const handleRemoveDocument = (index: number) => {
-    setFormData({
-      ...formData,
-      documents: formData.documents?.filter((_, i) => i !== index),
-    });
   };
 
   const buildOptions = (items: Section[], depth = 0): { id: string; label: string }[] => {
@@ -89,13 +59,12 @@ export const ProjectForm = ({ project, sections, open, onOpenChange, onSave }: P
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>{project ? 'Modifier le projet' : 'Nouveau projet'}</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Section */}
           <div className="space-y-2">
             <Label htmlFor="section">Section *</Label>
             <Select
@@ -116,37 +85,35 @@ export const ProjectForm = ({ project, sections, open, onOpenChange, onSave }: P
             </Select>
           </div>
 
-          {/* Title */}
           <div className="space-y-2">
             <Label htmlFor="title">Titre *</Label>
             <Input
               id="title"
               value={formData.title}
               onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+              placeholder="Ex: Organisation du festival d'été"
               required
             />
           </div>
 
-          {/* Description */}
           <div className="space-y-2">
             <Label htmlFor="description">Description</Label>
             <Textarea
               id="description"
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              placeholder="Décrivez brièvement votre projet..."
               rows={3}
             />
           </div>
 
-          {/* Status */}
           <div className="space-y-2">
-            <Label htmlFor="status">Statut *</Label>
+            <Label htmlFor="status">Statut</Label>
             <Select
               value={formData.status}
               onValueChange={(value: 'planned' | 'in_progress' | 'completed') =>
                 setFormData({ ...formData, status: value })
               }
-              required
             >
               <SelectTrigger>
                 <SelectValue />
@@ -159,139 +126,15 @@ export const ProjectForm = ({ project, sections, open, onOpenChange, onSave }: P
             </Select>
           </div>
 
-          {/* Funding Project Toggle */}
-          <div className="flex items-center justify-between p-4 border rounded-lg bg-muted/50">
-            <div>
-              <Label htmlFor="is_funding">Projet de financement</Label>
-              <p className="text-sm text-muted-foreground">Activer le suivi des collectes et dons</p>
-            </div>
-            <Switch
-              id="is_funding"
-              checked={formData.is_funding_project}
-              onCheckedChange={(checked) => setFormData({ ...formData, is_funding_project: checked })}
-            />
-          </div>
-
-          {/* Funding Fields (conditional) */}
-          {formData.is_funding_project && (
-            <div className="space-y-4 p-4 border rounded-lg border-primary/20 bg-primary/5">
-              <div className="space-y-2">
-                <Label htmlFor="funding_goal">Objectif de collecte (€)</Label>
-                <Input
-                  id="funding_goal"
-                  type="number"
-                  min="0"
-                  value={formData.funding_goal || ''}
-                  onChange={(e) => setFormData({ ...formData, funding_goal: parseFloat(e.target.value) || 0 })}
-                  placeholder="5000"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="funding_deadline">Date limite de collecte</Label>
-                <Input
-                  id="funding_deadline"
-                  type="date"
-                  value={formData.funding_deadline || ''}
-                  onChange={(e) => setFormData({ ...formData, funding_deadline: e.target.value })}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="cover_image">Image de couverture (URL)</Label>
-                <Input
-                  id="cover_image"
-                  type="url"
-                  value={formData.cover_image_url || ''}
-                  onChange={(e) => setFormData({ ...formData, cover_image_url: e.target.value })}
-                  placeholder="https://..."
-                />
-              </div>
-            </div>
-          )}
-
-          {/* Dates */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="start_date">Date de début</Label>
-              <Input
-                id="start_date"
-                type="date"
-                value={formData.start_date}
-                onChange={(e) => setFormData({ ...formData, start_date: e.target.value })}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="end_date">Date de fin</Label>
-              <Input
-                id="end_date"
-                type="date"
-                value={formData.end_date}
-                onChange={(e) => setFormData({ ...formData, end_date: e.target.value })}
-              />
-            </div>
-          </div>
-
-          {/* Roadmap */}
-          <div className="space-y-2">
-            <Label htmlFor="roadmap">Feuille de route</Label>
-            <Textarea
-              id="roadmap"
-              value={formData.roadmap}
-              onChange={(e) => setFormData({ ...formData, roadmap: e.target.value })}
-              rows={4}
-              placeholder="Décrivez les étapes clés du projet..."
-            />
-          </div>
-
-          {/* Documents */}
-          <div className="space-y-2">
-            <Label>Documents</Label>
-            
-            {/* Existing documents */}
-            {formData.documents && formData.documents.length > 0 && (
-              <div className="space-y-2 mb-3">
-                {formData.documents.map((doc, index) => (
-                  <div key={index} className="flex items-center gap-2 bg-muted p-2 rounded">
-                    <span className="flex-1 text-sm">{doc.name}</span>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleRemoveDocument(index)}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* Add new document */}
-            <div className="flex gap-2">
-              <Input
-                placeholder="Nom du document"
-                value={newDocument.name}
-                onChange={(e) => setNewDocument({ ...newDocument, name: e.target.value })}
-              />
-              <Input
-                placeholder="URL"
-                value={newDocument.url}
-                onChange={(e) => setNewDocument({ ...newDocument, url: e.target.value })}
-              />
-              <Button type="button" onClick={handleAddDocument} size="icon">
-                <Plus className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-
-          {/* Actions */}
-          <div className="flex justify-end gap-2 pt-4">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={saving}>
               Annuler
             </Button>
-            <Button type="submit">
+            <Button type="submit" disabled={saving || !formData.title?.trim() || !formData.section_id}>
+              {saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
               {project ? 'Mettre à jour' : 'Créer'}
             </Button>
-          </div>
+          </DialogFooter>
         </form>
       </DialogContent>
     </Dialog>
