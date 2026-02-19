@@ -4,10 +4,11 @@ import { useAuth } from '@/hooks/useAuth';
 import { useOrganigramme } from '@/hooks/useOrganigramme';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Plus, Search, Lightbulb, ChevronDown } from 'lucide-react';
+import { Plus, Search, Lightbulb, ChevronDown, FileText } from 'lucide-react';
 import { ProjectForm } from '@/components/ProjectForm';
 import { ProjectsKanban } from '@/components/projects/ProjectsKanban';
 import { IdeaBox } from '@/components/projects/IdeaBox';
+import { TranscriptImporter } from '@/components/projects/TranscriptImporter';
 import { HubPageLayout } from '@/components/hub/HubPageLayout';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -59,6 +60,7 @@ const Projects = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterSectionId, setFilterSectionId] = useState('all');
   const [ideaBoxOpen, setIdeaBoxOpen] = useState(true);
+  const [showTranscriptImporter, setShowTranscriptImporter] = useState(false);
 
   // Build flat section map for name lookups
   const flattenSections = (sections: Section[]): Record<string, string> => {
@@ -248,6 +250,12 @@ const Projects = () => {
       <div className="mb-6">
         <div className="flex items-center justify-between mb-2">
           <h1 className="text-2xl md:text-3xl font-bold">{t('nav.projects')}</h1>
+          {isAdmin && (
+            <Button variant="outline" onClick={() => setShowTranscriptImporter(true)}>
+              <FileText className="h-4 w-4 mr-2" />
+              Importer une visio
+            </Button>
+          )}
           {(isAdmin || isSectionLeader) && (
             <Button onClick={() => { setEditingProject(undefined); setShowForm(true); }}>
               <Plus className="h-4 w-4 mr-2" />
@@ -327,6 +335,26 @@ const Projects = () => {
           onSave={handleSaveProject}
         />
       )}
+
+      {/* Transcript Importer */}
+      <TranscriptImporter
+        open={showTranscriptImporter}
+        onOpenChange={setShowTranscriptImporter}
+        onProjectsCreated={async () => {
+          const { data: refreshed } = await supabase
+            .from('projects')
+            .select('*')
+            .order('created_at', { ascending: false });
+          if (refreshed) {
+            setProjects(refreshed.map(p => ({
+              ...p,
+              documents: (p.documents as any) || [],
+              approval_status: (p.approval_status as any) || 'pending',
+            })));
+          }
+        }}
+        sectionMap={sectionMap}
+      />
     </HubPageLayout>
   );
 };
