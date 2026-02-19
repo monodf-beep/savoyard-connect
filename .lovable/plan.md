@@ -1,62 +1,83 @@
 
 
-# Simplification UX sans supprimer de modules
+# Simplification du Dashboard
 
-## Principe
+## Problemes identifies
 
-Tous les modules restent disponibles dans le Store. On change uniquement les **valeurs par defaut** et on nettoie les elements trompeurs.
+1. **Taches fictives** : quand il n'y a pas de taches reelles, 2 fausses taches sont affichees
+2. **KPI redondants** : "Taches" et "En attente" se chevauchent -- 4 cards pour trop peu d'info
+3. **Actions rapides inutiles** : doublonnent la sidebar, "Ajouter un document" est un faux label
+4. **Notification factice** : "Nouveau projet / Hier" en dur dans le header
+5. **Onboarding non traduit** : cles brutes affichees ("profile", "logo")
+6. **Double separateur** dans le menu profil du header
+7. **Breadcrumb redondant** sur la page dashboard
+
+## Plan de simplification
+
+### 1. Supprimer les fausses taches (`HubDashboardLayout.tsx`)
+
+Remplacer les taches fictives (lignes 98-101) par un etat vide clair :
+- Si aucune tache reelle : afficher un message "Aucune tache en cours" avec un bouton "Creer une tache" qui redirige vers `/admin`
+- Plus jamais de donnees inventees
+
+### 2. Reduire les KPI de 4 a 3 (`HubDashboardLayout.tsx`)
+
+Supprimer le KPI "En attente" (doublon de "Taches"). Garder :
+- **Membres** (reel)
+- **Projets** (reel)
+- **Taches** (reel)
+
+3 cards au lieu de 4, layout `grid-cols-3` sur desktop.
+
+### 3. Supprimer le bloc "Actions rapides" (`HubDashboardLayout.tsx`)
+
+Retirer entierement la card "Actions rapides" (lignes 261-276). Ces 3 boutons dupliquent la sidebar. Le dashboard devient plus epure : juste les KPI + la liste de taches + l'onboarding.
+
+### 4. Supprimer la notification factice (`GlobalHeader.tsx`)
+
+Remplacer le contenu du dropdown notifications (lignes 161-171) par un etat vide : "Aucune notification" au lieu de la fausse notification "Nouveau projet".
+
+### 5. Ajouter les traductions de l'onboarding (`fr.ts`, `it.ts`)
+
+Ajouter les cles manquantes dans les fichiers i18n :
+
+```text
+onboarding.title = "Demarrage rapide"
+onboarding.steps.profile.title = "Completer le profil"
+onboarding.steps.profile.description = "Ajoutez le nom et la description de votre association"
+onboarding.steps.logo.title = "Ajouter un logo"
+onboarding.steps.logo.description = "Personnalisez l'identite visuelle"
+onboarding.steps.members.title = "Inviter des membres"
+onboarding.steps.members.description = "Ajoutez au moins 3 membres"
+onboarding.steps.project.title = "Creer un projet"
+onboarding.steps.project.description = "Lancez votre premier projet"
+```
+
+### 6. Fix double separateur (`GlobalHeader.tsx`)
+
+Supprimer le `DropdownMenuSeparator` en double (ligne 200 ou 201).
+
+### 7. Supprimer le breadcrumb sur le dashboard (`HubDashboardLayout.tsx`)
+
+Ne pas passer de `breadcrumb` au `GlobalHeader` quand on est sur le dashboard -- c'est evident qu'on y est. Le breadcrumb reste utile sur les autres pages.
 
 ---
 
-## 1. Defaults plus raisonnables (`src/hooks/useModules.tsx`)
+## Resultat attendu
 
-Passer `defaultEnabled: false` pour les modules qui utilisent des donnees fictives, afin que les nouvelles associations ne soient pas submergees. Les associations existantes qui les ont deja actives ne sont pas impactees.
+Le dashboard passe de **5 blocs** (KPI + Taches + Actions rapides + Onboarding + Header charge) a **3 blocs** :
+- 3 KPI reels et lisibles
+- Liste de taches reelles (ou etat vide propre)
+- Checklist d'onboarding (correctement traduite)
 
-Modules qui passent a `defaultEnabled: false` :
-- `finance` (deja false)
-- `value-chains` (deja false)
-- `jobs` (deja false)
-- `members` (passe de true a false -- donnees mock)
+Zero fausse donnee, zero doublon, zero bruit visuel.
 
-Restent `defaultEnabled: true` : `dashboard`, `accompagnateur`, `organigramme`, `projects`
+## Fichiers modifies
 
-## 2. Supprimer les faux signaux (`src/components/hub/GlobalHeader.tsx`)
-
-- Retirer le badge notification "2" en dur sur la cloche (fausse notification)
-- Retirer le selecteur d'association en double dans le menu profil (deja present dans le header)
-
-## 3. Sidebar : groupes visuels (`src/components/hub/HubSidebar.tsx`)
-
-Ajouter des separateurs visuels entre les categories de modules pour une meilleure lisibilite :
-- **Mon association** : Dashboard, Accompagnateur, modules de gestion actifs
-- **Reseau** : modules reseau actifs
-- **Administration** : Module Store, Parametres
-
-## 4. Fix route `/hub` (`src/App.tsx`)
-
-L'utilisateur est actuellement sur `/hub` -- verifier que la redirection vers `/dashboard` fonctionne correctement avec un `Navigate` au lieu d'un rendu direct.
-
-## 5. Fix toggle admin sur Jobs (`src/pages/Jobs.tsx`)
-
-Supprimer le bouton toggle "Admin" manuel et utiliser directement `isAdmin` de `useAuth()`.
-
----
-
-## Details techniques
-
-### `useModules.tsx`
-- Changer `members` de `defaultEnabled: true` a `defaultEnabled: false`
-
-### `GlobalHeader.tsx`
-- Supprimer le badge "2" sur l'icone cloche
-- Supprimer le bloc selecteur d'association dans le dropdown profil
-
-### `HubSidebar.tsx`
-- Grouper les items par categorie avec des separateurs texte discrets (ex: "GESTION", "RESEAU")
-
-### `App.tsx`
-- Remplacer `<Route path="/hub" element={<Dashboard />} />` par `<Route path="/hub" element={<Navigate to="/dashboard" replace />} />`
-
-### `Jobs.tsx`
-- Remplacer le state `isAdmin` local + toggle par `const { isAdmin } = useAuth()`
+| Fichier | Modification |
+|---------|-------------|
+| `src/components/hub/HubDashboardLayout.tsx` | Supprimer fausses taches, reduire KPI a 3, supprimer actions rapides, retirer breadcrumb |
+| `src/components/hub/GlobalHeader.tsx` | Supprimer notification factice, fix double separateur |
+| `src/i18n/locales/fr.ts` | Ajouter cles onboarding |
+| `src/i18n/locales/it.ts` | Ajouter cles onboarding |
 
