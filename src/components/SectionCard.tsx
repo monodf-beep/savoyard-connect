@@ -97,6 +97,22 @@ export const SectionCard: React.FC<SectionCardProps> = ({
 
   const totalMemberCount = getTotalMemberCount(section);
 
+  // Collecter récursivement tous les membres (y compris sous-sections) avec déduplication
+  const getAllMembers = (s: Section): Person[] => {
+    let all = [...s.members];
+    if (s.leader) all.push(s.leader);
+    if (s.subsections) {
+      s.subsections.forEach(sub => {
+        all = all.concat(getAllMembers(sub));
+      });
+    }
+    return all;
+  };
+  const allMembers = React.useMemo(() => 
+    [...new Map(getAllMembers(section).map(m => [m.id, m])).values()],
+    [section]
+  );
+
   const hasContent = section.members.length > 0 || (section.subsections && section.subsections.length > 0) || (section.vacantPositions && section.vacantPositions.length > 0);
   const isMainSection = level === 0;
   const marginLeft = isMobile ? level * 8 : level * 20;
@@ -181,9 +197,9 @@ export const SectionCard: React.FC<SectionCardProps> = ({
                   </Tooltip>
                 </TooltipProvider>
               )}
-              {!section.isExpanded && section.members.length > 0 && (
+              {!section.isExpanded && allMembers.length > 0 && (
                 <div className="flex items-center ml-2 flex-shrink-0">
-                  {section.members.slice(0, 8).map((person, index) => (
+                  {allMembers.slice(0, 8).map((person, index) => (
                     <Avatar 
                       key={person.id} 
                       className="w-6 h-6 border-2 border-background"
@@ -195,10 +211,10 @@ export const SectionCard: React.FC<SectionCardProps> = ({
                       </AvatarFallback>
                     </Avatar>
                   ))}
-                  {section.members.length > 8 && (
+                  {allMembers.length > 8 && (
                     <span className="w-6 h-6 rounded-full bg-muted flex items-center justify-center text-[9px] font-medium text-muted-foreground border-2 border-background"
                           style={{ marginLeft: -8 }}>
-                      +{section.members.length - 8}
+                      +{allMembers.length - 8}
                     </span>
                   )}
                 </div>
@@ -408,9 +424,9 @@ export const SectionCard: React.FC<SectionCardProps> = ({
             )}
           </div>
           <div className="flex items-center gap-2">
-            {!section.isExpanded && section.members.length > 0 && (
+            {!section.isExpanded && allMembers.length > 0 && (
               <div className="flex items-center flex-shrink-0">
-                {section.members.slice(0, 8).map((person, index) => (
+                {allMembers.slice(0, 8).map((person, index) => (
                   <Avatar 
                     key={person.id} 
                     className="w-5 h-5 border-2 border-background"
@@ -422,10 +438,10 @@ export const SectionCard: React.FC<SectionCardProps> = ({
                     </AvatarFallback>
                   </Avatar>
                 ))}
-                {section.members.length > 8 && (
+                {allMembers.length > 8 && (
                   <span className="w-5 h-5 rounded-full bg-muted flex items-center justify-center text-[8px] font-medium text-muted-foreground border-2 border-background"
                         style={{ marginLeft: -6 }}>
-                    +{section.members.length - 8}
+                    +{allMembers.length - 8}
                   </span>
                 )}
               </div>
