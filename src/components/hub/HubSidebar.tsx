@@ -240,7 +240,7 @@ export const HubSidebar = ({ collapsed, onToggle, isMobile = false }: HubSidebar
               </Button>
             </TooltipTrigger>
             {isCollapsed && (
-              <TooltipContent side="right" className="bg-popover border border-border shadow-lg">
+              <TooltipContent side="right" className="bg-popover text-popover-foreground border border-border shadow-lg">
                 <p>Épingler</p>
               </TooltipContent>
             )}
