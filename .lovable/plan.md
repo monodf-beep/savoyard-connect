@@ -1,70 +1,120 @@
 
-# Avatars condenses quand la section est repliee
+# Simplification de la toolbar desktop
 
-## Objectif
+## Changements
 
-Quand une section est **repliee**, afficher une rangee d'avatars superposees (style "avatar stack") directement dans le header de la section, a cote du compteur de membres. Quand la section est **depliee**, afficher les cartes completes avec noms comme actuellement.
+### 1. Fusionner "Tout deplier" / "Tout replier" en un seul bouton toggle
 
-## Rendu visuel
+Remplacer les deux boutons par un seul bouton discret qui alterne entre les deux etats :
+- Si au moins une section est repliee : affiche l'icone "Expand" et fait `expandAll()` au clic
+- Si toutes les sections sont depliees : affiche l'icone "Shrink" et fait `collapseAll()` au clic
+- Pas de texte, juste une icone (variante `ghost`, taille `icon` ou `sm`) avec un tooltip optionnel
+- On determine l'etat via un `useMemo` qui verifie recursivement si toutes les sections visibles sont `isExpanded === true`
 
-- **Section repliee** : le header affiche le titre, le badge Resp., puis une rangee d'avatars circulaires qui se chevauchent legerement (overlap de -8px), limite a ~8 avatars visibles + un badge "+X" si plus. Cela remplace le simple compteur "12 membres".
-- **Section depliee** : le header n'affiche plus les avatars (ils sont visibles en dessous sous forme de cartes completes). Le compteur texte reste visible.
+### 2. Renommer "Aller a..." en "Vue d'ensemble"
 
-## Modifications
+Le bouton dropdown s'appelle "Vue d'ensemble" au lieu de "Aller a..." :
+- Icone `LayoutGrid` ou `Map` de lucide-react
+- Le dropdown liste les sections racines (en gras) avec leurs sous-sections indentees et le nombre de membres
+- Clic sur un item = scroll fluide + depliage automatique
 
-### 1. `src/components/SectionCard.tsx`
+### Resultat visuel de la toolbar
 
-**Section principale (isMainSection)** — dans le header (ligne ~162-186) :
+```text
+[Rechercher...]  [Ligne|Membres]  [Vue d'ensemble v]  [⊞] 
+                                                        ^
+                                                   toggle deplier/replier (icone seule)
+```
 
-- Quand `!section.isExpanded` et qu'il y a des membres, afficher un composant "avatar stack" inline :
-  - Prendre les 8 premiers membres
-  - Les afficher avec `Avatar` (taille `w-6 h-6`) avec un `margin-left: -8px` (sauf le premier)
-  - Si plus de 8 membres, ajouter un petit cercle "+N"
-  - Garder le compteur texte "X membres" a cote
-- Quand `section.isExpanded`, garder uniquement le compteur texte comme actuellement
-
-**Sous-sections** (deuxieme return, ligne ~360+) — meme logique dans le header replié.
-
-### 2. Aucun autre fichier modifie
-
-Le composant `Avatar`/`AvatarImage`/`AvatarFallback` existant est reutilise directement dans SectionCard. Pas besoin de nouveau composant.
-
----
+La barre passe de 4 boutons + champ de recherche a 2 boutons + 1 icone + champ de recherche. Beaucoup plus epuree.
 
 ## Detail technique
 
-Code a inserer dans le header, apres le badge Resp. et avant le compteur :
+### Fichier modifie : `src/components/Organigramme.tsx`
 
+**Imports a ajouter** :
+- `DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator` depuis `@/components/ui/dropdown-menu`
+- `Avatar, AvatarImage, AvatarFallback` depuis `@/components/ui/avatar`
+- `Tooltip, TooltipContent, TooltipTrigger, TooltipProvider` depuis `@/components/ui/tooltip`
+- Icones : `LayoutGrid` ou `MapPin` depuis lucide-react
+
+**Nouveau `useMemo`** (~5 lignes) :
 ```text
-{!section.isExpanded && section.members.length > 0 && (
-  <div className="flex items-center ml-2 flex-shrink-0">
-    {section.members.slice(0, 8).map((person, index) => (
-      <Avatar 
-        key={person.id} 
-        className="w-6 h-6 border-2 border-background"
-        style={{ marginLeft: index === 0 ? 0 : -8 }}
-      >
-        <AvatarImage src={person.photo} />
-        <AvatarFallback className="text-[8px] bg-primary/10 text-primary">
-          {person.firstName.charAt(0)}
-        </AvatarFallback>
-      </Avatar>
-    ))}
-    {section.members.length > 8 && (
-      <span className="w-6 h-6 rounded-full bg-muted flex items-center justify-center 
-                       text-[9px] font-medium text-muted-foreground border-2 border-background"
-            style={{ marginLeft: -8 }}>
-        +{section.members.length - 8}
-      </span>
-    )}
-  </div>
-)}
+const allExpanded = useMemo(() => {
+  const check = (sections: Section[]): boolean =>
+    sections.every(s => s.isExpanded && (!s.subsections || check(s.subsections)));
+  return check(searchFilteredSections);
+}, [searchFilteredSections]);
 ```
 
-Ce bloc sera ajoute dans les deux blocs de rendu (section principale et sous-section).
+**Fonction `scrollToSection`** (~10 lignes) :
+- Accepte `sectionId` et optionnel `parentId`
+- Deplie le parent si fourni via `toggleSection`
+- Deplie la section cible
+- `setTimeout(150ms)` puis `scrollIntoView({ behavior: 'smooth', block: 'start' })`
+
+**Remplacer les 2 boutons expand/collapse** (lignes 907-928) par un seul bouton icone :
+```text
+<Tooltip>
+  <TooltipTrigger asChild>
+    <Button
+      variant="ghost"
+      size="sm"
+      className="h-8 w-8 p-0"
+      onClick={() => allExpanded ? collapseAll() : expandAll()}
+    >
+      {allExpanded ? <Shrink className="w-4 h-4" /> : <Expand className="w-4 h-4" />}
+    </Button>
+  </TooltipTrigger>
+  <TooltipContent>{allExpanded ? 'Tout replier' : 'Tout deplier'}</TooltipContent>
+</Tooltip>
+```
+
+**Ajouter le dropdown "Vue d'ensemble"** juste avant le bouton toggle :
+```text
+<DropdownMenu>
+  <DropdownMenuTrigger asChild>
+    <Button variant="outline" size="sm" className="h-8 px-3">
+      <LayoutGrid className="w-3.5 h-3.5 mr-1.5" />
+      <span className="text-xs">Vue d'ensemble</span>
+    </Button>
+  </DropdownMenuTrigger>
+  <DropdownMenuContent align="end" className="w-64 max-h-80 overflow-y-auto">
+    {searchFilteredSections.map(section => (
+      <React.Fragment key={section.id}>
+        <DropdownMenuItem 
+          onClick={() => scrollToSection(section.id)}
+          className="font-medium"
+        >
+          {section.title}
+          <span className="ml-auto text-xs text-muted-foreground">
+            {getTotalCount(section)}
+          </span>
+        </DropdownMenuItem>
+        {section.subsections?.filter(s => !s.isHidden).map(sub => (
+          <DropdownMenuItem
+            key={sub.id}
+            onClick={() => scrollToSection(sub.id, section.id)}
+            className="pl-6 text-muted-foreground"
+          >
+            {sub.title}
+            <span className="ml-auto text-xs">{sub.members.length}</span>
+          </DropdownMenuItem>
+        ))}
+      </React.Fragment>
+    ))}
+  </DropdownMenuContent>
+</DropdownMenu>
+```
+
+**Fonction utilitaire `getTotalCount`** (~5 lignes) : comptage recursif des membres (existe deja dans le code mobile, a extraire en helper local).
+
+### Mobile
+
+Dans le Sheet mobile existant, les boutons "Tout deplier" / "Tout replier" restent tels quels (ils sont deja dans un menu secondaire, pas envahissants).
 
 ## Fichiers modifies
 
 | Fichier | Modification |
 |---------|-------------|
-| `src/components/SectionCard.tsx` | Ajouter avatar stack dans les headers replies (2 endroits), importer Avatar/AvatarImage/AvatarFallback |
+| `src/components/Organigramme.tsx` | Remplacer 2 boutons par 1 toggle icone, ajouter dropdown "Vue d'ensemble", imports, `scrollToSection`, `allExpanded`, `getTotalCount` |
