@@ -9,6 +9,8 @@ import { ProjectForm } from '@/components/ProjectForm';
 import { ProjectsKanban } from '@/components/projects/ProjectsKanban';
 import { IdeaBox } from '@/components/projects/IdeaBox';
 import { TranscriptImporter } from '@/components/projects/TranscriptImporter';
+import { MeetingsTimeline } from '@/components/projects/MeetingsTimeline';
+import { useMeetings } from '@/hooks/useMeetings';
 import { HubPageLayout } from '@/components/hub/HubPageLayout';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -61,6 +63,8 @@ const Projects = () => {
   const [filterSectionId, setFilterSectionId] = useState('all');
   const [ideaBoxOpen, setIdeaBoxOpen] = useState(true);
   const [showTranscriptImporter, setShowTranscriptImporter] = useState(false);
+  const [filterMeetingId, setFilterMeetingId] = useState<string | null>(null);
+  const { meetings, isLoading: meetingsLoading } = useMeetings(5);
 
   // Build flat section map for name lookups
   const flattenSections = (sections: Section[]): Record<string, string> => {
@@ -205,8 +209,9 @@ const Projects = () => {
 
   const filteredProjects = projects.filter(p => {
     if (p.approval_status !== 'approved' && !isAdmin) return false;
-    if (filterSectionId !== 'all' && p.section_id !== filterSectionId) return false;
-    if (searchQuery) {
+    if (filterMeetingId && (p as any).source_meeting_id !== filterMeetingId) return false;
+    if (!filterMeetingId && filterSectionId !== 'all' && p.section_id !== filterSectionId) return false;
+    if (!filterMeetingId && searchQuery) {
       const query = searchQuery.toLowerCase();
       if (!p.title.toLowerCase().includes(query) &&
           !(p.description?.toLowerCase().includes(query))) {
@@ -291,6 +296,14 @@ const Projects = () => {
           />
         </div>
       </div>
+
+      {/* Meetings Timeline */}
+      <MeetingsTimeline
+        meetings={meetings}
+        isLoading={meetingsLoading}
+        activeMeetingId={filterMeetingId}
+        onFilterByMeeting={setFilterMeetingId}
+      />
 
       {/* Kanban - Full Width */}
       {filteredProjects.length === 0 ? (
