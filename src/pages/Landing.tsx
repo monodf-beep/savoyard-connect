@@ -280,7 +280,7 @@ const Landing = () => {
                 avatar: "MD",
               },
               {
-                quote: "L'annuaire B2B nous a permis de trouver des partenaires transfrontaliers en quelques clics. Un outil indispensable !",
+                quote: "L'annuaire nous a permis de trouver des partenaires transfrontaliers en quelques clics. Un outil indispensable !",
                 author: "Giovanni Rossi",
                 role: "Directeur",
                 org: "Cultura Valdostana",

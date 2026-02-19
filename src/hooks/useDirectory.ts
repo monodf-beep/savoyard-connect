@@ -1,19 +1,17 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { DirectoryAssociation, GeographicZone } from '@/types/directory';
+import { DirectoryAssociation } from '@/types/directory';
 
 interface UseDirectoryOptions {
-  zones?: GeographicZone[];
   silo?: string;
-  ignoreBorders?: boolean;
   searchQuery?: string;
 }
 
 export function useDirectory(options: UseDirectoryOptions = {}) {
-  const { zones = [], silo, ignoreBorders = false, searchQuery = '' } = options;
+  const { silo, searchQuery = '' } = options;
 
   return useQuery({
-    queryKey: ['directory', zones, silo, ignoreBorders, searchQuery],
+    queryKey: ['directory', silo, searchQuery],
     queryFn: async () => {
       let query = supabase
         .from('associations')
@@ -21,19 +19,10 @@ export function useDirectory(options: UseDirectoryOptions = {}) {
         .eq('is_public', true)
         .eq('is_active', true);
 
-      // Apply zone filter if not ignoring borders
-      if (!ignoreBorders && zones.length > 0) {
-        // Filter by primary or secondary zone
-        const zoneFilters = zones.map(z => `primary_zone.eq.${z},secondary_zone.eq.${z}`).join(',');
-        query = query.or(zoneFilters);
-      }
-
-      // Apply silo filter
       if (silo && silo !== 'all') {
         query = query.eq('silo', silo);
       }
 
-      // Apply search filter
       if (searchQuery) {
         query = query.or(`name.ilike.%${searchQuery}%,description.ilike.%${searchQuery}%,city.ilike.%${searchQuery}%`);
       }
@@ -71,7 +60,47 @@ export function useUserGeolocation() {
         );
       });
     },
-    staleTime: 1000 * 60 * 30, // Cache for 30 minutes
+    staleTime: 1000 * 60 * 30,
     retry: false,
+  });
+}
+
+export function useCrossBorderSuggestions(userAssociationSilo?: string | null, userAssociationZone?: string | null) {
+  return useQuery({
+    queryKey: ['cross-border-suggestions', userAssociationSilo, userAssociationZone],
+    queryFn: async () => {
+      if (!userAssociationSilo || !userAssociationZone) return [];
+
+      const { data: zones } = await import('@/types/directory').then(m => {
+        const userZoneInfo = m.GEOGRAPHIC_ZONES.find(z => z.id === userAssociationZone);
+        return { data: userZoneInfo };
+      });
+
+      if (!zones) return [];
+
+      const userCountry = zones.country;
+
+      let query = supabase
+        .from('associations')
+        .select('id, name, description, logo_url, primary_zone, secondary_zone, silo, city, latitude, longitude, linkedin_url, instagram_url, created_at')
+        .eq('is_public', true)
+        .eq('is_active', true)
+        .eq('silo', userAssociationSilo)
+        .limit(4);
+
+      const { data, error } = await query.order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      // Filter client-side to get associations from a different country
+      const { GEOGRAPHIC_ZONES } = await import('@/types/directory');
+      const suggestions = (data || []).filter(assoc => {
+        const assocZone = GEOGRAPHIC_ZONES.find(z => z.id === assoc.primary_zone);
+        return assocZone && assocZone.country !== userCountry;
+      });
+
+      return suggestions.slice(0, 4) as DirectoryAssociation[];
+    },
+    enabled: !!userAssociationSilo && !!userAssociationZone,
   });
 }

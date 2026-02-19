@@ -24,8 +24,8 @@ export const fr = {
     signup: "Créer mon compte",
     logout: "Déconnexion",
     dashboard: "Tableau de bord",
-    directory: "Annuaire B2B",
-    directoryB2B: "Annuaire B2B",
+    directory: "Annuaire Associations",
+    directoryB2B: "Annuaire Associations",
     resources: "Ressources",
     resourcesShared: "Ressources mutualisées",
     projects: "Projets",
@@ -168,7 +168,7 @@ export const fr = {
       orgChart: "Organigramme",
       projectKanban: "Projets Kanban",
       financeTracking: "Suivi financier",
-      b2bDirectory: "Annuaire B2B",
+      b2bDirectory: "Annuaire Associations",
       sharedEmployment: "Emplois partagés",
       coFundedProjects: "Projets cofinancés",
       expertDiscounts: "Tarifs experts -20%",
@@ -253,7 +253,7 @@ export const fr = {
   pillars: {
     title: "Les 4 Piliers du Hub",
     directory: {
-      title: "Annuaire B2B Qualifié",
+      title: "Annuaire Associations",
       description: "Trouvez des partenaires compatibles par géographie, domaine et besoins",
     },
     resources: {
@@ -743,7 +743,7 @@ export const fr = {
   // Annuaire / Directory
   directory: {
     hero: {
-      badge: "Annuaire B2B transfrontalier",
+      badge: "Annuaire transfrontalier",
       title: "Trouvez des associations partenaires",
       subtitle: "Explorez notre réseau d'associations alpines. Filtrez par zone géographique, domaine d'activité et trouvez des partenaires à proximité.",
       locationActive: "Géolocalisation activée",
@@ -939,7 +939,7 @@ export const fr = {
       },
       howItWorks: {
         q: "Comment fonctionne la plateforme ?",
-        a: "Créez votre compte, inscrivez votre association, et accédez immédiatement à l'annuaire B2B, aux opportunités de financement, et aux outils de gestion internes.",
+        a: "Créez votre compte, inscrivez votre association, et accédez immédiatement à l'annuaire, aux opportunités de financement, et aux outils de gestion internes.",
       },
       whoCanJoin: {
         q: "Qui peut rejoindre le réseau ?",
@@ -1017,7 +1017,7 @@ export const fr = {
       },
       services: {
         title: "Services proposés",
-        content: "La plateforme propose des outils de gestion associative, un annuaire B2B, des fonctionnalités de mutualisation de ressources, et un accès aux opportunités de financement.",
+        content: "La plateforme propose des outils de gestion associative, un annuaire d'associations, des fonctionnalités de mutualisation de ressources, et un accès aux opportunités de financement.",
       },
       responsibilities: {
         title: "Responsabilités",
