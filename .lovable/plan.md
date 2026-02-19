@@ -1,61 +1,39 @@
 
-
-# Afficher les avatars des sous-sections dans les en-tetes des sections parentes
+# Simplification de l'en-tete de l'organigramme
 
 ## Probleme
 
-Quand une section parente comme "Commissions" ou "Groupes de travail" est repliee, aucun avatar n'apparait dans l'en-tete car ces sections n'ont pas de membres directs -- les membres sont dans les sous-sections. Seules "Bureau" et "Conseil d'administration" affichent des avatars car elles ont des membres directs.
+L'en-tete actuel occupe 4 lignes avant le contenu :
+1. Titre "Organigramme" + icone info + badge "29 membres" + bouton "Postes vacants"
+2. Description "Vue complete de la structure organisationnelle"
+3. Barre de controles (recherche + toggle vue + Vue d'ensemble + expand/collapse)
+4. Hint "Glissez-deposez..." (admin)
 
 ## Solution
 
-Modifier `SectionCard.tsx` pour collecter recursivement tous les membres (y compris ceux des sous-sections) et les afficher dans l'avatar stack quand la section est repliee. Ainsi "Commissions" affichera les avatars de tous les membres de toutes ses sous-commissions.
+Fusionner en 2 lignes maximum :
+- **Ligne 1** : Titre "Organigramme" + badge membres + bouton postes vacants (deja dans Index.tsx, inchange)
+- **Ligne 2** : Barre de controles uniquement (recherche + toggle vue + Vue d'ensemble + expand/collapse)
+
+Supprimer :
+- La description "Vue complete de la structure organisationnelle" (dans Index.tsx si elle existe, ou dans HubPageLayout)
+- Le hint "Glissez-deposez..." (admin le sait deja)
 
 ## Detail technique
 
-### Fichier : `src/components/SectionCard.tsx`
+### Fichier : `src/pages/Index.tsx`
 
-1. **Ajouter une fonction `getAllMembers`** qui collecte recursivement tous les membres d'une section et ses sous-sections :
+Verifier et supprimer toute description sous le titre. Actuellement le fichier ne montre pas de description explicite, donc c'est probablement dans `HubPageLayout`. Je vais verifier et supprimer la prop ou le texte correspondant.
 
-```typescript
-const getAllMembers = (s: Section): Person[] => {
-  let all = [...s.members];
-  if (s.subsections) {
-    s.subsections.forEach(sub => {
-      all = all.concat(getAllMembers(sub));
-    });
-  }
-  return all;
-};
-const allMembers = getAllMembers(section);
-```
+### Fichier : `src/components/Organigramme.tsx`
 
-2. **Remplacer `section.members` par `allMembers`** dans les 2 blocs d'affichage d'avatars (section repliee) :
-   - Ligne 184 : condition `section.members.length > 0` devient `allMembers.length > 0`
-   - Ligne 186 : `section.members.slice(0, 8)` devient `allMembers.slice(0, 8)`
-   - Ligne 198-201 : `section.members.length` devient `allMembers.length`
-   - Ligne 411 : idem pour la version mobile
-   - Lignes 413, 425-429 : idem
+1. **Supprimer le hint drag-and-drop** (lignes 1019-1022) : le bloc `isAdmin && <div>Glissez-deposez...</div>` est retire.
 
-3. **Aussi afficher le leader si present** : si une section parente a un `leader` et que les sous-sections ont aussi des leaders, ceux-ci seront naturellement inclus car ils sont dans les `members` des sous-sections.
-
-4. **Deduplication** : filtrer les doublons par `id` (une personne peut apparaitre dans plusieurs sous-sections) :
-
-```typescript
-const allMembers = [...new Map(getAllMembers(section).map(m => [m.id, m])).values()];
-```
-
-## Resultat attendu
-
-```text
-> Commissions   [avatar1 avatar2 avatar3 avatar4 avatar5 +17]
-> Groupes de travail   [avatar1 avatar2 avatar3 +8]
-```
-
-Les sections parentes affichent desormais un apercu de tous leurs membres, meme quand les membres sont repartis dans les sous-sections.
+2. **Reduire le margin du header** : `mb-3 md:mb-6` devient `mb-2 md:mb-3` (ligne 734) pour rapprocher la toolbar du contenu.
 
 ## Fichiers modifies
 
 | Fichier | Modification |
 |---------|-------------|
-| `src/components/SectionCard.tsx` | Ajouter `getAllMembers` recursif, remplacer `section.members` par `allMembers` dans les 2 blocs d'avatar stack (desktop ligne 184-203, mobile ligne 411-430) |
-
+| `src/components/Organigramme.tsx` | Supprimer le hint drag-and-drop (lignes 1019-1022), reduire les marges du header |
+| `src/pages/Index.tsx` | Aucune modification necessaire (pas de description visible) |
