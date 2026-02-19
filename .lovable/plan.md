@@ -1,124 +1,101 @@
 
 
-# Critique et refonte de la page Chaines de Valeur
+# Diagnostic : Projets internes vs Gestion des taches
 
-## Diagnostic : ce qui ne va pas
+## Le probleme
 
-### 1. Trop de couches de navigation -- "usine a gaz"
+L'application propose **deux Kanban boards quasi-identiques** dans la sidebar :
 
-L'utilisateur arrive sur la page et voit **trois zones en meme temps** :
-- La **sidebar gauche** (liste des chaines, recherche, bouton creer) = 288px
-- Le **canvas central** (ReactFlow avec noeuds draggables, zoom, pan, grille)
-- Le **panneau detail droit** qui s'ouvre en overlay quand on clique un segment = 320px
+| | Projets internes (`/projects`) | Gestion des taches (`/admin`) |
+|---|---|---|
+| Table Supabase | `projects` | `admin_tasks` |
+| Colonnes | Planifie / En cours / Termine | A faire / En cours / Fait |
+| Drag-and-drop | Oui (@dnd-kit) | Oui (@dnd-kit) |
+| Visible par | Tous (avec approbation) | Admins uniquement |
+| Champs | Titre, description, section, statut | Titre, description, priorite, echeance |
+| Extras | Timeline reunions, boite a idees, import transcription | Templates auto (AG, cotisations, agrements) |
 
-Ca fait **3 niveaux de navigation sur une seule page**, en plus de la sidebar principale de l'app. Sur un ecran 1366px, il reste ~700px pour le canvas. C'est claustrophobe.
+**Pour un utilisateur lambda, c'est la meme chose presentee deux fois.** La nuance entre "projet" et "tache" n'est pas evidente sans formation. Un admin doit naviguer entre deux pages pour gerer ses actions.
 
-### 2. Le workflow ReactFlow est over-engineere
+## Ce qui n'est pas valorise ou est de trop
 
-Le canvas ReactFlow offre :
-- Drag & drop libre des noeuds avec snap-to-grid (20px)
-- Sauvegarde des positions X/Y et du viewport (zoom/pan)
-- Detection de "unsaved changes" avec alerte avant de quitter
-- Hover highlighting des edges connectes
-- Bouton "+" dynamique qui suit le dernier noeud
-- Bouton "Reorganiser" avec annulation
-- Bouton "Sauvegarder les positions"
+1. **La page Admin (`/admin`) est une copie simplifiee de `/projects`** -- memes 3 colonnes, meme DnD, meme formulaire (titre + description + statut). La seule difference : priorite + echeance sur admin_tasks, et section + meetings sur projects.
 
-**Pour quoi faire ?** Les chaines de valeur d'une association ont typiquement 3-7 etapes lineaires. C'est un flux sequentiel (A -> B -> C), pas un graphe complexe. ReactFlow est un outil prevu pour des workflows DAG avec des branches, des conditions, des boucles. Ici c'est un marteau-pilon pour ecraser une mouche.
+2. **Les templates auto-crees** (AG annuelle, cotisations, agrements) sont utiles mais enfouis dans une page separee. Ils devraient etre des projets comme les autres.
 
-L'utilisateur moyen ne comprend pas pourquoi il peut deplacer les cartes, ne sait pas qu'il faut sauvegarder les positions, et n'a aucun besoin de zoom/pan sur 5 cartes.
+3. **NetworkProjects (`/projets-reseau`)** est une vue en lecture seule des memes `projects` filtres par `is_funding_project`. C'est coherent comme vue inter-associations, pas de probleme ici.
 
-### 3. Toggle Workflow/Kanban : deux vues pour rien
+4. **La Boite a Idees** fonctionne independamment (table `ideas`, pas liee aux projets). Elle est bien placee en collapsible en bas de page, mais elle pourrait etre supprimee si elle n'est pas utilisee -- c'est une micro-fonctionnalite de plus.
 
-Il y a un toggle entre mode "Workflow" (ReactFlow) et "Kanban" (colonnes horizontales). Les deux montrent exactement la meme information (nom du segment + acteurs) dans deux presentations differentes. Ca force l'utilisateur a choisir sans raison.
+5. **La Timeline des reunions** ajoute une couche de complexite avec son propre formulaire de creation, ses filtres, et la notion de "RDV" vs "transcription importee". C'est un mini-calendrier cache dans la page projets.
 
-### 4. Fusionner/Scinder : fonctions expertes exposees
-
-Les boutons "Fusionner" et "Scinder" sont dans la barre d'outils principale. Ce sont des operations avancees que 99% des utilisateurs ne feront jamais. Leur presence ajoute du bruit cognitif.
-
-### 5. Systeme d'approbation visible en permanence
-
-Le badge "En attente" et les actions "Approuver/Rejeter" sont toujours visibles. Pour une association avec 3-4 chaines, ce workflow d'approbation est disproportionne.
-
-### 6. Fichiers morts
-
-- `ValueChainFlowDiagram.tsx` : jamais importe nulle part (ancien composant remplace par WorkflowCanvas)
-- `MinimalChainDisplay.tsx` : jamais importe nulle part (ancien composant remplace par KanbanChainDisplay)
-
-### 7. Le panneau de details : repetitif
-
-Le `SegmentDetailPanel` affiche exactement les memes infos que le noeud du canvas (nom + acteurs), juste en plus grand. Il n'ajoute aucune information supplementaire. C'est un clic de plus pour rien.
-
----
-
-## Solution : une seule vue, zero sidebar supplementaire
+## Solution proposee : fusionner en une seule page
 
 ### Principe
 
-Supprimer la complexite et adopter une vue unique, lineaire, lisible immediatement. Pas de ReactFlow, pas de sidebar de selection, pas de panneau de details en overlay.
+Supprimer la page Admin (`/admin`) et absorber ses fonctionnalites dans la page Projets (`/projects`). Un seul Kanban, une seule table, une seule entree dans la sidebar.
 
-### Nouvelle architecture
+### Changements concrets
 
-```text
-+--------------------------------------------------+
-| Chaines de valeur                    [+ Creer]   |
-| Visualisez les processus operationnels            |
-+--------------------------------------------------+
-| [Recherche...] (filtre inline, pas de sidebar)    |
-+--------------------------------------------------+
-|                                                    |
-| === Production editoriale ===        [Modifier]   |
-|                                                    |
-| [Acquisition] --> [Edition] --> [Publication]      |
-|  Marie D.          Jean M.       Section Com.      |
-|  Paul R.           Lucie B.                        |
-|                                                    |
-| === Gestion evenementielle ===       [Modifier]   |
-|                                                    |
-| [Planification] --> [Logistique] --> [Suivi]       |
-|  Section Bureau     Pierre K.        Marie D.      |
-|                                                    |
-+--------------------------------------------------+
-```
+**1. Enrichir la table `projects` avec les champs manquants**
 
-### Ce qu'on garde
-- Formulaire de creation/edition (dialog existant, il fonctionne bien)
-- Suppression avec confirmation
-- Donnees Supabase (hook `useValueChains` -- intact)
+Migration SQL :
+- Ajouter `priority` (text, default 'medium') -- les valeurs low/medium/high
+- Ajouter `due_date` (date) -- echeance
+- Ajouter `template_key` (text) -- pour les taches recurrentes type AG
 
-### Ce qu'on supprime
-- **ChainSidebar** : la liste des chaines sera inline dans la page, pas dans une sidebar separee
-- **WorkflowCanvas** : remplace par un affichage lineaire simple (fleches entre blocs)
-- **SegmentDetailPanel** : les acteurs sont deja visibles sur chaque segment, pas besoin d'un panneau supplementaire
-- **ValueChainFlowDiagram.tsx** : code mort
-- **MinimalChainDisplay.tsx** : code mort
-- **KanbanChainDisplay** : plus besoin de deux vues
-- Toggle Workflow/Kanban
-- Boutons Fusionner/Scinder (garder les fonctions dans le hook mais retirer de l'UI)
-- Boutons "Sauvegarder positions" / "Reorganiser" / "Annuler"
-- ReactFlow (la dependance `reactflow` peut rester pour le moment mais n'est plus utilisee sur cette page)
+Ces champs sont optionnels. Un projet peut avoir une echeance ou non, une priorite ou non. Ca ne surcharge pas le formulaire : on ajoute deux champs au dialog existant (un select priorite + un date picker echeance).
 
-### La nouvelle vue
+**2. Migrer les donnees existantes de `admin_tasks` vers `projects`**
 
-Chaque chaine s'affiche comme un **bloc accordeon** :
-- **Ferme** : titre + nombre d'etapes + badge "En attente" si applicable
-- **Ouvert** : affichage lineaire horizontal des segments (fleches entre eux), chaque segment montre son nom et ses acteurs (avatars + noms)
+Migration SQL qui copie les taches admin existantes dans `projects` avec un mapping de statut (todo -> planned, in_progress -> in_progress, done -> completed).
 
-Pour editer, on clique "Modifier" qui ouvre le dialog existant (`ValueChainForm`). C'est tout.
+**3. Modifier la page Projets**
 
-## Fichiers
+- Ajouter un badge de priorite sur les cartes Kanban (discret : juste un point colore ou un badge "Urgent" pour les high)
+- Afficher l'echeance sur la carte si elle existe (ex: "3j restants" en jaune, "2j en retard" en rouge)
+- Les templates (AG annuelle, cotisations, agrements) deviennent des projets crees automatiquement comme avant, mais dans la table `projects`
+
+**4. Modifier le formulaire de creation de projet**
+
+Le formulaire actuel a 4 champs : Titre, Description, Section, Statut. On ajoute :
+- Priorite (select : Basse / Normale / Urgente) -- optionnel, defaut Normale
+- Echeance (date picker) -- optionnel
+
+Ca fait 6 champs, ca reste raisonnable.
+
+**5. Supprimer la page Admin et ses dependances**
+
+- Supprimer `src/pages/Admin.tsx`
+- Retirer l'entree "Gestion des taches" de la sidebar (`HubSidebar.tsx`)
+- Retirer le module "admin-tasks" du registre (`useModules.tsx`)
+- Retirer la route `/admin` de `App.tsx`
+- La table `admin_tasks` peut etre conservee temporairement (au cas ou) ou droppee apres migration
+
+### Ce qu'on ne touche PAS
+
+- La Boite a Idees : elle reste en collapsible en bas, c'est leger
+- La Timeline des reunions : elle reste, c'est le lien entre decisions et actions
+- NetworkProjects (`/projets-reseau`) : vue inter-associations, pas de changement
+- L'import de transcription : reste tel quel
+
+## Fichiers concernes
 
 | Fichier | Action |
 |---|---|
-| `src/pages/ValueChains.tsx` | Refonte : supprimer sidebar/canvas/panneau detail, afficher les chaines en blocs accordeon avec vue lineaire |
-| `src/components/valueChain/ValueChainFlowDiagram.tsx` | Supprimer (code mort) |
-| `src/components/valueChain/MinimalChainDisplay.tsx` | Supprimer (code mort) |
-| `src/components/valueChain/KanbanChainDisplay.tsx` | Supprimer (remplace par vue inline) |
-| `src/components/valueChain/WorkflowCanvas.tsx` | Supprimer (remplace par vue lineaire) |
-| `src/components/valueChain/ChainSidebar.tsx` | Supprimer (remplace par recherche inline) |
-| `src/components/valueChain/SegmentDetailPanel.tsx` | Supprimer (info deja visible sur les segments) |
+| Migration SQL | Ajouter `priority`, `due_date`, `template_key` a `projects` + migrer les donnees de `admin_tasks` |
+| `src/pages/Admin.tsx` | Supprimer |
+| `src/pages/Projects.tsx` | Ajouter la logique de templates auto-crees (AG, cotisations, agrements) |
+| `src/components/ProjectForm.tsx` | Ajouter les champs Priorite et Echeance |
+| `src/components/projects/ProjectsKanban.tsx` | Afficher priorite et echeance sur les cartes |
+| `src/components/hub/HubSidebar.tsx` | Retirer l'entree `/admin` |
+| `src/hooks/useModules.tsx` | Retirer le module `admin-tasks` |
+| `src/App.tsx` | Retirer la route `/admin` |
+| `src/integrations/supabase/types.ts` | Sera regenere apres migration |
 
-Le hook `useValueChains.ts` reste intact -- les fonctions `mergeChains`, `splitChain`, `saveSegmentPositions` restent disponibles si besoin futur mais ne sont plus exposees dans l'UI.
+## Resultat pour l'utilisateur
 
-Le `ValueChainForm.tsx` reste intact -- c'est le dialog d'edition qui fonctionne bien.
+Avant : 2 pages Kanban, 2 tables, 2 entrees sidebar, confusion entre "projet" et "tache".
+
+Apres : 1 seule page "Projets", un Kanban unifie. Les echeances et priorites sont visibles directement sur les cartes. Les taches recurrentes (AG, cotisations) apparaissent comme des projets normaux. Zero confusion.
 
