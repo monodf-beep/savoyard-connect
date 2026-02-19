@@ -14,7 +14,8 @@ import {
   DialogTitle,
   DialogDescription,
 } from '@/components/ui/dialog';
-import { FileText, Loader2, Check, Copy, Settings, Sparkles } from 'lucide-react';
+import { FileText, Loader2, Check, Copy, Settings, Sparkles, Upload } from 'lucide-react';
+import { Input } from '@/components/ui/input';
 
 interface ExtractedAction {
   title: string;
@@ -47,8 +48,41 @@ export const TranscriptImporter = ({
   const [isCreating, setIsCreating] = useState(false);
   const [step, setStep] = useState<'input' | 'preview'>('input');
   const [copied, setCopied] = useState(false);
+  const [isLoadingPdf, setIsLoadingPdf] = useState(false);
 
   const webhookUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/process-transcript`;
+
+  const handlePdfUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.type !== 'application/pdf') {
+      toast({ title: 'Format non supporté', description: 'Veuillez sélectionner un fichier PDF', variant: 'destructive' });
+      return;
+    }
+    setIsLoadingPdf(true);
+    try {
+      const arrayBuffer = await file.arrayBuffer();
+      const base64 = btoa(
+        new Uint8Array(arrayBuffer).reduce((data, byte) => data + String.fromCharCode(byte), '')
+      );
+      const { data, error } = await supabase.functions.invoke('extract-pdf-text', {
+        body: { pdf_base64: base64, filename: file.name },
+      });
+      if (error) throw error;
+      if (data?.text) {
+        setTranscript(data.text);
+        toast({ title: 'PDF importé', description: `${file.name} — texte extrait avec succès` });
+      } else {
+        toast({ title: 'Aucun texte trouvé', description: 'Le PDF ne contient pas de texte extractible', variant: 'destructive' });
+      }
+    } catch (error: any) {
+      console.error('PDF extract error:', error);
+      toast({ title: 'Erreur', description: error?.message || "Impossible d'extraire le texte du PDF", variant: 'destructive' });
+    } finally {
+      setIsLoadingPdf(false);
+      e.target.value = '';
+    }
+  };
 
   const gasScript = `// Google Apps Script — Coller dans Extensions > Apps Script
 // Déclencheur : onFileCreated sur le dossier Drive des transcriptions
@@ -216,6 +250,31 @@ function onFileCreated(e) {
           <TabsContent value="manual" className="mt-4 space-y-4">
             {step === 'input' ? (
               <>
+                <div className="flex items-center gap-2">
+                  <label className="flex-1">
+                    <Input
+                      type="file"
+                      accept=".pdf"
+                      onChange={handlePdfUpload}
+                      className="hidden"
+                      disabled={isLoadingPdf}
+                    />
+                    <Button
+                      variant="outline"
+                      className="w-full"
+                      asChild
+                      disabled={isLoadingPdf}
+                    >
+                      <span>
+                        {isLoadingPdf ? (
+                          <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Extraction du PDF...</>
+                        ) : (
+                          <><Upload className="h-4 w-4 mr-2" />Téléverser un PDF</>
+                        )}
+                      </span>
+                    </Button>
+                  </label>
+                </div>
                 <Textarea
                   placeholder="Collez ici le texte de la transcription de votre visio (Google Meet, Zoom, etc.)..."
                   value={transcript}
