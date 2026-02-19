@@ -272,9 +272,12 @@ export type Database = {
           cover_image_url: string | null
           created_at: string
           description: string | null
+          federation_joined_at: string | null
+          helloasso_slug: string | null
           id: string
           instagram_url: string | null
           is_active: boolean | null
+          is_federation_member: boolean | null
           is_public: boolean | null
           latitude: number | null
           linkedin_url: string | null
@@ -299,9 +302,12 @@ export type Database = {
           cover_image_url?: string | null
           created_at?: string
           description?: string | null
+          federation_joined_at?: string | null
+          helloasso_slug?: string | null
           id?: string
           instagram_url?: string | null
           is_active?: boolean | null
+          is_federation_member?: boolean | null
           is_public?: boolean | null
           latitude?: number | null
           linkedin_url?: string | null
@@ -326,9 +332,12 @@ export type Database = {
           cover_image_url?: string | null
           created_at?: string
           description?: string | null
+          federation_joined_at?: string | null
+          helloasso_slug?: string | null
           id?: string
           instagram_url?: string | null
           is_active?: boolean | null
+          is_federation_member?: boolean | null
           is_public?: boolean | null
           latitude?: number | null
           linkedin_url?: string | null
@@ -439,6 +448,63 @@ export type Database = {
             columns: ["target_association_id"]
             isOneToOne: false
             referencedRelation: "associations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      federation_members: {
+        Row: {
+          activated_at: string | null
+          association_id: string
+          created_at: string
+          email: string
+          expires_at: string | null
+          first_name: string | null
+          helloasso_member_id: string | null
+          id: string
+          last_name: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          activated_at?: string | null
+          association_id: string
+          created_at?: string
+          email: string
+          expires_at?: string | null
+          first_name?: string | null
+          helloasso_member_id?: string | null
+          id?: string
+          last_name?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          activated_at?: string | null
+          association_id?: string
+          created_at?: string
+          email?: string
+          expires_at?: string | null
+          first_name?: string | null
+          helloasso_member_id?: string | null
+          id?: string
+          last_name?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "federation_members_association_id_fkey"
+            columns: ["association_id"]
+            isOneToOne: false
+            referencedRelation: "associations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "federation_members_helloasso_member_id_fkey"
+            columns: ["helloasso_member_id"]
+            isOneToOne: false
+            referencedRelation: "helloasso_members"
             referencedColumns: ["id"]
           },
         ]
