@@ -171,7 +171,7 @@ export const GlobalHeader = ({ breadcrumb, onMobileMenuToggle }: GlobalHeaderPro
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="gap-1 md:gap-2 px-1.5 md:px-2 h-9">
+            <Button variant="ghost" className="gap-1 md:gap-2 px-1.5 md:px-2 h-9 hover:bg-muted hover:text-foreground">
               <Avatar className="h-7 w-7 md:h-8 md:w-8 border-2 border-primary/20">
                 <AvatarImage src={user?.user_metadata?.avatar_url} />
                 <AvatarFallback className="bg-primary/10 text-primary font-semibold text-xs">
