@@ -162,11 +162,9 @@ export const GlobalHeader = ({ breadcrumb, onMobileMenuToggle }: GlobalHeaderPro
             <div className="px-3 py-2 border-b border-border">
               <p className="font-semibold text-sm">{t("notifications.title")}</p>
             </div>
-            <div className="max-h-64 overflow-y-auto">
-              <DropdownMenuItem className="flex flex-col items-start gap-1 p-3 cursor-pointer">
-                <p className="text-sm font-medium">{t("notifications.newProject")}</p>
-                <p className="text-xs text-muted-foreground">{t("notifications.yesterday")}</p>
-              </DropdownMenuItem>
+            <div className="px-3 py-6 text-center text-muted-foreground">
+              <Bell className="h-6 w-6 mx-auto mb-2 opacity-40" />
+              <p className="text-sm">{t("notifications.empty", "Aucune notification")}</p>
             </div>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -196,8 +194,6 @@ export const GlobalHeader = ({ breadcrumb, onMobileMenuToggle }: GlobalHeaderPro
               </Link>
             </DropdownMenuItem>
             <div className="sm:hidden px-2 py-1.5"><LanguageToggle /></div>
-            <DropdownMenuSeparator />
-            
             <DropdownMenuSeparator />
             <DropdownMenuItem className="cursor-pointer text-destructive focus:text-destructive" onClick={handleSignOut}>
               <LogOut className="h-4 w-4 mr-2" />{t("nav.logout")}

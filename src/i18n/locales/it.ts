@@ -381,6 +381,22 @@ export const it = {
         domainsAdded: "Settori di attività inseriti",
         firstConnection: "Prima connessione stabilita",
         resourceAdded: "Risorsa aggiunta",
+        profile: {
+          title: "Completare il profilo",
+          description: "Aggiungi il nome e la descrizione della tua associazione",
+        },
+        logo: {
+          title: "Aggiungere un logo",
+          description: "Personalizza l'identità visiva",
+        },
+        members: {
+          title: "Invitare membri",
+          description: "Aggiungi almeno 3 membri",
+        },
+        project: {
+          title: "Creare un progetto",
+          description: "Lancia il tuo primo progetto",
+        },
       },
       completeProfile: "Completa il mio profilo",
     },
@@ -864,5 +880,27 @@ export const it = {
     backToList: "Torna agli articoli",
     categories: { news: "Notizie", tutorials: "Tutorial", testimonials: "Testimonianze" },
     placeholder: { post1: { title: "Benvenuto su Associacion!", excerpt: "Scopri come la nostra piattaforma può aiutarti." }, post2: { title: "Come creare la tua associazione", excerpt: "Guida pratica." }, post3: { title: "Testimonianza: Club Alpino", excerpt: "Esperienza di un'associazione sportiva." } },
+  },
+  // Top-level onboarding keys (used by OnboardingChecklist component)
+  onboarding: {
+    title: "Avvio rapido",
+    steps: {
+      profile: {
+        title: "Completare il profilo",
+        description: "Aggiungi il nome e la descrizione della tua associazione",
+      },
+      logo: {
+        title: "Aggiungere un logo",
+        description: "Personalizza l'identità visiva",
+      },
+      members: {
+        title: "Invitare membri",
+        description: "Aggiungi almeno 3 membri",
+      },
+      project: {
+        title: "Creare un progetto",
+        description: "Lancia il tuo primo progetto",
+      },
+    },
   },
 };

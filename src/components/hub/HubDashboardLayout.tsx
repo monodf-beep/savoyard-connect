@@ -81,13 +81,6 @@ export const HubDashboardLayout = ({
     { icon: Users, value: statsLoading ? null : (stats?.membersCount || 0), label: t("dashboard.kpi.members", "Membres"), color: "text-primary", bg: "bg-primary/10" },
     { icon: FolderKanban, value: statsLoading ? null : (stats?.projectsCount || 0), label: t("dashboard.kpi.projects.label"), color: "text-secondary", bg: "bg-secondary/10" },
     { icon: ClipboardList, value: statsLoading ? null : (stats?.tasksCount || 0), label: t("dashboard.kpi.tasks", "Tâches"), color: "text-orange-500", bg: "bg-orange-500/10" },
-    { icon: Clock, value: statsLoading ? null : (stats?.pendingTasksCount || 0), label: t("dashboard.kpi.pending", "En attente"), color: "text-amber-500", bg: "bg-amber-500/10" },
-  ];
-
-  const quickActions = [
-    { icon: FileText, label: t("dashboard.quickActions.addDocument", "Ajouter un document"), href: "/projects" },
-    { icon: Users, label: t("dashboard.quickActions.manageMembers", "Gérer les membres"), href: "/members" },
-    { icon: Settings, label: t("dashboard.quickActions.settings", "Paramètres"), href: "/settings" },
   ];
 
   const displayTasks = realTasks && realTasks.length > 0 
@@ -95,14 +88,11 @@ export const HubDashboardLayout = ({
         title: task.title, status: task.status,
         dueDate: task.due_date ? format(new Date(task.due_date), "d MMM", { locale: dateLocale }) : t("common.noDate", "Non défini"),
       }))
-    : [
-        { title: t("dashboard.tasks.sample.orgChart", "Mettre à jour l'organigramme"), status: "pending", dueDate: t("common.today", "Aujourd'hui") },
-        { title: t("dashboard.tasks.sample.finance", "Valider le rapport financier"), status: "pending", dueDate: t("common.tomorrow", "Demain") },
-      ];
+    : [];
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <GlobalHeader breadcrumb={t("nav.dashboard")} onMobileMenuToggle={() => setMobileMenuOpen(true)} />
+      <GlobalHeader onMobileMenuToggle={() => setMobileMenuOpen(true)} />
 
       <div className="flex flex-1">
         <div className="hidden md:block">
@@ -197,7 +187,7 @@ export const HubDashboardLayout = ({
           </div>
 
           {/* KPI Cards */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <div className="grid grid-cols-3 gap-3">
             {kpis.map((kpi, index) => (
               <Card key={index} className="border-border/50">
                 <CardContent className="p-4">
@@ -233,55 +223,49 @@ export const HubDashboardLayout = ({
                 </div>
               </CardHeader>
               <CardContent className="space-y-3">
-                {displayTasks.map((task, index) => (
-                  <div key={index} className={cn(
-                    "flex items-center justify-between p-3 rounded-lg border transition-colors",
-                    task.status === 'completed' 
-                      ? "bg-muted/30 border-border/50" 
-                      : "bg-background border-border hover:border-primary/30"
-                  )}>
-                    <div className="flex items-center gap-3">
-                      {task.status === 'completed' ? (
-                        <CheckCircle2 className="h-5 w-5 text-green-500" />
-                      ) : (
-                        <div className="h-5 w-5 rounded-full border-2 border-muted-foreground/30" />
-                      )}
-                      <span className={cn("text-sm", task.status === 'completed' && "line-through text-muted-foreground")}>
-                        {task.title}
-                      </span>
-                    </div>
-                    <Badge variant="outline" className="text-[10px]">
-                      <Calendar className="h-3 w-3 mr-1" />{task.dueDate}
-                    </Badge>
+                {displayTasks.length === 0 ? (
+                  <div className="text-center py-6 text-muted-foreground">
+                    <ClipboardList className="h-8 w-8 mx-auto mb-2 opacity-40" />
+                    <p className="text-sm">{t("dashboard.tasks.empty", "Aucune tâche en cours")}</p>
+                    <Button variant="outline" size="sm" className="mt-3" onClick={() => navigate('/admin')}>
+                      {t("dashboard.tasks.create", "Créer une tâche")}
+                    </Button>
                   </div>
-                ))}
+                ) : (
+                  displayTasks.map((task, index) => (
+                    <div key={index} className={cn(
+                      "flex items-center justify-between p-3 rounded-lg border transition-colors",
+                      task.status === 'completed' 
+                        ? "bg-muted/30 border-border/50" 
+                        : "bg-background border-border hover:border-primary/30"
+                    )}>
+                      <div className="flex items-center gap-3">
+                        {task.status === 'completed' ? (
+                          <CheckCircle2 className="h-5 w-5 text-green-500" />
+                        ) : (
+                          <div className="h-5 w-5 rounded-full border-2 border-muted-foreground/30" />
+                        )}
+                        <span className={cn("text-sm", task.status === 'completed' && "line-through text-muted-foreground")}>
+                          {task.title}
+                        </span>
+                      </div>
+                      <Badge variant="outline" className="text-[10px]">
+                        <Calendar className="h-3 w-3 mr-1" />{task.dueDate}
+                      </Badge>
+                    </div>
+                  ))
+                )}
               </CardContent>
             </Card>
 
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <Zap className="h-5 w-5 text-accent" />
-                  {t("dashboard.quickActions.title")}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                {quickActions.map((action, index) => (
-                  <Button key={index} variant="outline" className="w-full justify-start gap-3 h-12" onClick={() => navigate(action.href)}>
-                    <action.icon className="h-4 w-4 text-muted-foreground" />
-                    {action.label}
-                  </Button>
-                ))}
-              </CardContent>
-            </Card>
+            <OnboardingChecklist
+              association={currentAssociation}
+              membersCount={stats?.membersCount || 0}
+              projectsCount={stats?.projectsCount || 0}
+              onActionClick={(path) => navigate(path)}
+            />
           </div>
 
-          <OnboardingChecklist
-            association={currentAssociation}
-            membersCount={stats?.membersCount || 0}
-            projectsCount={stats?.projectsCount || 0}
-            onActionClick={(path) => navigate(path)}
-          />
 
           <div className="h-20 md:hidden" />
         </main>

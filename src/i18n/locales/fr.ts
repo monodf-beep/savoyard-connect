@@ -406,6 +406,22 @@ export const fr = {
         domainsAdded: "Domaines d'activité renseignés",
         firstConnection: "Première connexion établie",
         resourceAdded: "Ressource ajoutée",
+        profile: {
+          title: "Compléter le profil",
+          description: "Ajoutez le nom et la description de votre association",
+        },
+        logo: {
+          title: "Ajouter un logo",
+          description: "Personnalisez l'identité visuelle",
+        },
+        members: {
+          title: "Inviter des membres",
+          description: "Ajoutez au moins 3 membres",
+        },
+        project: {
+          title: "Créer un projet",
+          description: "Lancez votre premier projet",
+        },
       },
       completeProfile: "Compléter mon profil",
     },
@@ -1087,4 +1103,26 @@ export const fr = {
     },
   },
 
+  // Top-level onboarding keys (used by OnboardingChecklist component)
+  onboarding: {
+    title: "Démarrage rapide",
+    steps: {
+      profile: {
+        title: "Compléter le profil",
+        description: "Ajoutez le nom et la description de votre association",
+      },
+      logo: {
+        title: "Ajouter un logo",
+        description: "Personnalisez l'identité visuelle",
+      },
+      members: {
+        title: "Inviter des membres",
+        description: "Ajoutez au moins 3 membres",
+      },
+      project: {
+        title: "Créer un projet",
+        description: "Lancez votre premier projet",
+      },
+    },
+  },
 };
