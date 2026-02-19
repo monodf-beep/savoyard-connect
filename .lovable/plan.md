@@ -1,109 +1,62 @@
 
-# Suppression du Hub Réseau et simplification de la navigation
 
-## Pourquoi supprimer le Hub ?
+# Simplification UX sans supprimer de modules
 
-Depuis la migration de toutes les fonctionnalités (Annuaire, Experts, Mutualisation, etc.) dans le contexte association via le Store de modules, le Hub Réseau n'a plus de raison d'exister :
+## Principe
 
-- Les raccourcis du Hub pointent vers des pages accessibles dans la sidebar
-- Le sélecteur d'association est deja dans le header global
-- Les stats réseau peuvent etre integrees au Dashboard
-- Le double contexte hub/association complexifie l'UX sans apporter de valeur
+Tous les modules restent disponibles dans le Store. On change uniquement les **valeurs par defaut** et on nettoie les elements trompeurs.
 
-## Ce qui change
+---
 
-### 1. Flux de connexion simplifie
+## 1. Defaults plus raisonnables (`src/hooks/useModules.tsx`)
 
-**Avant** : Login -> Hub -> Choisir asso -> Dashboard
-**Apres** : Login -> Dashboard (association auto-selectionnee ou choix si plusieurs)
+Passer `defaultEnabled: false` pour les modules qui utilisent des donnees fictives, afin que les nouvelles associations ne soient pas submergees. Les associations existantes qui les ont deja actives ne sont pas impactees.
 
-### 2. Fichiers a supprimer
+Modules qui passent a `defaultEnabled: false` :
+- `finance` (deja false)
+- `value-chains` (deja false)
+- `jobs` (deja false)
+- `members` (passe de true a false -- donnees mock)
 
-- `src/pages/Hub.tsx` : page Hub complete
-- `src/hooks/useNetworkStats.ts` : stats reseau (plus utilisees)
-- `src/components/hub/HubKPICards.tsx` : cartes KPI du hub
-- `src/components/hub/HubQuickActions.tsx` : actions rapides du hub
-- `src/components/hub/HubActivityTimeline.tsx` : timeline hub
-- `src/components/hub/HubOnboardingCard.tsx` : onboarding hub
+Restent `defaultEnabled: true` : `dashboard`, `accompagnateur`, `organigramme`, `projects`
 
-### 3. Fichiers a modifier
+## 2. Supprimer les faux signaux (`src/components/hub/GlobalHeader.tsx`)
 
-**`src/hooks/useAssociation.tsx`**
-- Supprimer le type `ContextType` et la dualite hub/association
-- Supprimer `selectHubContext`, `currentContext`, `setCurrentContext`
-- Au login, auto-selectionner la premiere association (ou la derniere utilisee)
-- Si aucune association, rediriger vers `/onboarding-asso`
+- Retirer le badge notification "2" en dur sur la cloche (fausse notification)
+- Retirer le selecteur d'association en double dans le menu profil (deja present dans le header)
 
-**`src/components/hub/HubSidebar.tsx`**
-- Supprimer `hubNetworkItems` (le tableau avec un seul item "Home Hub")
-- Supprimer toute la logique de contexte `if (currentContext === 'hub')`
-- Ne garder que les `associationItems` filtres par modules
-- Renommer le composant en `AppSidebar` (optionnel, pour clarte)
+## 3. Sidebar : groupes visuels (`src/components/hub/HubSidebar.tsx`)
 
-**`src/components/hub/HubPageLayout.tsx`** et **`src/components/hub/HubDashboardLayout.tsx`**
-- Supprimer les references au contexte hub
-- Supprimer le bouton "Retour au Hub Reseau"
-- Simplifier le menu mobile : plus de switch hub/asso
+Ajouter des separateurs visuels entre les categories de modules pour une meilleure lisibilite :
+- **Mon association** : Dashboard, Accompagnateur, modules de gestion actifs
+- **Reseau** : modules reseau actifs
+- **Administration** : Module Store, Parametres
 
-**`src/components/hub/MobileBottomNav.tsx`**
-- Supprimer la branche `if (currentContext === 'hub')` qui affichait des nav items hub
-- Ne garder que la navigation association
+## 4. Fix route `/hub` (`src/App.tsx`)
 
-**`src/components/hub/GlobalHeader.tsx`**
-- Supprimer l'option "Retour au Hub" du switcher
-- Le switcher ne fait plus que changer d'association
+L'utilisateur est actuellement sur `/hub` -- verifier que la redirection vers `/dashboard` fonctionne correctement avec un `Navigate` au lieu d'un rendu direct.
 
-**`src/App.tsx`**
-- Supprimer la route `/hub`
-- Rediriger les utilisateurs connectes vers `/dashboard` par defaut
+## 5. Fix toggle admin sur Jobs (`src/pages/Jobs.tsx`)
 
-**`src/i18n/locales/fr.ts`** et **`src/i18n/locales/it.ts`**
-- Nettoyer les cles de traduction `hubNetwork`, `hubHome`, `returnToHub`, etc.
+Supprimer le bouton toggle "Admin" manuel et utiliser directement `isAdmin` de `useAuth()`.
 
-### 4. Recuperer les elements utiles du Hub
-
-Les quelques elements de valeur du Hub seront redistribues :
-
-- **Stats reseau** : integrees au Dashboard sous forme de petit widget "Mon reseau" (nombre d'assos, de projets)
-- **Liste associations** : deja dans le header via `AssociationSwitcher`, suffisant
-- **Bouton "Creer une association"** : deja dans le switcher du header
-- **Silos Sport/Culture** : restent accessibles via les landing pages publiques et la sidebar
+---
 
 ## Details techniques
 
-### Simplification du contexte
+### `useModules.tsx`
+- Changer `members` de `defaultEnabled: true` a `defaultEnabled: false`
 
-```text
-AVANT:
-useAssociation() -> currentContext: 'hub' | 'association'
-                 -> selectHubContext()
-                 -> selectAssociationContext(asso)
+### `GlobalHeader.tsx`
+- Supprimer le badge "2" sur l'icone cloche
+- Supprimer le bloc selecteur d'association dans le dropdown profil
 
-APRES:
-useAssociation() -> currentAssociation (toujours defini si connecte)
-                 -> setCurrentAssociation(asso)
-```
+### `HubSidebar.tsx`
+- Grouper les items par categorie avec des separateurs texte discrets (ex: "GESTION", "RESEAU")
 
-### Redirections
+### `App.tsx`
+- Remplacer `<Route path="/hub" element={<Dashboard />} />` par `<Route path="/hub" element={<Navigate to="/dashboard" replace />} />`
 
-```text
-/hub           -> redirige vers /dashboard
-Login reussi   -> /dashboard (au lieu de /hub)
-Aucune asso    -> /onboarding-asso
-```
+### `Jobs.tsx`
+- Remplacer le state `isAdmin` local + toggle par `const { isAdmin } = useAuth()`
 
-### Impact sur la sidebar
-
-```text
-AVANT (contexte hub):     Sidebar avec 1 seul item "Home Hub"
-AVANT (contexte asso):    Sidebar complete avec modules
-
-APRES:                    Sidebar unique, toujours les modules de l'asso active
-```
-
-## Resultat attendu
-
-- Navigation simplifiee en 1 seul niveau (plus de bascule hub/asso)
-- Moins de code a maintenir (~300 lignes supprimees)
-- Experience utilisateur plus directe : connexion -> gestion immediate
-- Le header reste le point central pour changer d'association
