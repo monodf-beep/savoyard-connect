@@ -1,101 +1,130 @@
 
 
-# Diagnostic : Projets internes vs Gestion des taches
+# Diagnostic critique : Annuaire B2B
 
-## Le probleme
+## Problemes identifies
 
-L'application propose **deux Kanban boards quasi-identiques** dans la sidebar :
+### 1. Le nom "B2B" est incomprehensible
 
-| | Projets internes (`/projects`) | Gestion des taches (`/admin`) |
-|---|---|---|
-| Table Supabase | `projects` | `admin_tasks` |
-| Colonnes | Planifie / En cours / Termine | A faire / En cours / Fait |
-| Drag-and-drop | Oui (@dnd-kit) | Oui (@dnd-kit) |
-| Visible par | Tous (avec approbation) | Admins uniquement |
-| Champs | Titre, description, section, statut | Titre, description, priorite, echeance |
-| Extras | Timeline reunions, boite a idees, import transcription | Templates auto (AG, cotisations, agrements) |
+Les associations ne sont pas des entreprises. "B2B" (Business to Business) est du jargon startup qui n'a aucun sens pour un president d'association de 55 ans en Savoie. Le terme apparait 15+ fois dans les fichiers de traduction FR et IT.
 
-**Pour un utilisateur lambda, c'est la meme chose presentee deux fois.** La nuance entre "projet" et "tache" n'est pas evidente sans formation. Un admin doit naviguer entre deux pages pour gerer ses actions.
+**Action** : Renommer partout en "Annuaire Associations" / "Annuario Associazioni".
 
-## Ce qui n'est pas valorise ou est de trop
+### 2. Deux sidebars = usine a gaz
 
-1. **La page Admin (`/admin`) est une copie simplifiee de `/projects`** -- memes 3 colonnes, meme DnD, meme formulaire (titre + description + statut). La seule difference : priorite + echeance sur admin_tasks, et section + meetings sur projects.
+Sur desktop, l'utilisateur voit :
+- La **sidebar principale** de l'app (HubSidebar, ~250px)
+- La **sidebar filtres** de l'annuaire (DirectoryFilters, 320px dans un `aside`)
 
-2. **Les templates auto-crees** (AG annuelle, cotisations, agrements) sont utiles mais enfouis dans une page separee. Ils devraient etre des projets comme les autres.
+Sur un ecran 1366px, il reste ~800px pour le contenu. C'est etouffant et ca donne une impression de complexite.
 
-3. **NetworkProjects (`/projets-reseau`)** est une vue en lecture seule des memes `projects` filtres par `is_funding_project`. C'est coherent comme vue inter-associations, pas de probleme ici.
+**Action** : Supprimer la sidebar filtres. Mettre la recherche et les filtres silos en ligne au-dessus de la carte.
 
-4. **La Boite a Idees** fonctionne independamment (table `ideas`, pas liee aux projets). Elle est bien placee en collapsible en bas de page, mais elle pourrait etre supprimee si elle n'est pas utilisee -- c'est une micro-fonctionnalite de plus.
+### 3. Toggle Carte/Grille : deux vues pour rien (encore)
 
-5. **La Timeline des reunions** ajoute une couche de complexite avec son propre formulaire de creation, ses filtres, et la notion de "RDV" vs "transcription importee". C'est un mini-calendrier cache dans la page projets.
+Meme probleme que les chaines de valeur : un toggle entre carte Mapbox et grille de cartes. La carte EST la valeur differenciante de l'annuaire (visualiser les associations alpines par geographie). La grille de cartes est une liste LinkedIn-like generique qui n'apporte rien de plus.
 
-## Solution proposee : fusionner en une seule page
+**Action** : Supprimer le mode grille. Garder uniquement la carte.
 
-### Principe
+### 4. "Ignorer les frontieres" contredit la mission
 
-Supprimer la page Admin (`/admin`) et absorber ses fonctionnalites dans la page Projets (`/projects`). Un seul Kanban, une seule table, une seule entree dans la sidebar.
+Le switch "Ignorer les frontieres" est l'inverse exact de ce que le projet veut faire. La mission est de **forcer les interactions transfrontalieres**. Par defaut, les zones sont filtrees par pays -- donc l'utilisateur voit SOIT la France SOIT l'Italie. Il faut activer manuellement un toggle pour voir les deux.
 
-### Changements concrets
+C'est l'inverse de ce qu'il faut : par defaut, **tout doit etre visible**. Les frontieres doivent etre ignorees par conception, pas par option.
 
-**1. Enrichir la table `projects` avec les champs manquants**
+**Action** : Supprimer le toggle "Ignorer les frontieres". Supprimer les checkboxes de zones. Par defaut, toutes les associations de toutes les zones sont affichees. Le filtre se fait uniquement par recherche textuelle et par silo (domaine d'activite).
 
-Migration SQL :
-- Ajouter `priority` (text, default 'medium') -- les valeurs low/medium/high
-- Ajouter `due_date` (date) -- echeance
-- Ajouter `template_key` (text) -- pour les taches recurrentes type AG
+### 5. Les messages vont dans le vide
 
-Ces champs sont optionnels. Un projet peut avoir une echeance ou non, une priorite ou non. Ca ne surcharge pas le formulaire : on ajoute deux champs au dialog existant (un select priorite + un date picker echeance).
+Le formulaire de contact envoie des messages dans la table `directory_contacts`. Mais il n'existe **aucune interface pour lire ces messages**. Pas d'inbox, pas de notification, rien. L'utilisateur envoie un message et pense que ca fonctionne, mais personne ne le verra jamais.
 
-**2. Migrer les donnees existantes de `admin_tasks` vers `projects`**
+**Action pour maintenant** : Remplacer le formulaire de messagerie par un simple lien vers le profil public de l'association (qui affiche deja email, LinkedIn, Instagram, site web). C'est plus honnete et plus direct. Le systeme de messagerie interne pourra etre ajoute plus tard quand une vraie inbox sera construite.
 
-Migration SQL qui copie les taches admin existantes dans `projects` avec un mapping de statut (todo -> planned, in_progress -> in_progress, done -> completed).
+### 6. La modale de contact duplique le profil
 
-**3. Modifier la page Projets**
+Quand on clique sur un marqueur de la carte, une modale (`AssociationModal`) s'ouvre avec : nom, description, badges zones, liens sociaux, formulaire de contact. C'est exactement le meme contenu que la page profil (`/annuaire/:id`). Deux chemins pour la meme info.
 
-- Ajouter un badge de priorite sur les cartes Kanban (discret : juste un point colore ou un badge "Urgent" pour les high)
-- Afficher l'echeance sur la carte si elle existe (ex: "3j restants" en jaune, "2j en retard" en rouge)
-- Les templates (AG annuelle, cotisations, agrements) deviennent des projets crees automatiquement comme avant, mais dans la table `projects`
+**Action** : Supprimer `AssociationModal`. Quand on clique un marqueur, on navigue directement vers `/annuaire/:id`.
 
-**4. Modifier le formulaire de creation de projet**
+### 7. `cover_image_url` n'est pas requete
 
-Le formulaire actuel a 4 champs : Titre, Description, Section, Statut. On ajoute :
-- Priorite (select : Basse / Normale / Urgente) -- optionnel, defaut Normale
-- Echeance (date picker) -- optionnel
+Le hook `useDirectory` selectionne : `id, name, description, logo_url, primary_zone, secondary_zone, silo, city, latitude, longitude, linkedin_url, instagram_url, created_at`. Le champ `cover_image_url` n'est PAS dans le SELECT. Mais `AssociationCard` essaie de l'afficher. Il sera toujours `undefined`. C'est du code mort visuel.
 
-Ca fait 6 champs, ca reste raisonnable.
+**Action** : Comme on supprime la vue grille (et donc AssociationCard), ce probleme disparait naturellement.
 
-**5. Supprimer la page Admin et ses dependances**
+### 8. Rien ne force l'interaction transfrontaliere
 
-- Supprimer `src/pages/Admin.tsx`
-- Retirer l'entree "Gestion des taches" de la sidebar (`HubSidebar.tsx`)
-- Retirer le module "admin-tasks" du registre (`useModules.tsx`)
-- Retirer la route `/admin` de `App.tsx`
-- La table `admin_tasks` peut etre conservee temporairement (au cas ou) ou droppee apres migration
+L'annuaire est **passif** : on browse, on filtre, eventuellement on regarde un profil. Il n'y a aucun mecanisme pour pousser les associations a se connecter entre elles. Pas de suggestions, pas de mise en relation, pas de "cette association en Piemont a les memes activites que vous en Savoie".
 
-### Ce qu'on ne touche PAS
+**Action** : Ajouter une banniere simple "Associations proches de vous" sous la carte, qui montre 3-4 associations d'un **pays different** mais du **meme silo** que l'association de l'utilisateur connecte. C'est un "nudge" vers la cooperation transfrontaliere, sans complexite.
 
-- La Boite a Idees : elle reste en collapsible en bas, c'est leger
-- La Timeline des reunions : elle reste, c'est le lien entre decisions et actions
-- NetworkProjects (`/projets-reseau`) : vue inter-associations, pas de changement
-- L'import de transcription : reste tel quel
+---
+
+## Solution : carte plein ecran + filtres inline + suggestions transfrontalieres
+
+### Nouvelle architecture de la page
+
+```text
++------------------------------------------------------------+
+| Annuaire Associations                                       |
+| Trouvez des associations partenaires dans les Alpes          |
++------------------------------------------------------------+
+| [Recherche...]  [Sport] [Culture] [Terroir] [Autre] [Tous] |
+|                                            12 associations  |
++------------------------------------------------------------+
+|                                                              |
+|            CARTE MAPBOX PLEIN ECRAN                          |
+|     (marqueurs colores par silo, popups au clic,             |
+|      clic sur popup -> /annuaire/:id)                        |
+|                                                              |
++------------------------------------------------------------+
+| Associations suggerees pour vous          (si connecte)      |
+| [Card 1 - Piemont]  [Card 2 - Savoie]  [Card 3 - Aoste]   |
++------------------------------------------------------------+
+```
+
+### Ce qu'on supprime
+
+| Fichier / Element | Raison |
+|---|---|
+| `DirectoryFilters.tsx` | Remplace par filtres inline (recherche + badges silo) directement dans la page |
+| `AssociationModal.tsx` | Duplique le profil, remplace par navigation vers `/annuaire/:id` |
+| `AssociationCard.tsx` | Plus de vue grille, les cartes ne servent que pour les suggestions (composant simplifie inline) |
+| Toggle Carte/Grille | Une seule vue : la carte |
+| Toggle "Ignorer les frontieres" | Supprime -- toutes les associations visibles par defaut |
+| Checkboxes de zones | Supprime -- pas de filtrage par frontiere |
+| Formulaire de contact (dans AssociationModal + AssociationProfile) | Remplace par liens directs (email, LinkedIn, site web) tant qu'il n'y a pas d'inbox |
+
+### Ce qu'on garde
+
+- `DirectoryMap.tsx` : le composant carte Mapbox (intact, juste on le rend pleine largeur)
+- `AssociationProfile.tsx` : la page profil `/annuaire/:id` (on retire juste le formulaire de contact, remplace par liens directs)
+- `useDirectory.ts` : le hook de requete (on simplifie en supprimant le parametre `ignoreBorders` et `zones`)
+- `types/directory.ts` : les types et constantes (on garde `SILO_INFO`, on garde `GEOGRAPHIC_ZONES` pour les couleurs de badges sur le profil)
+
+### Ce qu'on ajoute
+
+**Suggestions transfrontalieres** : un bloc en bas de page qui, pour un utilisateur connecte, affiche 3-4 associations :
+- Du **meme silo** que son association
+- D'un **pays different** (si l'utilisateur est FR, on montre des IT et vice-versa)
+- Presentees comme des cartes compactes (logo + nom + ville + silo badge)
+- Avec un lien "Voir le profil"
+
+C'est la fonctionnalite qui repond directement a l'objectif "forcer les interactions entre Piemont et Savoie".
 
 ## Fichiers concernes
 
 | Fichier | Action |
 |---|---|
-| Migration SQL | Ajouter `priority`, `due_date`, `template_key` a `projects` + migrer les donnees de `admin_tasks` |
-| `src/pages/Admin.tsx` | Supprimer |
-| `src/pages/Projects.tsx` | Ajouter la logique de templates auto-crees (AG, cotisations, agrements) |
-| `src/components/ProjectForm.tsx` | Ajouter les champs Priorite et Echeance |
-| `src/components/projects/ProjectsKanban.tsx` | Afficher priorite et echeance sur les cartes |
-| `src/components/hub/HubSidebar.tsx` | Retirer l'entree `/admin` |
-| `src/hooks/useModules.tsx` | Retirer le module `admin-tasks` |
-| `src/App.tsx` | Retirer la route `/admin` |
-| `src/integrations/supabase/types.ts` | Sera regenere apres migration |
-
-## Resultat pour l'utilisateur
-
-Avant : 2 pages Kanban, 2 tables, 2 entrees sidebar, confusion entre "projet" et "tache".
-
-Apres : 1 seule page "Projets", un Kanban unifie. Les echeances et priorites sont visibles directement sur les cartes. Les taches recurrentes (AG, cotisations) apparaissent comme des projets normaux. Zero confusion.
+| `src/pages/DirectoryHub.tsx` | Refonte : filtres inline, carte pleine largeur, suggestions transfrontalieres en bas |
+| `src/components/directory/DirectoryFilters.tsx` | Supprimer (remplace par filtres inline dans la page) |
+| `src/components/directory/AssociationModal.tsx` | Supprimer (navigation directe vers profil) |
+| `src/components/directory/AssociationCard.tsx` | Supprimer (plus de vue grille) |
+| `src/components/directory/DirectoryMap.tsx` | Simplifier : popups avec bouton "Voir le profil" au lieu de `onMarkerClick` callback |
+| `src/hooks/useDirectory.ts` | Simplifier : supprimer `ignoreBorders` et `zones`, garder `silo` et `searchQuery` |
+| `src/types/directory.ts` | Inchange |
+| `src/pages/AssociationProfile.tsx` | Retirer le formulaire de contact, afficher les liens directs (email, site, reseaux) a la place |
+| `src/i18n/locales/fr.ts` | Renommer "Annuaire B2B" en "Annuaire Associations" partout |
+| `src/i18n/locales/it.ts` | Renommer "Annuario B2B" en "Annuario Associazioni" partout |
+| `src/components/hub/HubSidebar.tsx` | Mettre a jour le label de la sidebar |
 
