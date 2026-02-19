@@ -1,83 +1,48 @@
 
+# Simplification RH et Benevolat (sans toucher aux Members)
 
-# Simplification du Dashboard
+## Recapitulatif
 
-## Problemes identifies
-
-1. **Taches fictives** : quand il n'y a pas de taches reelles, 2 fausses taches sont affichees
-2. **KPI redondants** : "Taches" et "En attente" se chevauchent -- 4 cards pour trop peu d'info
-3. **Actions rapides inutiles** : doublonnent la sidebar, "Ajouter un document" est un faux label
-4. **Notification factice** : "Nouveau projet / Hier" en dur dans le header
-5. **Onboarding non traduit** : cles brutes affichees ("profile", "logo")
-6. **Double separateur** dans le menu profil du header
-7. **Breadcrumb redondant** sur la page dashboard
-
-## Plan de simplification
-
-### 1. Supprimer les fausses taches (`HubDashboardLayout.tsx`)
-
-Remplacer les taches fictives (lignes 98-101) par un etat vide clair :
-- Si aucune tache reelle : afficher un message "Aucune tache en cours" avec un bouton "Creer une tache" qui redirige vers `/admin`
-- Plus jamais de donnees inventees
-
-### 2. Reduire les KPI de 4 a 3 (`HubDashboardLayout.tsx`)
-
-Supprimer le KPI "En attente" (doublon de "Taches"). Garder :
-- **Membres** (reel)
-- **Projets** (reel)
-- **Taches** (reel)
-
-3 cards au lieu de 4, layout `grid-cols-3` sur desktop.
-
-### 3. Supprimer le bloc "Actions rapides" (`HubDashboardLayout.tsx`)
-
-Retirer entierement la card "Actions rapides" (lignes 261-276). Ces 3 boutons dupliquent la sidebar. Le dashboard devient plus epure : juste les KPI + la liste de taches + l'onboarding.
-
-### 4. Supprimer la notification factice (`GlobalHeader.tsx`)
-
-Remplacer le contenu du dropdown notifications (lignes 161-171) par un etat vide : "Aucune notification" au lieu de la fausse notification "Nouveau projet".
-
-### 5. Ajouter les traductions de l'onboarding (`fr.ts`, `it.ts`)
-
-Ajouter les cles manquantes dans les fichiers i18n :
-
-```text
-onboarding.title = "Demarrage rapide"
-onboarding.steps.profile.title = "Completer le profil"
-onboarding.steps.profile.description = "Ajoutez le nom et la description de votre association"
-onboarding.steps.logo.title = "Ajouter un logo"
-onboarding.steps.logo.description = "Personnalisez l'identite visuelle"
-onboarding.steps.members.title = "Inviter des membres"
-onboarding.steps.members.description = "Ajoutez au moins 3 membres"
-onboarding.steps.project.title = "Creer un projet"
-onboarding.steps.project.description = "Lancez votre premier projet"
-```
-
-### 6. Fix double separateur (`GlobalHeader.tsx`)
-
-Supprimer le `DropdownMenuSeparator` en double (ligne 200 ou 201).
-
-### 7. Supprimer le breadcrumb sur le dashboard (`HubDashboardLayout.tsx`)
-
-Ne pas passer de `breadcrumb` au `GlobalHeader` quand on est sur le dashboard -- c'est evident qu'on y est. Le breadcrumb reste utile sur les autres pages.
+L'utilisateur confirme que les donnees Members sont reelles (proviennent de l'organigramme). On ne touche pas au module Members. On applique les etapes 1, 3, 4, 5 et 6 du plan approuve.
 
 ---
 
-## Resultat attendu
+## Modifications
 
-Le dashboard passe de **5 blocs** (KPI + Taches + Actions rapides + Onboarding + Header charge) a **3 blocs** :
-- 3 KPI reels et lisibles
-- Liste de taches reelles (ou etat vide propre)
-- Checklist d'onboarding (correctement traduite)
+### 1. Page Jobs : supprimer les donnees fictives (`src/pages/Jobs.tsx`)
 
-Zero fausse donnee, zero doublon, zero bruit visuel.
+- Supprimer le tableau `initialJobPostings` (lignes 14-52) avec ses fausses annonces startup
+- Initialiser `jobPostings` avec un tableau vide : `useState<JobPosting[]>([])`
+- Supprimer le `TutorialDialog` (lignes 103-135)
+- L'etat vide existant (lignes 149-156) s'affichera naturellement
+- Supprimer l'import de `TutorialDialog` et `Settings`/`Info` non utilises
+
+### 2. Organigramme : retirer la vue "Tuiles" (`src/components/Organigramme.tsx`)
+
+**Desktop** (lignes 904-913) : supprimer le bouton "Tuiles" du toggle de vue
+
+**Mobile** (lignes 778-786) : supprimer le bouton "Tuiles" du menu mobile
+
+**Rendu** (lignes 1038-1141) : supprimer le bloc `else` qui rend la vue grid. Le ternaire `viewMode === 'members' ? ... : viewMode === 'line' ? ...` devient un simple ternaire a 2 branches.
+
+Supprimer `LayoutGrid` de l'import lucide-react (ligne 18).
+
+### 3. Organigramme : retirer le bandeau "Mode Administrateur" (`src/components/Organigramme.tsx`)
+
+Supprimer le bloc lignes 952-960 (bandeau bleu permanent).
+
+### 4. Page organigramme : retirer TutorialDialog et description (`src/pages/Index.tsx`)
+
+- Supprimer le `TutorialDialog` (lignes 87-123) et son import
+- Supprimer la ligne de description "Vue complete de la structure organisationnelle" (ligne 125)
+- Garder : titre + badge membres + bouton postes vacants
+
+---
 
 ## Fichiers modifies
 
 | Fichier | Modification |
 |---------|-------------|
-| `src/components/hub/HubDashboardLayout.tsx` | Supprimer fausses taches, reduire KPI a 3, supprimer actions rapides, retirer breadcrumb |
-| `src/components/hub/GlobalHeader.tsx` | Supprimer notification factice, fix double separateur |
-| `src/i18n/locales/fr.ts` | Ajouter cles onboarding |
-| `src/i18n/locales/it.ts` | Ajouter cles onboarding |
-
+| `src/pages/Jobs.tsx` | Supprimer donnees fictives, supprimer TutorialDialog |
+| `src/components/Organigramme.tsx` | Retirer vue Tuiles (desktop + mobile + rendu), retirer bandeau Admin |
+| `src/pages/Index.tsx` | Retirer TutorialDialog et description |
