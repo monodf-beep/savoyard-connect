@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/hooks/useAuth';
 import { useOrganigramme } from '@/hooks/useOrganigramme';
@@ -13,6 +13,14 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { cn } from '@/lib/utils';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Section } from '@/types/organigramme';
 
 export interface Project {
   id: string;
@@ -49,7 +57,35 @@ const Projects = () => {
   const [showForm, setShowForm] = useState(false);
   const [editingProject, setEditingProject] = useState<Project | undefined>();
   const [searchQuery, setSearchQuery] = useState('');
+  const [filterSectionId, setFilterSectionId] = useState('all');
   const [ideaBoxOpen, setIdeaBoxOpen] = useState(true);
+
+  // Build flat section map for name lookups
+  const flattenSections = (sections: Section[]): Record<string, string> => {
+    const map: Record<string, string> = {};
+    const walk = (items: Section[]) => {
+      items.forEach(s => {
+        map[s.id] = s.title;
+        if (s.subsections) walk(s.subsections);
+      });
+    };
+    walk(sections);
+    return map;
+  };
+  const sectionMap = useMemo(() => flattenSections(data.sections), [data.sections]);
+
+  // Flat list of sections for the filter dropdown
+  const sectionList = useMemo(() => {
+    const list: { id: string; title: string }[] = [];
+    const walk = (items: Section[], depth = 0) => {
+      items.forEach(s => {
+        list.push({ id: s.id, title: `${'\u2014 '.repeat(depth)}${s.title}` });
+        if (s.subsections) walk(s.subsections, depth + 1);
+      });
+    };
+    walk(data.sections);
+    return list;
+  }, [data.sections]);
 
   useEffect(() => {
     const fetchProjects = async () => {
@@ -167,6 +203,7 @@ const Projects = () => {
 
   const filteredProjects = projects.filter(p => {
     if (p.approval_status !== 'approved' && !isAdmin) return false;
+    if (filterSectionId !== 'all' && p.section_id !== filterSectionId) return false;
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
       if (!p.title.toLowerCase().includes(query) &&
@@ -223,15 +260,28 @@ const Projects = () => {
         </p>
       </div>
 
-      {/* Search */}
-      <div className="relative mb-6">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <Input
-          placeholder="Rechercher un projet..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="pl-10"
-        />
+      {/* Filters */}
+      <div className="flex flex-col sm:flex-row gap-3 mb-6">
+        <Select value={filterSectionId} onValueChange={setFilterSectionId}>
+          <SelectTrigger className="w-full sm:w-[200px]">
+            <SelectValue placeholder="Toutes les sections" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Toutes les sections</SelectItem>
+            {sectionList.map(s => (
+              <SelectItem key={s.id} value={s.id}>{s.title}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Rechercher un projet..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-10"
+          />
+        </div>
       </div>
 
       {/* Kanban - Full Width */}
@@ -245,6 +295,7 @@ const Projects = () => {
           onStatusChange={handleStatusChange}
           onProjectClick={handleProjectClick}
           isAdmin={isAdmin}
+          sectionMap={sectionMap}
         />
       )}
 
