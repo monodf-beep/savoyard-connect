@@ -1,7 +1,7 @@
 import React from 'react';
 import { Person, Section } from '../types/organigramme';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
-import { Edit2, Linkedin, Sparkles } from 'lucide-react';
+import { Edit2, Linkedin } from 'lucide-react';
 import { PersonQuickActions } from './PersonQuickActions';
 import {
   Tooltip,
@@ -104,21 +104,11 @@ export const PersonCard: React.FC<PersonCardProps> = ({
                 {person.firstName} {person.lastName}
               </span>
               {isLeaderOfCurrentSection && (
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Sparkles className="w-3.5 h-3.5 text-primary flex-shrink-0" />
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Responsable de cette section</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
+                <span className="text-[10px] font-medium text-primary bg-primary/10 px-1.5 py-0.5 rounded flex-shrink-0">
+                  Resp.
+                </span>
               )}
             </div>
-            {person.linkedin && (
-              <Linkedin className={`${iconClass} text-muted-foreground opacity-60 flex-shrink-0`} />
-            )}
           </button>
           {isAdmin && sectionId && sectionTitle && onUpdate && (
             <div className="opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" onClick={(e) => e.stopPropagation()}>
@@ -159,16 +149,9 @@ export const PersonCard: React.FC<PersonCardProps> = ({
                 {person.firstName} {person.lastName}
               </h4>
               {isLeaderOfCurrentSection && (
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Sparkles className="w-3.5 h-3.5 text-primary flex-shrink-0" />
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Responsable de cette section</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
+                <span className="text-[10px] font-medium text-primary bg-primary/10 px-1.5 py-0.5 rounded flex-shrink-0">
+                  Resp.
+                </span>
               )}
             </div>
             <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
