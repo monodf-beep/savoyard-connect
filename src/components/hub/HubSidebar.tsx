@@ -40,7 +40,6 @@ const associationItems: NavItem[] = [
   { path: "/value-chains", labelKey: "nav.valueChains", icon: GitBranch, canBePublic: true },
   { path: "/jobs", labelKey: "nav.volunteering", icon: Briefcase, canBePublic: true },
   { path: "/projects", labelKey: "nav.internalProjects", icon: FolderKanban, canBePublic: true },
-  { path: "/admin", labelKey: "nav.taskManagement", icon: Kanban, gestionnaireOnly: true },
   { path: "/toolbox", labelKey: "nav.toolbox", icon: Briefcase },
   { path: "", labelKey: "nav.sections.network", icon: Globe, isSeparator: true },
   { path: "/annuaire", labelKey: "nav.directoryB2B", icon: Building2 },

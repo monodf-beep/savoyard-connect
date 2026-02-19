@@ -48,6 +48,9 @@ export interface Project {
   funding_deadline?: string;
   is_funding_project?: boolean;
   cover_image_url?: string;
+  priority?: string;
+  due_date?: string;
+  template_key?: string;
 }
 
 const Projects = () => {

@@ -24,8 +24,7 @@ export const MODULE_REGISTRY: ModuleDefinition[] = [
   { key: "organigramme", label: "RH & Organigramme", description: "Organigramme interactif, fiches de poste et bénévoles", icon: "Users", category: "management", defaultEnabled: true },
   { key: "value-chains", label: "Chaînes de valeur", description: "Modélisez les processus et flux de votre association", icon: "GitBranch", category: "management", defaultEnabled: false },
   { key: "jobs", label: "Bénévolat", description: "Publiez des offres de bénévolat et recevez des candidatures", icon: "Briefcase", category: "management", defaultEnabled: false },
-  { key: "projects", label: "Projets internes", description: "Gestion de projets, suivi d'avancement et financement", icon: "FolderKanban", category: "management", defaultEnabled: true },
-  { key: "admin-tasks", label: "Gestion des tâches", description: "Kanban opérationnel pour les tâches quotidiennes", icon: "Kanban", category: "management", defaultEnabled: false },
+  { key: "projects", label: "Projets & Tâches", description: "Kanban unifié pour projets, tâches et suivi d'avancement", icon: "FolderKanban", category: "management", defaultEnabled: true },
   
   // Network modules (ex-Hub)
   { key: "annuaire", label: "Annuaire B2B", description: "Trouvez et contactez d'autres associations du réseau", icon: "Building2", category: "network", defaultEnabled: false },
@@ -48,7 +47,6 @@ export const MODULE_PATH_MAP: Record<string, string> = {
   "value-chains": "/value-chains",
   "jobs": "/jobs",
   "projects": "/projects",
-  "admin-tasks": "/admin",
   "annuaire": "/annuaire",
   "experts": "/experts",
   "mutualisation": "/mutualisation",

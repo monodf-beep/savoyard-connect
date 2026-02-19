@@ -26,7 +26,7 @@ import NotFound from "./pages/NotFound";
 import Settings from "./pages/Settings";
 import Dashboard from "./pages/Dashboard";
 import Finance from "./pages/Finance";
-import Admin from "./pages/Admin";
+
 import Pricing from "./pages/Pricing";
 import SportLanding from "./pages/silos/SportLanding";
 import CultureLanding from "./pages/silos/CultureLanding";
@@ -119,7 +119,7 @@ const AppContent = () => {
         <Route path="/value-chains" element={<ValueChains />} />
         <Route path="/finance" element={<Finance />} />
         <Route path="/settings" element={<Settings />} />
-        <Route path="/admin" element={<Admin />} />
+        {/* /admin removed — merged into /projects */}
         <Route path="/toolbox" element={<Toolbox />} />
         <Route path="/tarifs" element={<Pricing />} />
         <Route path="/onboarding" element={<Onboarding />} />
