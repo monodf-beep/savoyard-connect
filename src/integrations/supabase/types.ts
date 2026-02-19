@@ -285,7 +285,7 @@ export type Database = {
           longitude: number | null
           naf_ape: string | null
           name: string
-          owner_id: string
+          owner_id: string | null
           primary_zone: string | null
           public_email: string | null
           rna: string | null
@@ -315,7 +315,7 @@ export type Database = {
           longitude?: number | null
           naf_ape?: string | null
           name: string
-          owner_id: string
+          owner_id?: string | null
           primary_zone?: string | null
           public_email?: string | null
           rna?: string | null
@@ -345,7 +345,7 @@ export type Database = {
           longitude?: number | null
           naf_ape?: string | null
           name?: string
-          owner_id?: string
+          owner_id?: string | null
           primary_zone?: string | null
           public_email?: string | null
           rna?: string | null

@@ -26,3 +26,6 @@ verify_jwt = false
 
 [functions.process-transcript]
 verify_jwt = false
+
+[functions.scrape-associations]
+verify_jwt = false
