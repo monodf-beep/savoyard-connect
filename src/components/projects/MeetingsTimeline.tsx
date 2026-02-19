@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { ChevronDown, Users, FolderOpen, Calendar, X, Plus } from 'lucide-react';
@@ -13,6 +13,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 import { Meeting } from '@/hooks/useMeetings';
 import { supabase } from '@/integrations/supabase/client';
@@ -41,8 +48,21 @@ export const MeetingsTimeline = ({
   const [startDate, setStartDate] = useState('');
   const [startTime, setStartTime] = useState('');
   const [description, setDescription] = useState('');
+  const [sectionId, setSectionId] = useState('');
+  const [sections, setSections] = useState<Array<{ id: string; title: string }>>([]);
   const [isSaving, setIsSaving] = useState(false);
   const { toast } = useToast();
+
+  useEffect(() => {
+    const fetchSections = async () => {
+      const { data } = await supabase
+        .from('sections')
+        .select('id, title')
+        .order('title');
+      if (data) setSections(data);
+    };
+    fetchSections();
+  }, []);
 
   if (isLoading) return null;
 
@@ -73,6 +93,7 @@ export const MeetingsTimeline = ({
       setStartDate('');
       setStartTime('');
       setDescription('');
+      setSectionId('');
       setShowForm(false);
       onMeetingCreated();
     } catch (e: any) {
@@ -204,6 +225,18 @@ export const MeetingsTimeline = ({
               value={title}
               onChange={(e) => setTitle(e.target.value)}
             />
+            <Select value={sectionId} onValueChange={setSectionId}>
+              <SelectTrigger>
+                <SelectValue placeholder="Commission (optionnel)" />
+              </SelectTrigger>
+              <SelectContent>
+                {sections.map((s) => (
+                  <SelectItem key={s.id} value={s.id}>
+                    {s.title}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             <div className="flex gap-2">
               <Input
                 type="date"
