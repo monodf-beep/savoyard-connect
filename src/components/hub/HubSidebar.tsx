@@ -185,7 +185,7 @@ export const HubSidebar = ({ collapsed, onToggle, isMobile = false }: HubSidebar
     >
       <div className="flex h-full flex-col">
         {/* Association header — fixed height h-12 */}
-        <div className="h-12 flex items-center gap-2.5 px-2.5 border-b border-border bg-secondary/5 overflow-hidden">
+        <div className="h-12 flex items-center gap-2.5 px-[calc(0.625rem+2px)] border-b border-border bg-secondary/5 overflow-hidden">
           <Tooltip>
             <TooltipTrigger asChild>
               <div className="flex-shrink-0">
