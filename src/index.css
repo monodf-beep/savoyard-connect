@@ -117,7 +117,7 @@
 @layer components {
   /* En-têtes de sections */
   .section-header {
-    @apply px-2 py-2 md:px-4 md:py-3 rounded-lg transition-all duration-200 border bg-card;
+    @apply px-3 py-2 rounded-lg transition-all duration-200 border bg-card;
     border-color: hsl(var(--border));
   }
 
