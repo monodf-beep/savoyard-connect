@@ -70,7 +70,7 @@ export const HubSidebar = ({ collapsed, onToggle, isMobile = false }: HubSidebar
   }, []);
 
   const handleMouseLeave = useCallback(() => {
-    leaveTimer.current = setTimeout(() => setHovered(false), 150);
+    leaveTimer.current = setTimeout(() => setHovered(false), 300);
   }, []);
 
   const isCollapsed = isMobile ? false : (collapsed && !hovered);
@@ -96,12 +96,15 @@ export const HubSidebar = ({ collapsed, onToggle, isMobile = false }: HubSidebar
 
   const renderNavItem = (item: NavItem) => {
     if (item.isSeparator) {
-      if (isCollapsed) return null;
       return (
-        <div key={item.labelKey} className="pt-3 pb-1">
-          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground px-2">
-            {t(item.labelKey)}
-          </p>
+        <div key={item.labelKey} className={cn("pt-3 pb-1", isCollapsed && "pt-2 pb-0.5")}>
+          {isCollapsed ? (
+            <div className="mx-2 border-t border-border" />
+          ) : (
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground px-2">
+              {t(item.labelKey)}
+            </p>
+          )}
         </div>
       );
     }
