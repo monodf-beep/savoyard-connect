@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useCallback } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/hooks/useAuth";
@@ -62,6 +62,16 @@ export const HubSidebar = ({ collapsed, onToggle, isMobile = false }: HubSidebar
   const { currentAssociation, isOwnerOrAdmin, isGestionnaire } = useAssociation();
   const { isModuleVisibleInSidebar } = useModules();
   const [hovered, setHovered] = useState(false);
+  const leaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleMouseEnter = useCallback(() => {
+    if (leaveTimer.current) { clearTimeout(leaveTimer.current); leaveTimer.current = null; }
+    setHovered(true);
+  }, []);
+
+  const handleMouseLeave = useCallback(() => {
+    leaveTimer.current = setTimeout(() => setHovered(false), 150);
+  }, []);
 
   const isCollapsed = isMobile ? false : (collapsed && !hovered);
 
@@ -167,8 +177,8 @@ export const HubSidebar = ({ collapsed, onToggle, isMobile = false }: HubSidebar
         isCollapsed ? "w-14" : "w-56",
         hovered && collapsed && "shadow-xl"
       )}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
     >
       <div className="flex h-full flex-col">
         {!isCollapsed && (
