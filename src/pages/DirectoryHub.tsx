@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { HubPageLayout } from '@/components/hub/HubPageLayout';
 import { DirectoryMap } from '@/components/directory/DirectoryMap';
+import { ImportAssociationsDialog } from '@/components/directory/ImportAssociationsDialog';
 import { useDirectory, useUserGeolocation, useCrossBorderSuggestions } from '@/hooks/useDirectory';
 import { DirectoryAssociation, SILO_INFO, SiloType, GEOGRAPHIC_ZONES } from '@/types/directory';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -12,6 +13,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
 import { Search, Users, MapPin, ArrowRight } from 'lucide-react';
 import { useAssociation } from '@/hooks/useAssociation';
+import { useAuth } from '@/hooks/useAuth';
 
 const DirectoryHub = () => {
   const { t, i18n } = useTranslation();
@@ -19,6 +21,7 @@ const DirectoryHub = () => {
   const [selectedSilo, setSelectedSilo] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const { currentAssociation } = useAssociation();
+  const { isAdmin } = useAuth();
 
   const { data: userLocation } = useUserGeolocation();
   
@@ -35,9 +38,12 @@ const DirectoryHub = () => {
   return (
     <HubPageLayout breadcrumb={t("nav.directory")}>
       {/* Header */}
-      <div className="mb-4">
-        <h1 className="text-2xl font-bold mb-1">{t('directory.hero.title')}</h1>
-        <p className="text-muted-foreground text-sm">{t('directory.hero.subtitle')}</p>
+      <div className="mb-4 flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold mb-1">{t('directory.hero.title')}</h1>
+          <p className="text-muted-foreground text-sm">{t('directory.hero.subtitle')}</p>
+        </div>
+        {isAdmin && <ImportAssociationsDialog />}
       </div>
 
       {/* Inline Filters */}
