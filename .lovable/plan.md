@@ -1,48 +1,70 @@
 
-# Simplification RH et Benevolat (sans toucher aux Members)
+# Avatars condenses quand la section est repliee
 
-## Recapitulatif
+## Objectif
 
-L'utilisateur confirme que les donnees Members sont reelles (proviennent de l'organigramme). On ne touche pas au module Members. On applique les etapes 1, 3, 4, 5 et 6 du plan approuve.
+Quand une section est **repliee**, afficher une rangee d'avatars superposees (style "avatar stack") directement dans le header de la section, a cote du compteur de membres. Quand la section est **depliee**, afficher les cartes completes avec noms comme actuellement.
 
----
+## Rendu visuel
+
+- **Section repliee** : le header affiche le titre, le badge Resp., puis une rangee d'avatars circulaires qui se chevauchent legerement (overlap de -8px), limite a ~8 avatars visibles + un badge "+X" si plus. Cela remplace le simple compteur "12 membres".
+- **Section depliee** : le header n'affiche plus les avatars (ils sont visibles en dessous sous forme de cartes completes). Le compteur texte reste visible.
 
 ## Modifications
 
-### 1. Page Jobs : supprimer les donnees fictives (`src/pages/Jobs.tsx`)
+### 1. `src/components/SectionCard.tsx`
 
-- Supprimer le tableau `initialJobPostings` (lignes 14-52) avec ses fausses annonces startup
-- Initialiser `jobPostings` avec un tableau vide : `useState<JobPosting[]>([])`
-- Supprimer le `TutorialDialog` (lignes 103-135)
-- L'etat vide existant (lignes 149-156) s'affichera naturellement
-- Supprimer l'import de `TutorialDialog` et `Settings`/`Info` non utilises
+**Section principale (isMainSection)** — dans le header (ligne ~162-186) :
 
-### 2. Organigramme : retirer la vue "Tuiles" (`src/components/Organigramme.tsx`)
+- Quand `!section.isExpanded` et qu'il y a des membres, afficher un composant "avatar stack" inline :
+  - Prendre les 8 premiers membres
+  - Les afficher avec `Avatar` (taille `w-6 h-6`) avec un `margin-left: -8px` (sauf le premier)
+  - Si plus de 8 membres, ajouter un petit cercle "+N"
+  - Garder le compteur texte "X membres" a cote
+- Quand `section.isExpanded`, garder uniquement le compteur texte comme actuellement
 
-**Desktop** (lignes 904-913) : supprimer le bouton "Tuiles" du toggle de vue
+**Sous-sections** (deuxieme return, ligne ~360+) — meme logique dans le header replié.
 
-**Mobile** (lignes 778-786) : supprimer le bouton "Tuiles" du menu mobile
+### 2. Aucun autre fichier modifie
 
-**Rendu** (lignes 1038-1141) : supprimer le bloc `else` qui rend la vue grid. Le ternaire `viewMode === 'members' ? ... : viewMode === 'line' ? ...` devient un simple ternaire a 2 branches.
-
-Supprimer `LayoutGrid` de l'import lucide-react (ligne 18).
-
-### 3. Organigramme : retirer le bandeau "Mode Administrateur" (`src/components/Organigramme.tsx`)
-
-Supprimer le bloc lignes 952-960 (bandeau bleu permanent).
-
-### 4. Page organigramme : retirer TutorialDialog et description (`src/pages/Index.tsx`)
-
-- Supprimer le `TutorialDialog` (lignes 87-123) et son import
-- Supprimer la ligne de description "Vue complete de la structure organisationnelle" (ligne 125)
-- Garder : titre + badge membres + bouton postes vacants
+Le composant `Avatar`/`AvatarImage`/`AvatarFallback` existant est reutilise directement dans SectionCard. Pas besoin de nouveau composant.
 
 ---
+
+## Detail technique
+
+Code a inserer dans le header, apres le badge Resp. et avant le compteur :
+
+```text
+{!section.isExpanded && section.members.length > 0 && (
+  <div className="flex items-center ml-2 flex-shrink-0">
+    {section.members.slice(0, 8).map((person, index) => (
+      <Avatar 
+        key={person.id} 
+        className="w-6 h-6 border-2 border-background"
+        style={{ marginLeft: index === 0 ? 0 : -8 }}
+      >
+        <AvatarImage src={person.photo} />
+        <AvatarFallback className="text-[8px] bg-primary/10 text-primary">
+          {person.firstName.charAt(0)}
+        </AvatarFallback>
+      </Avatar>
+    ))}
+    {section.members.length > 8 && (
+      <span className="w-6 h-6 rounded-full bg-muted flex items-center justify-center 
+                       text-[9px] font-medium text-muted-foreground border-2 border-background"
+            style={{ marginLeft: -8 }}>
+        +{section.members.length - 8}
+      </span>
+    )}
+  </div>
+)}
+```
+
+Ce bloc sera ajoute dans les deux blocs de rendu (section principale et sous-section).
 
 ## Fichiers modifies
 
 | Fichier | Modification |
 |---------|-------------|
-| `src/pages/Jobs.tsx` | Supprimer donnees fictives, supprimer TutorialDialog |
-| `src/components/Organigramme.tsx` | Retirer vue Tuiles (desktop + mobile + rendu), retirer bandeau Admin |
-| `src/pages/Index.tsx` | Retirer TutorialDialog et description |
+| `src/components/SectionCard.tsx` | Ajouter avatar stack dans les headers replies (2 endroits), importer Avatar/AvatarImage/AvatarFallback |
