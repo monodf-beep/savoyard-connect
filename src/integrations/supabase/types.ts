@@ -1123,6 +1123,7 @@ export type Database = {
           created_by: string | null
           description: string | null
           documents: Json | null
+          due_date: string | null
           end_date: string | null
           funded_amount: number | null
           funding_deadline: string | null
@@ -1131,12 +1132,14 @@ export type Database = {
           id: string
           is_funding_project: boolean | null
           manual_cash_total: number | null
+          priority: string | null
           roadmap: string | null
           section_id: string
           source_meeting_id: string | null
           start_date: string | null
           status: Database["public"]["Enums"]["project_status"]
           supporter_count: number | null
+          template_key: string | null
           title: string
           updated_at: string
         }
@@ -1148,6 +1151,7 @@ export type Database = {
           created_by?: string | null
           description?: string | null
           documents?: Json | null
+          due_date?: string | null
           end_date?: string | null
           funded_amount?: number | null
           funding_deadline?: string | null
@@ -1156,12 +1160,14 @@ export type Database = {
           id?: string
           is_funding_project?: boolean | null
           manual_cash_total?: number | null
+          priority?: string | null
           roadmap?: string | null
           section_id: string
           source_meeting_id?: string | null
           start_date?: string | null
           status?: Database["public"]["Enums"]["project_status"]
           supporter_count?: number | null
+          template_key?: string | null
           title: string
           updated_at?: string
         }
@@ -1173,6 +1179,7 @@ export type Database = {
           created_by?: string | null
           description?: string | null
           documents?: Json | null
+          due_date?: string | null
           end_date?: string | null
           funded_amount?: number | null
           funding_deadline?: string | null
@@ -1181,12 +1188,14 @@ export type Database = {
           id?: string
           is_funding_project?: boolean | null
           manual_cash_total?: number | null
+          priority?: string | null
           roadmap?: string | null
           section_id?: string
           source_meeting_id?: string | null
           start_date?: string | null
           status?: Database["public"]["Enums"]["project_status"]
           supporter_count?: number | null
+          template_key?: string | null
           title?: string
           updated_at?: string
         }

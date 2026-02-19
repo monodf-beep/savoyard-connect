@@ -1,13 +1,17 @@
 import { useState, useEffect } from 'react';
+import { format } from 'date-fns';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from './ui/dialog';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Textarea } from './ui/textarea';
 import { Label } from './ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import { Calendar } from './ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { Project } from '@/pages/Projects';
 import { Section } from '@/types/organigramme';
-import { Loader2 } from 'lucide-react';
+import { Loader2, CalendarIcon } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface ProjectFormProps {
   project?: Project;
@@ -23,6 +27,8 @@ export const ProjectForm = ({ project, sections, open, onOpenChange, onSave }: P
     description: '',
     section_id: '',
     status: 'planned',
+    priority: 'medium',
+    due_date: undefined,
   });
   const [saving, setSaving] = useState(false);
 
@@ -33,9 +39,11 @@ export const ProjectForm = ({ project, sections, open, onOpenChange, onSave }: P
         description: project.description || '',
         section_id: project.section_id,
         status: project.status,
+        priority: project.priority || 'medium',
+        due_date: project.due_date || undefined,
       });
     } else {
-      setFormData({ title: '', description: '', section_id: '', status: 'planned' });
+      setFormData({ title: '', description: '', section_id: '', status: 'planned', priority: 'medium', due_date: undefined });
     }
   }, [project]);
 
@@ -107,23 +115,72 @@ export const ProjectForm = ({ project, sections, open, onOpenChange, onSave }: P
             />
           </div>
 
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-2">
+              <Label htmlFor="status">Statut</Label>
+              <Select
+                value={formData.status}
+                onValueChange={(value: 'planned' | 'in_progress' | 'completed') =>
+                  setFormData({ ...formData, status: value })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="planned">Planifié</SelectItem>
+                  <SelectItem value="in_progress">En cours</SelectItem>
+                  <SelectItem value="completed">Terminé</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="priority">Priorité</Label>
+              <Select
+                value={formData.priority || 'medium'}
+                onValueChange={(value) =>
+                  setFormData({ ...formData, priority: value })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="low">Basse</SelectItem>
+                  <SelectItem value="medium">Normale</SelectItem>
+                  <SelectItem value="high">Urgente</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
           <div className="space-y-2">
-            <Label htmlFor="status">Statut</Label>
-            <Select
-              value={formData.status}
-              onValueChange={(value: 'planned' | 'in_progress' | 'completed') =>
-                setFormData({ ...formData, status: value })
-              }
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="planned">Planifié</SelectItem>
-                <SelectItem value="in_progress">En cours</SelectItem>
-                <SelectItem value="completed">Terminé</SelectItem>
-              </SelectContent>
-            </Select>
+            <Label>Échéance</Label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={cn(
+                    "w-full justify-start text-left font-normal",
+                    !formData.due_date && "text-muted-foreground"
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {formData.due_date ? format(new Date(formData.due_date), "dd/MM/yyyy") : "Aucune"}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={formData.due_date ? new Date(formData.due_date) : undefined}
+                  onSelect={(date) =>
+                    setFormData({ ...formData, due_date: date ? format(date, 'yyyy-MM-dd') : undefined })
+                  }
+                  className={cn("p-3 pointer-events-auto")}
+                />
+              </PopoverContent>
+            </Popover>
           </div>
 
           <DialogFooter className="gap-2 sm:gap-0">

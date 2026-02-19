@@ -19,12 +19,13 @@ import {
 import { useDroppable } from '@dnd-kit/core';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
-import { GripVertical } from 'lucide-react';
+import { GripVertical, Clock, AlertTriangle } from 'lucide-react';
 import { Project } from '@/pages/Projects';
+import { differenceInDays, parseISO } from 'date-fns';
 
 interface ProjectsKanbanProps {
   projects: Project[];
@@ -162,6 +163,49 @@ const SortableProjectCard = ({
   );
 };
 
+// Priority indicator
+const PriorityDot = ({ priority }: { priority?: string }) => {
+  if (!priority || priority === 'medium') return null;
+  if (priority === 'high') {
+    return (
+      <Badge variant="outline" className="text-[10px] bg-destructive/10 text-destructive border-destructive/30 px-1.5 py-0">
+        <AlertTriangle className="h-3 w-3 mr-0.5" />
+        Urgent
+      </Badge>
+    );
+  }
+  return null; // Don't show badge for low priority
+};
+
+// Due date display
+const DueDateBadge = ({ dueDate, status }: { dueDate?: string; status: string }) => {
+  if (!dueDate || status === 'completed') return null;
+  const days = differenceInDays(parseISO(dueDate), new Date());
+  let label: string;
+  let colorClass: string;
+  
+  if (days < 0) {
+    label = `${Math.abs(days)}j en retard`;
+    colorClass = 'text-destructive bg-destructive/10 border-destructive/30';
+  } else if (days === 0) {
+    label = "Aujourd'hui";
+    colorClass = 'text-destructive bg-destructive/10 border-destructive/30';
+  } else if (days <= 3) {
+    label = `${days}j restants`;
+    colorClass = 'text-yellow-700 bg-yellow-50 border-yellow-200 dark:text-yellow-400 dark:bg-yellow-900/20 dark:border-yellow-800';
+  } else {
+    label = `${days}j restants`;
+    colorClass = 'text-muted-foreground bg-muted border-border';
+  }
+
+  return (
+    <Badge variant="outline" className={cn("text-[10px] px-1.5 py-0", colorClass)}>
+      <Clock className="h-3 w-3 mr-0.5" />
+      {label}
+    </Badge>
+  );
+};
+
 // Project Card for Kanban
 const KanbanProjectCard = ({ 
   project, 
@@ -210,11 +254,15 @@ const KanbanProjectCard = ({
           </p>
         )}
 
-        {project.approval_status === 'pending' && (
-          <Badge variant="outline" className="text-[10px] bg-destructive/10 text-destructive border-destructive/30 mb-2">
-            En attente
-          </Badge>
-        )}
+        <div className="flex flex-wrap gap-1">
+          {project.approval_status === 'pending' && (
+            <Badge variant="outline" className="text-[10px] bg-destructive/10 text-destructive border-destructive/30">
+              En attente
+            </Badge>
+          )}
+          <PriorityDot priority={project.priority} />
+          <DueDateBadge dueDate={project.due_date} status={project.status} />
+        </div>
 
         {project.is_funding_project && fundingGoal > 0 && (
           <div className="mt-2">
