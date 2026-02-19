@@ -17,65 +17,50 @@ serve(async (req) => {
       throw new Error('No PDF data provided');
     }
 
-    console.log(`Processing PDF: ${filename || 'unknown'}`);
+    console.log(`Processing PDF: ${filename || 'unknown'}, size: ${pdf_base64.length} chars`);
 
-    // Decode base64 to binary
-    const binaryString = atob(pdf_base64);
-    const bytes = new Uint8Array(binaryString.length);
-    for (let i = 0; i < binaryString.length; i++) {
-      bytes[i] = binaryString.charCodeAt(i);
+    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    if (!LOVABLE_API_KEY) {
+      throw new Error("LOVABLE_API_KEY is not configured");
     }
 
-    // Extract text from PDF by parsing the raw content
-    // We look for text streams between BT and ET operators
-    const pdfText = new TextDecoder('latin1').decode(bytes);
-    
-    let extractedText = '';
+    // Use Gemini to extract text from the PDF via the Lovable AI gateway
+    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "google/gemini-2.5-flash",
+        messages: [
+          {
+            role: "user",
+            content: [
+              {
+                type: "text",
+                text: "Extrais tout le texte de ce document PDF. Retourne uniquement le contenu textuel brut, sans mise en forme, sans commentaire. Préserve la structure des paragraphes avec des sauts de ligne."
+              },
+              {
+                type: "image_url",
+                image_url: {
+                  url: `data:application/pdf;base64,${pdf_base64}`
+                }
+              }
+            ]
+          }
+        ],
+      }),
+    });
 
-    // Method 1: Extract text from parentheses in BT/ET blocks (most common)
-    const btEtRegex = /BT\s([\s\S]*?)ET/g;
-    let match;
-    while ((match = btEtRegex.exec(pdfText)) !== null) {
-      const block = match[1];
-      // Extract text from Tj and TJ operators
-      const tjRegex = /\(([^)]*)\)\s*Tj/g;
-      let tjMatch;
-      while ((tjMatch = tjRegex.exec(block)) !== null) {
-        extractedText += tjMatch[1] + ' ';
-      }
-      // TJ arrays
-      const tjArrayRegex = /\[([^\]]*)\]\s*TJ/g;
-      let tjArrMatch;
-      while ((tjArrMatch = tjArrayRegex.exec(block)) !== null) {
-        const inner = tjArrMatch[1];
-        const strRegex = /\(([^)]*)\)/g;
-        let strMatch;
-        while ((strMatch = strRegex.exec(inner)) !== null) {
-          extractedText += strMatch[1];
-        }
-        extractedText += ' ';
-      }
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("AI gateway error:", response.status, errorText);
+      throw new Error(`AI extraction failed: ${response.status}`);
     }
 
-    // Method 2: Try to find stream content with readable text
-    if (!extractedText.trim()) {
-      // Fallback: extract any readable strings from the PDF
-      const readableRegex = /\(([A-Za-zÀ-ÿ0-9\s,.;:!?'"\-]{3,})\)/g;
-      let readMatch;
-      while ((readMatch = readableRegex.exec(pdfText)) !== null) {
-        extractedText += readMatch[1] + ' ';
-      }
-    }
-
-    // Clean up the extracted text
-    extractedText = extractedText
-      .replace(/\\n/g, '\n')
-      .replace(/\\r/g, '')
-      .replace(/\\t/g, ' ')
-      .replace(/\\\(/g, '(')
-      .replace(/\\\)/g, ')')
-      .replace(/\s+/g, ' ')
-      .trim();
+    const result = await response.json();
+    const extractedText = result.choices?.[0]?.message?.content || '';
 
     console.log(`Extracted ${extractedText.length} characters from PDF`);
 
