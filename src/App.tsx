@@ -143,10 +143,7 @@ const AppContent = () => {
         <Route path="*" element={<NotFound />} />
       </Routes>
       {isAdmin && !isPublicPage && (
-        <>
-          <AIAssistant />
-          <AdminOnboarding open={showAdminOnboarding} onOpenChange={setShowAdminOnboarding} />
-        </>
+        <AdminOnboarding open={showAdminOnboarding} onOpenChange={setShowAdminOnboarding} />
       )}
       {isSectionLeader && !isAdmin && !isPublicPage && (
         <SectionLeaderOnboarding open={showLeaderOnboarding} onOpenChange={setShowLeaderOnboarding} />
