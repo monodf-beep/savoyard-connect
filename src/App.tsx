@@ -33,6 +33,7 @@ import CultureLanding from "./pages/silos/CultureLanding";
 import Experts from "./pages/Experts";
 import DirectoryHub from "./pages/DirectoryHub";
 import Opportunites from "./pages/Opportunites";
+import Subventions from "./pages/Subventions";
 import Toolbox from "./pages/Toolbox";
 
 import Members from "./pages/Members";
@@ -130,6 +131,7 @@ const AppContent = () => {
         <Route path="/annuaire" element={<DirectoryHub />} />
         <Route path="/annuaire/:id" element={<AssociationProfile />} />
         <Route path="/opportunites" element={<Opportunites />} />
+        <Route path="/subventions" element={<Subventions />} />
         <Route path="/profil" element={<Profile />} />
         <Route path="/projets-reseau" element={<NetworkProjects />} />
         <Route path="/module-store" element={<ModuleStore />} />

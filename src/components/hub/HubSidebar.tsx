@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { 
   LayoutDashboard, Users, FolderKanban, Briefcase, PiggyBank, Settings, 
   ChevronLeft, ChevronRight, GraduationCap, Sparkles, Globe, Building2,
-  UserCheck, Kanban, Handshake, GitBranch, TrendingUp, Rocket, Package, Pin, PinOff,
+  UserCheck, Kanban, Handshake, GitBranch, TrendingUp, Rocket, Package, Pin, PinOff, Banknote,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -40,6 +40,7 @@ const associationItems: NavItem[] = [
   { path: "/value-chains", labelKey: "nav.valueChains", icon: GitBranch, canBePublic: true },
   { path: "/jobs", labelKey: "nav.volunteering", icon: Briefcase, canBePublic: true },
   { path: "/projects", labelKey: "nav.internalProjects", icon: FolderKanban, canBePublic: true },
+  { path: "/subventions", labelKey: "nav.subventions", icon: Banknote },
   { path: "/toolbox", labelKey: "nav.toolbox", icon: Briefcase },
   { path: "", labelKey: "nav.sections.network", icon: Globe, isSeparator: true },
   { path: "/annuaire", labelKey: "nav.directory", icon: Building2 },
