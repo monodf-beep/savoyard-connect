@@ -216,7 +216,7 @@ export const HubDashboardLayout = ({
                     <Clock className="h-5 w-5 text-primary" />
                     {t("dashboard.tasks.title", "Tâches à faire")}
                   </CardTitle>
-                  <Button variant="ghost" size="sm" onClick={() => navigate('/admin')}>
+                  <Button variant="ghost" size="sm" onClick={() => navigate('/projects')}>
                     {t("common.viewAll", "Voir tout")}
                     <ArrowRight className="h-4 w-4 ml-1" />
                   </Button>
@@ -227,7 +227,7 @@ export const HubDashboardLayout = ({
                   <div className="text-center py-6 text-muted-foreground">
                     <ClipboardList className="h-8 w-8 mx-auto mb-2 opacity-40" />
                     <p className="text-sm">{t("dashboard.tasks.empty", "Aucune tâche en cours")}</p>
-                    <Button variant="outline" size="sm" className="mt-3" onClick={() => navigate('/admin')}>
+                    <Button variant="outline" size="sm" className="mt-3" onClick={() => navigate('/projects')}>
                       {t("dashboard.tasks.create", "Créer une tâche")}
                     </Button>
                   </div>
