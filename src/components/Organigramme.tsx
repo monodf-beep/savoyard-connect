@@ -635,7 +635,7 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
     if (user) {
       await signOut();
     } else {
-      navigate('/auth');
+      navigate('/login');
     }
   }, [user, signOut, navigate]);
 
