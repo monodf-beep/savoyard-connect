@@ -266,6 +266,47 @@ export type Database = {
           },
         ]
       }
+      association_webhooks: {
+        Row: {
+          association_id: string
+          created_at: string
+          events: string[]
+          id: string
+          is_active: boolean
+          service: string
+          updated_at: string
+          webhook_url: string
+        }
+        Insert: {
+          association_id: string
+          created_at?: string
+          events?: string[]
+          id?: string
+          is_active?: boolean
+          service: string
+          updated_at?: string
+          webhook_url: string
+        }
+        Update: {
+          association_id?: string
+          created_at?: string
+          events?: string[]
+          id?: string
+          is_active?: boolean
+          service?: string
+          updated_at?: string
+          webhook_url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "association_webhooks_association_id_fkey"
+            columns: ["association_id"]
+            isOneToOne: false
+            referencedRelation: "associations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       associations: {
         Row: {
           city: string | null
