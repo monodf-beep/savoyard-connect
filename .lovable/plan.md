@@ -1,81 +1,52 @@
 
 
-## Plan: Enrichir la Boîte à Outils avec un catalogue d'intégrations complémentaires
+## Améliorations identifiees pour la Boite a Outils
 
-### Contexte
+Apres analyse du code et de l'interface, voici les axes d'amelioration concrets :
 
-La page `/toolbox` actuelle contient 4 outils (HelloAsso, JeVeuxAider, Solidatech, Canva Pro). L'objectif est de la transformer en un véritable hub d'intégrations avec deux niveaux :
+### 1. Recherche et filtrage
+Actuellement, les 16 integrations sont affichees en liste sans possibilite de filtrer. Ajouter :
+- Une barre de recherche en haut pour trouver un outil par nom
+- Des filtres par type (Webhook / Externe / Existant) et par statut (Connecte / Non connecte)
 
-1. **Outils connectables via webhook** (Slack, Discord, Notion, Google Workspace, etc.) : l'admin colle une URL webhook pour recevoir des notifications depuis Associacion
-2. **Outils recommandés** (liens externes avec guides) : outils complémentaires utiles aux associations
+### 2. Compteur de connexions actives
+Ajouter un bandeau KPI en haut montrant : nombre de webhooks actifs, nombre d'outils configures, dernier webhook declenche.
 
-### Approche technique
+### 3. Guides interactifs integres
+Les outils "external" renvoient vers un lien externe sans explication. Ajouter un panneau lateral (Sheet) avec un guide pas-a-pas pour chaque outil : comment creer un webhook Slack, comment connecter Notion, etc. Cela evite de perdre l'utilisateur.
 
-Puisque Associacion est un front-end React sans backend Node.js natif, les intégrations "MCP" réelles (OAuth, tokens) nécessiteraient des Edge Functions Supabase pour chaque service. C'est un chantier conséquent.
+### 4. Historique des webhooks
+Actuellement, aucun log n'est visible. Ajouter une section "Historique" montrant les derniers webhooks declenches (date, evenement, service, statut HTTP). Necessite une table `webhook_logs` en base.
 
-L'approche pragmatique en V1 :
-- **Webhooks sortants** : stocker une URL webhook (Slack, Discord, Zapier, n8n) par association dans Supabase, et l'appeler depuis le front ou une Edge Function quand un événement se produit (nouveau membre, nouveau projet, etc.)
-- **Catalogue enrichi** : ajouter visuellement tous les outils avec statut "Connecté" / "Configurer" / "Lien externe"
+### 5. Validation d'URL webhook
+Le champ URL n'a aucune validation. Ajouter une verification de format selon le service :
+- Slack : doit commencer par `https://hooks.slack.com/`
+- Discord : doit commencer par `https://discord.com/api/webhooks/`
+- Zapier : doit commencer par `https://hooks.zapier.com/`
 
-### Modifications prévues
+### 6. Notifications reelles (trigger automatique)
+Le hook `useWebhooks` stocke les configs mais aucun webhook n'est reellement declenche quand un evenement se produit (nouveau membre, nouveau projet, etc.). Creer une Edge Function `trigger-webhook` appelee apres chaque action cle pour envoyer le payload aux URLs configurees.
 
-#### 1. Table Supabase `association_webhooks`
-Nouvelle table pour stocker les webhooks configurés par association :
-- `id`, `association_id`, `service` (slack, discord, notion, zapier, n8n), `webhook_url`, `is_active`, `events` (array des événements à notifier), `created_at`
+### 7. Accessibilite admin uniquement
+La configuration des webhooks devrait etre restreinte aux admins de l'association. Les membres voient le catalogue mais pas le bouton "Configurer". Ajouter une verification du role dans le composant.
 
-#### 2. Refonte de `src/pages/Toolbox.tsx`
-Restructurer la page en 4 catégories :
+### 8. UX mobile
+Les cartes sont fonctionnelles sur mobile mais le dialog webhook est un peu etroit. Convertir en Drawer sur mobile pour une meilleure experience tactile.
 
-- **Communication** : Slack, Discord, Microsoft Teams
-- **Productivité** : Notion, Google Workspace (Drive, Docs, Sheets), Trello
-- **Financement** : HelloAsso (existant), Stripe, PayPal
-- **Bénévolat & Ressources** : JeVeuxAider (existant), Solidatech (existant)
-- **Graphisme** : Canva Pro (existant), Figma
-- **Automatisation** : Zapier, n8n, Make
+---
 
-Chaque carte d'intégration aura :
-- Logo coloré + nom + description
-- Badge "Recommandé" ou "Nouveau"
-- Statut : "Lien externe" (ouvre le site) ou "Webhook" (ouvre un dialog de configuration)
-- Note explicative sur la synergie avec Associacion
+### Plan d'implementation (par priorite)
 
-#### 3. Dialog de configuration webhook
-Un composant `WebhookConfigDialog` permettant à l'admin de :
-- Coller l'URL du webhook (Slack Incoming Webhook, Discord Webhook, etc.)
-- Choisir les événements à notifier (nouveau membre, nouveau projet, nouvelle tâche, etc.)
-- Tester la connexion (envoie un message de test)
-- Activer/désactiver
+| Priorite | Amelioration | Fichiers impactes |
+|----------|-------------|-------------------|
+| Haute | Barre de recherche + filtres | `Toolbox.tsx` |
+| Haute | Validation URL webhook | `WebhookConfigDialog.tsx` |
+| Haute | Trigger automatique des webhooks | Nouvelle Edge Function + hooks existants |
+| Moyenne | Guides integres (Sheet) | Nouveau composant `ToolGuideSheet.tsx` + `Toolbox.tsx` |
+| Moyenne | Compteur KPI connexions actives | `Toolbox.tsx` |
+| Moyenne | Restriction admin pour config | `IntegrationCard` + `useAuth` |
+| Basse | Historique webhook logs | Nouvelle table + composant |
+| Basse | Drawer mobile | `WebhookConfigDialog.tsx` |
 
-#### 4. Hook `useWebhooks`
-- CRUD sur la table `association_webhooks`
-- Fonction `triggerWebhook(service, event, payload)` pour envoyer des notifications
-
-#### 5. Bannière de réassurance
-Mise à jour du message pour insister sur la complémentarité : "Associacion ne remplace pas vos outils. Il les connecte."
-
-### Catalogue complet des intégrations V1
-
-| Outil | Type | Action |
-|-------|------|--------|
-| Slack | Webhook | Dialog config → notifications |
-| Discord | Webhook | Dialog config → notifications |
-| Microsoft Teams | Lien externe | Guide de setup |
-| Notion | Lien externe | Guide d'usage complémentaire |
-| Google Workspace | Lien externe | Guide de setup |
-| Trello | Lien externe | Guide d'usage complémentaire |
-| HelloAsso | Existant | Connecter compte |
-| Zapier | Webhook | Dialog config → automatisation |
-| n8n | Webhook | Dialog config → automatisation |
-| Make | Lien externe | Guide de setup |
-| Canva Pro | Existant | Demander accès |
-| JeVeuxAider | Existant | Publier mission |
-| Solidatech | Existant | Voir offres |
-
-### Fichiers impactés
-
-- **Nouveau** : `src/components/toolbox/WebhookConfigDialog.tsx`
-- **Nouveau** : `src/hooks/useWebhooks.ts`
-- **Modifié** : `src/pages/Toolbox.tsx` (refonte complète du catalogue)
-- **Migration SQL** : table `association_webhooks` + RLS policies
-- **Aucune modification** aux pages existantes, routes ou navigation
+Souhaitez-vous que j'implemente toutes ces ameliorations ou un sous-ensemble ?
 
