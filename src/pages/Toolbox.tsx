@@ -1,15 +1,20 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { HubPageLayout } from "@/components/hub/HubPageLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import {
   ExternalLink, Star, Puzzle, CreditCard, Users, PenTool,
   ArrowRight, Zap, MessageSquare, Briefcase, Settings2, Check, Webhook,
+  Search, Filter, BookOpen, Activity, Link2,
 } from "lucide-react";
 import { WebhookConfigDialog } from "@/components/toolbox/WebhookConfigDialog";
+import { ToolGuideSheet } from "@/components/toolbox/ToolGuideSheet";
+import { WebhookHistory } from "@/components/toolbox/WebhookHistory";
 import { useWebhooks } from "@/hooks/useWebhooks";
+import { useAssociation } from "@/hooks/useAssociation";
 
 // --- Types ---
 interface Integration {
@@ -19,11 +24,12 @@ interface Integration {
   recommended?: boolean;
   isNew?: boolean;
   type: "webhook" | "external" | "existing";
-  service?: string; // webhook service key
+  service?: string;
   action: string;
   actionUrl?: string;
   note?: string;
   guidePlaceholder?: string;
+  hasGuide?: boolean;
 }
 
 interface Category {
@@ -54,6 +60,7 @@ const categories: Category[] = [
         action: "Configurer",
         note: "Nouveau membre, nouveau projet… tout arrive dans Slack.",
         guidePlaceholder: "https://hooks.slack.com/services/T.../B.../...",
+        hasGuide: true,
       },
       {
         name: "Discord",
@@ -64,6 +71,7 @@ const categories: Category[] = [
         action: "Configurer",
         note: "Idéal pour les communautés bénévoles actives.",
         guidePlaceholder: "https://discord.com/api/webhooks/...",
+        hasGuide: true,
       },
       {
         name: "Microsoft Teams",
@@ -74,6 +82,7 @@ const categories: Category[] = [
         action: "Voir le guide",
         actionUrl: "https://learn.microsoft.com/fr-fr/microsoftteams/platform/webhooks-and-connectors/how-to/add-incoming-webhook",
         note: "Suivez le guide pour créer un webhook Teams.",
+        hasGuide: true,
       },
     ],
   },
@@ -93,6 +102,7 @@ const categories: Category[] = [
         action: "Utiliser avec Associacion",
         actionUrl: "https://www.notion.so",
         note: "Associacion gère l'opérationnel, Notion la documentation.",
+        hasGuide: true,
       },
       {
         name: "Google Workspace",
@@ -102,6 +112,7 @@ const categories: Category[] = [
         action: "Accéder",
         actionUrl: "https://workspace.google.com",
         note: "Stockez vos fichiers sur Drive, pilotez vos projets ici.",
+        hasGuide: true,
       },
       {
         name: "Trello",
@@ -220,6 +231,7 @@ const categories: Category[] = [
         action: "Configurer",
         note: "Déclenchez des actions automatiques quand un événement se produit.",
         guidePlaceholder: "https://hooks.zapier.com/hooks/catch/...",
+        hasGuide: true,
       },
       {
         name: "n8n",
@@ -230,6 +242,7 @@ const categories: Category[] = [
         action: "Configurer",
         note: "Parfait pour les associations tech-savvy qui veulent tout contrôler.",
         guidePlaceholder: "https://your-n8n.example.com/webhook/...",
+        hasGuide: true,
       },
       {
         name: "Make",
@@ -244,6 +257,12 @@ const categories: Category[] = [
   },
 ];
 
+const allIntegrations = categories.flatMap((c) => c.integrations);
+
+// --- Filter types ---
+type TypeFilter = "all" | "webhook" | "external" | "existing";
+type StatusFilter = "all" | "connected" | "not_connected";
+
 // --- Sub-components ---
 const ToolLogo = ({ name, color }: { name: string; color: string }) => (
   <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-white font-bold text-lg shrink-0 ${color}`}>
@@ -255,12 +274,16 @@ function IntegrationCard({
   integration,
   isConnected,
   onConfigure,
+  onGuide,
+  isAdmin,
 }: {
   integration: Integration;
   isConnected: boolean;
   onConfigure: () => void;
+  onGuide: () => void;
+  isAdmin: boolean;
 }) {
-  const { name, description, color, recommended, isNew, type, action, actionUrl, note } = integration;
+  const { name, description, color, recommended, isNew, type, action, actionUrl, note, hasGuide } = integration;
 
   return (
     <Card className="relative overflow-hidden hover:shadow-lg transition-shadow border-border group">
@@ -295,20 +318,32 @@ function IntegrationCard({
             )}
           </div>
         </div>
-        <div className="mt-4 pt-4 border-t border-border">
+        <div className="mt-4 pt-4 border-t border-border flex gap-2">
           {type === "webhook" ? (
-            <Button variant={isConnected ? "outline" : "default"} className="w-full gap-2" onClick={onConfigure}>
-              <Webhook className="h-4 w-4" />
-              {isConnected ? "Modifier la configuration" : action}
-            </Button>
+            isAdmin ? (
+              <Button variant={isConnected ? "outline" : "default"} className="flex-1 gap-2" onClick={onConfigure}>
+                <Webhook className="h-4 w-4" />
+                {isConnected ? "Modifier" : action}
+              </Button>
+            ) : (
+              <Button variant="outline" className="flex-1 gap-2" disabled>
+                <Webhook className="h-4 w-4" />
+                Réservé aux admins
+              </Button>
+            )
           ) : (
             <Button
               variant="outline"
-              className="w-full gap-2"
+              className="flex-1 gap-2"
               onClick={() => actionUrl && window.open(actionUrl, "_blank")}
             >
               {action}
               <ExternalLink className="h-4 w-4" />
+            </Button>
+          )}
+          {hasGuide && (
+            <Button variant="ghost" size="icon" onClick={onGuide} title="Voir le guide">
+              <BookOpen className="h-4 w-4" />
             </Button>
           )}
         </div>
@@ -331,23 +366,55 @@ const ReassuranceColumn = ({ icon: Icon, title, description }: {
   </div>
 );
 
+const filterButtons: { value: TypeFilter; label: string }[] = [
+  { value: "all", label: "Tous" },
+  { value: "webhook", label: "Webhook" },
+  { value: "external", label: "Externes" },
+  { value: "existing", label: "Intégrés" },
+];
+
 // --- Main Component ---
 export default function Toolbox() {
   const { t } = useTranslation();
   const { webhooks } = useWebhooks();
+  const { isOwnerOrAdmin } = useAssociation();
+  const [search, setSearch] = useState("");
+  const [typeFilter, setTypeFilter] = useState<TypeFilter>("all");
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [dialogState, setDialogState] = useState<{
     open: boolean;
     service: string;
     serviceName: string;
     guidePlaceholder?: string;
   }>({ open: false, service: "", serviceName: "" });
+  const [guideState, setGuideState] = useState<{ open: boolean; toolName: string }>({ open: false, toolName: "" });
 
   const isServiceConnected = (service?: string) =>
     service ? webhooks.some((w) => w.service === service && w.is_active) : false;
 
+  const activeWebhooksCount = webhooks.filter((w) => w.is_active).length;
+
+  // Filter categories based on search and filters
+  const filteredCategories = useMemo(() => {
+    return categories
+      .map((cat) => ({
+        ...cat,
+        integrations: cat.integrations.filter((int) => {
+          const matchesSearch = !search || int.name.toLowerCase().includes(search.toLowerCase()) || int.description.toLowerCase().includes(search.toLowerCase());
+          const matchesType = typeFilter === "all" || int.type === typeFilter;
+          const matchesStatus =
+            statusFilter === "all" ||
+            (statusFilter === "connected" && isServiceConnected(int.service)) ||
+            (statusFilter === "not_connected" && !isServiceConnected(int.service));
+          return matchesSearch && matchesType && matchesStatus;
+        }),
+      }))
+      .filter((cat) => cat.integrations.length > 0);
+  }, [search, typeFilter, statusFilter, webhooks]);
+
   return (
     <HubPageLayout breadcrumb={t("nav.toolbox", "Boîte à Outils & Intégrations")}>
-      <div className="space-y-10">
+      <div className="space-y-8">
         {/* Hero Banner */}
         <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary/10 via-secondary/5 to-accent/10 p-8 md:p-12">
           <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
@@ -368,8 +435,72 @@ export default function Toolbox() {
           </div>
         </div>
 
+        {/* KPI Counters */}
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+          <Card className="border-primary/20 bg-primary/5">
+            <CardContent className="py-4 flex items-center gap-3">
+              <Activity className="h-8 w-8 text-primary" />
+              <div>
+                <p className="text-2xl font-bold text-foreground">{activeWebhooksCount}</p>
+                <p className="text-xs text-muted-foreground">Webhooks actifs</p>
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="border-primary/20 bg-primary/5">
+            <CardContent className="py-4 flex items-center gap-3">
+              <Link2 className="h-8 w-8 text-primary" />
+              <div>
+                <p className="text-2xl font-bold text-foreground">{allIntegrations.length}</p>
+                <p className="text-xs text-muted-foreground">Intégrations disponibles</p>
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="border-primary/20 bg-primary/5 col-span-2 md:col-span-1">
+            <CardContent className="py-4 flex items-center gap-3">
+              <Webhook className="h-8 w-8 text-primary" />
+              <div>
+                <p className="text-2xl font-bold text-foreground">{categories.length}</p>
+                <p className="text-xs text-muted-foreground">Catégories</p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Search & Filters */}
+        <div className="flex flex-col sm:flex-row gap-3">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Rechercher un outil…"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+          <div className="flex gap-2 flex-wrap">
+            {filterButtons.map((fb) => (
+              <Button
+                key={fb.value}
+                variant={typeFilter === fb.value ? "default" : "outline"}
+                size="sm"
+                onClick={() => setTypeFilter(fb.value)}
+              >
+                {fb.label}
+              </Button>
+            ))}
+            <Button
+              variant={statusFilter === "connected" ? "default" : "outline"}
+              size="sm"
+              onClick={() => setStatusFilter(statusFilter === "connected" ? "all" : "connected")}
+            >
+              <Filter className="h-3 w-3 mr-1" />
+              Connectés
+            </Button>
+          </div>
+        </div>
+
         {/* Categories */}
-        {categories.map((cat) => (
+        {filteredCategories.map((cat) => (
           <section key={cat.title}>
             <div className="flex items-center gap-3 mb-6">
               <div className={`w-10 h-10 rounded-lg ${cat.iconBg} flex items-center justify-center`}>
@@ -386,6 +517,7 @@ export default function Toolbox() {
                   key={integration.name}
                   integration={integration}
                   isConnected={isServiceConnected(integration.service)}
+                  isAdmin={!!isOwnerOrAdmin}
                   onConfigure={() =>
                     setDialogState({
                       open: true,
@@ -394,11 +526,23 @@ export default function Toolbox() {
                       guidePlaceholder: integration.guidePlaceholder,
                     })
                   }
+                  onGuide={() => setGuideState({ open: true, toolName: integration.name })}
                 />
               ))}
             </div>
           </section>
         ))}
+
+        {filteredCategories.length === 0 && (
+          <div className="text-center py-12">
+            <Search className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            <p className="text-lg font-medium text-foreground">Aucun outil trouvé</p>
+            <p className="text-sm text-muted-foreground">Essayez de modifier vos filtres ou votre recherche.</p>
+          </div>
+        )}
+
+        {/* Webhook History */}
+        {activeWebhooksCount > 0 && <WebhookHistory />}
 
         {/* Reassurance */}
         <Card className="bg-muted/30 border-dashed">
@@ -434,6 +578,13 @@ export default function Toolbox() {
         service={dialogState.service}
         serviceName={dialogState.serviceName}
         guidePlaceholder={dialogState.guidePlaceholder}
+      />
+
+      {/* Tool Guide Sheet */}
+      <ToolGuideSheet
+        open={guideState.open}
+        onOpenChange={(open) => setGuideState((s) => ({ ...s, open }))}
+        toolName={guideState.toolName}
       />
     </HubPageLayout>
   );

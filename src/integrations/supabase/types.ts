@@ -1701,6 +1701,57 @@ export type Database = {
         }
         Relationships: []
       }
+      webhook_logs: {
+        Row: {
+          association_id: string
+          created_at: string
+          event: string
+          id: string
+          payload: Json | null
+          response_body: string | null
+          service: string
+          status_code: number | null
+          webhook_id: string
+        }
+        Insert: {
+          association_id: string
+          created_at?: string
+          event: string
+          id?: string
+          payload?: Json | null
+          response_body?: string | null
+          service: string
+          status_code?: number | null
+          webhook_id: string
+        }
+        Update: {
+          association_id?: string
+          created_at?: string
+          event?: string
+          id?: string
+          payload?: Json | null
+          response_body?: string | null
+          service?: string
+          status_code?: number | null
+          webhook_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "webhook_logs_association_id_fkey"
+            columns: ["association_id"]
+            isOneToOne: false
+            referencedRelation: "associations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "webhook_logs_webhook_id_fkey"
+            columns: ["webhook_id"]
+            isOneToOne: false
+            referencedRelation: "association_webhooks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
