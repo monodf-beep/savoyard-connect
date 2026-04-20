@@ -51,6 +51,7 @@ import TermsOfService from "./pages/TermsOfService";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import Blog from "./pages/Blog";
 import BlogPost from "./pages/BlogPost";
+import PublicOrganigramme from "./pages/PublicOrganigramme";
 import { MembershipProvider } from "./hooks/useMembership";
 
 const queryClient = new QueryClient();
@@ -64,6 +65,7 @@ const AppContent = () => {
 
   // Check if we're on public pages
   const isPublicPage = ['/', '/signup', '/login', '/onboarding', '/onboarding-asso'].includes(location.pathname);
+  const isPublicOrganigrammePage = location.pathname.startsWith('/public/organigramme/');
 
   // Apply custom colors to design system (only for non-landing pages)
   useEffect(() => {
@@ -142,12 +144,13 @@ const AppContent = () => {
         <Route path="/confidentialite" element={<PrivacyPolicy />} />
         <Route path="/blog" element={<Blog />} />
         <Route path="/blog/:slug" element={<BlogPost />} />
+        <Route path="/public/organigramme/:id" element={<PublicOrganigramme />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
-      {isAdmin && !isPublicPage && (
+      {isAdmin && !isPublicPage && !isPublicOrganigrammePage && (
         <AdminOnboarding open={showAdminOnboarding} onOpenChange={setShowAdminOnboarding} />
       )}
-      {isSectionLeader && !isAdmin && !isPublicPage && (
+      {isSectionLeader && !isAdmin && !isPublicPage && !isPublicOrganigrammePage && (
         <SectionLeaderOnboarding open={showLeaderOnboarding} onOpenChange={setShowLeaderOnboarding} />
       )}
     </>

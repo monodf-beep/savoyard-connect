@@ -17,11 +17,13 @@ import { Dialog, DialogContent } from './ui/dialog';
 import { Input } from './ui/input';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from './ui/dropdown-menu';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from './ui/tooltip';
-import { Eye, EyeOff, ExpandIcon as Expand, ShrinkIcon as Shrink, UserPlus, FolderPlus, LogIn, LogOut, List, Network, Menu, X, Upload, Plus, Search, LayoutGrid } from 'lucide-react';
+import { Eye, EyeOff, ExpandIcon as Expand, ShrinkIcon as Shrink, UserPlus, FolderPlus, LogIn, LogOut, List, Network, Menu, X, Upload, Plus, Search, LayoutGrid, Download, Share2 } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useOrganigramme } from '../hooks/useOrganigramme';
 import { supabase } from '../integrations/supabase/client';
 import { useAuth } from '../hooks/useAuth';
+import { useAssociation } from '../hooks/useAssociation';
+import { exportOrganigrammePDF } from '../utils/exportOrganigrammePDF';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { DndContext, DragOverlay, closestCenter, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
@@ -31,13 +33,18 @@ import { findSectionById } from '../utils/sectionUtils';
 
 interface OrganigrammeProps {
   isAdminMode?: boolean;
+  publicMode?: boolean;
 }
 
 export const Organigramme: React.FC<OrganigrammeProps> = ({
-  isAdminMode = false
+  isAdminMode = false,
+  publicMode = false
 }) => {
   const navigate = useNavigate();
   const { user, isAdmin, loading: authLoading, signOut } = useAuth();
+  const { currentAssociation } = useAssociation();
+  const exportRef = React.useRef<HTMLDivElement>(null);
+  const effectiveIsAdmin = publicMode ? false : isAdmin;
   const { data, loading, savePerson, deletePerson, saveSection, deleteSection, updateSectionExpansion, saveVacantPosition, updateVacantPosition, deleteVacantPosition, refetch } = useOrganigramme(isAdmin);
   const [selectedPerson, setSelectedPerson] = useState<Person | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -57,6 +64,35 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
   const [searchQuery, setSearchQuery] = useState('');
   const isMobile = useIsMobile();
   const [mobileCollapsedOverride, setMobileCollapsedOverride] = useState(true);
+
+  const handleExportPDF = async () => {
+    if (!exportRef.current) return;
+    // Expand all sections first so the export captures everything
+    if (!allExpanded) {
+      await expandAll();
+      // wait for re-render
+      await new Promise(r => setTimeout(r, 600));
+    }
+    const orgName = currentAssociation?.name || 'organigramme';
+    const filename = `${orgName.toLowerCase().replace(/\s+/g, '-')}-organigramme.pdf`;
+    await exportOrganigrammePDF(exportRef.current, filename, `Organigramme — ${orgName}`);
+  };
+
+  const handleSharePublicLink = async () => {
+    if (!currentAssociation?.id) {
+      toast.error('Aucune association sélectionnée');
+      return;
+    }
+    const url = `${window.location.origin}/public/organigramme/${currentAssociation.id}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      toast.success('Lien public copié dans le presse-papier', {
+        description: url,
+      });
+    } catch {
+      window.prompt('Copiez ce lien public :', url);
+    }
+  };
   
   // Drag & Drop
   const sensors = useSensors(
@@ -850,7 +886,7 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
                 )}
 
                 {/* Admin actions */}
-                {isAdmin && (
+                {effectiveIsAdmin && (
                   <div>
                     <h3 className="text-sm font-medium mb-2">Administration</h3>
                     <div className="space-y-2">
@@ -890,6 +926,35 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
                         <Upload className="w-4 h-4 mr-2" />
                         Importer bénévoles
                       </Button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Partage / Export */}
+                {!publicMode && (
+                  <div>
+                    <h3 className="text-sm font-medium mb-2">Partage</h3>
+                    <div className="space-y-2">
+                      <Button
+                        onClick={() => { handleExportPDF(); setIsControlsMenuOpen(false); }}
+                        variant="outline"
+                        size="sm"
+                        className="w-full justify-start"
+                      >
+                        <Download className="w-4 h-4 mr-2" />
+                        Exporter en PDF
+                      </Button>
+                      {effectiveIsAdmin && (
+                        <Button
+                          onClick={() => { handleSharePublicLink(); setIsControlsMenuOpen(false); }}
+                          variant="outline"
+                          size="sm"
+                          className="w-full justify-start"
+                        >
+                          <Share2 className="w-4 h-4 mr-2" />
+                          Copier le lien public
+                        </Button>
+                      )}
                     </div>
                   </div>
                 )}
@@ -991,17 +1056,56 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
               <TooltipContent>{allExpanded ? 'Tout replier' : 'Tout déplier'}</TooltipContent>
             </Tooltip>
           </TooltipProvider>
+
+          {/* Export PDF + Lien public */}
+          {!publicMode && (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="h-8 px-3"
+                    onClick={handleExportPDF}
+                  >
+                    <Download className="w-3.5 h-3.5 mr-1.5" />
+                    <span className="text-xs">PDF</span>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Exporter en PDF pour les bénévoles</TooltipContent>
+              </Tooltip>
+              {effectiveIsAdmin && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="h-8 px-3"
+                      onClick={handleSharePublicLink}
+                    >
+                      <Share2 className="w-3.5 h-3.5 mr-1.5" />
+                      <span className="text-xs">Lien public</span>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Copier le lien public consultable</TooltipContent>
+                </Tooltip>
+              )}
+            </TooltipProvider>
+          )}
         </div>
         </div>
       </div>
 
 
       {/* Sections ou Vue membres */}
+      <div ref={exportRef} className="bg-background">
       {viewMode === 'members' ? (
         <MembersGrid
           sections={data.sections}
           people={filteredPeople}
-          isAdmin={isAdmin}
+          isAdmin={effectiveIsAdmin}
           onEdit={handleEditPerson}
         />
       ) : (
@@ -1021,7 +1125,7 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
                   section={section}
                   onToggle={toggleSection}
                   onPersonClick={handlePersonClick}
-                  isAdmin={isAdmin}
+                  isAdmin={effectiveIsAdmin}
                   onEditPerson={handleEditPerson}
                   onEditVacantPosition={handleEditVacantPosition}
                   allSections={data.sections}
@@ -1048,7 +1152,7 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
                     section={section}
                     onToggle={() => {}}
                     onPersonClick={() => {}}
-                    isAdmin={isAdmin}
+                    isAdmin={effectiveIsAdmin}
                   />
                 </div>
               ) : null;
@@ -1068,6 +1172,7 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
           </DragOverlay>
         </DndContext>
       )}
+      </div>
 
       </div>
 
@@ -1076,7 +1181,7 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
         person={selectedPerson}
         isOpen={isSidebarOpen}
         onClose={handleCloseSidebar}
-        isAdmin={isAdmin}
+        isAdmin={effectiveIsAdmin}
         onEdit={handleEditPerson}
       />
 
@@ -1139,7 +1244,7 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
           setSelectedSection(null);
         }}
         onPersonClick={handlePersonClick}
-        isAdmin={isAdmin}
+        isAdmin={effectiveIsAdmin}
         onEditPerson={handleEditPerson}
       />
     </div>
