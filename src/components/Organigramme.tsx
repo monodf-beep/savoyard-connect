@@ -17,11 +17,13 @@ import { Dialog, DialogContent } from './ui/dialog';
 import { Input } from './ui/input';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from './ui/dropdown-menu';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from './ui/tooltip';
-import { Eye, EyeOff, ExpandIcon as Expand, ShrinkIcon as Shrink, UserPlus, FolderPlus, LogIn, LogOut, List, Network, Menu, X, Upload, Plus, Search, LayoutGrid } from 'lucide-react';
+import { Eye, EyeOff, ExpandIcon as Expand, ShrinkIcon as Shrink, UserPlus, FolderPlus, LogIn, LogOut, List, Network, Menu, X, Upload, Plus, Search, LayoutGrid, Download, Share2 } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useOrganigramme } from '../hooks/useOrganigramme';
 import { supabase } from '../integrations/supabase/client';
 import { useAuth } from '../hooks/useAuth';
+import { useAssociation } from '../hooks/useAssociation';
+import { exportOrganigrammePDF } from '../utils/exportOrganigrammePDF';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { DndContext, DragOverlay, closestCenter, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
@@ -31,13 +33,18 @@ import { findSectionById } from '../utils/sectionUtils';
 
 interface OrganigrammeProps {
   isAdminMode?: boolean;
+  publicMode?: boolean;
 }
 
 export const Organigramme: React.FC<OrganigrammeProps> = ({
-  isAdminMode = false
+  isAdminMode = false,
+  publicMode = false
 }) => {
   const navigate = useNavigate();
   const { user, isAdmin, loading: authLoading, signOut } = useAuth();
+  const { currentAssociation } = useAssociation();
+  const exportRef = React.useRef<HTMLDivElement>(null);
+  const effectiveIsAdmin = publicMode ? false : isAdmin;
   const { data, loading, savePerson, deletePerson, saveSection, deleteSection, updateSectionExpansion, saveVacantPosition, updateVacantPosition, deleteVacantPosition, refetch } = useOrganigramme(isAdmin);
   const [selectedPerson, setSelectedPerson] = useState<Person | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
