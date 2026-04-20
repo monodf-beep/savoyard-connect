@@ -857,7 +857,7 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
                 )}
 
                 {/* Admin actions */}
-                {isAdmin && (
+                {effectiveIsAdmin && (
                   <div>
                     <h3 className="text-sm font-medium mb-2">Administration</h3>
                     <div className="space-y-2">
@@ -1008,7 +1008,7 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
         <MembersGrid
           sections={data.sections}
           people={filteredPeople}
-          isAdmin={isAdmin}
+          isAdmin={effectiveIsAdmin}
           onEdit={handleEditPerson}
         />
       ) : (
@@ -1028,7 +1028,7 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
                   section={section}
                   onToggle={toggleSection}
                   onPersonClick={handlePersonClick}
-                  isAdmin={isAdmin}
+                  isAdmin={effectiveIsAdmin}
                   onEditPerson={handleEditPerson}
                   onEditVacantPosition={handleEditVacantPosition}
                   allSections={data.sections}
@@ -1055,7 +1055,7 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
                     section={section}
                     onToggle={() => {}}
                     onPersonClick={() => {}}
-                    isAdmin={isAdmin}
+                    isAdmin={effectiveIsAdmin}
                   />
                 </div>
               ) : null;
@@ -1083,7 +1083,7 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
         person={selectedPerson}
         isOpen={isSidebarOpen}
         onClose={handleCloseSidebar}
-        isAdmin={isAdmin}
+        isAdmin={effectiveIsAdmin}
         onEdit={handleEditPerson}
       />
 
@@ -1146,7 +1146,7 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
           setSelectedSection(null);
         }}
         onPersonClick={handlePersonClick}
-        isAdmin={isAdmin}
+        isAdmin={effectiveIsAdmin}
         onEditPerson={handleEditPerson}
       />
     </div>
