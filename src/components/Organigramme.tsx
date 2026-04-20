@@ -64,6 +64,35 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
   const [searchQuery, setSearchQuery] = useState('');
   const isMobile = useIsMobile();
   const [mobileCollapsedOverride, setMobileCollapsedOverride] = useState(true);
+
+  const handleExportPDF = async () => {
+    if (!exportRef.current) return;
+    // Expand all sections first so the export captures everything
+    if (!allExpanded) {
+      await expandAll();
+      // wait for re-render
+      await new Promise(r => setTimeout(r, 600));
+    }
+    const orgName = currentAssociation?.name || 'organigramme';
+    const filename = `${orgName.toLowerCase().replace(/\s+/g, '-')}-organigramme.pdf`;
+    await exportOrganigrammePDF(exportRef.current, filename, `Organigramme — ${orgName}`);
+  };
+
+  const handleSharePublicLink = async () => {
+    if (!currentAssociation?.id) {
+      toast.error('Aucune association sélectionnée');
+      return;
+    }
+    const url = `${window.location.origin}/public/organigramme/${currentAssociation.id}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      toast.success('Lien public copié dans le presse-papier', {
+        description: url,
+      });
+    } catch {
+      window.prompt('Copiez ce lien public :', url);
+    }
+  };
   
   // Drag & Drop
   const sensors = useSensors(
