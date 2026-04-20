@@ -930,6 +930,35 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
                   </div>
                 )}
 
+                {/* Partage / Export */}
+                {!publicMode && (
+                  <div>
+                    <h3 className="text-sm font-medium mb-2">Partage</h3>
+                    <div className="space-y-2">
+                      <Button
+                        onClick={() => { handleExportPDF(); setIsControlsMenuOpen(false); }}
+                        variant="outline"
+                        size="sm"
+                        className="w-full justify-start"
+                      >
+                        <Download className="w-4 h-4 mr-2" />
+                        Exporter en PDF
+                      </Button>
+                      {effectiveIsAdmin && (
+                        <Button
+                          onClick={() => { handleSharePublicLink(); setIsControlsMenuOpen(false); }}
+                          variant="outline"
+                          size="sm"
+                          className="w-full justify-start"
+                        >
+                          <Share2 className="w-4 h-4 mr-2" />
+                          Copier le lien public
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                )}
+
               </div>
             </SheetContent>
           </Sheet>
