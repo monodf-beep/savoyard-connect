@@ -1027,12 +1027,51 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
               <TooltipContent>{allExpanded ? 'Tout replier' : 'Tout déplier'}</TooltipContent>
             </Tooltip>
           </TooltipProvider>
+
+          {/* Export PDF + Lien public */}
+          {!publicMode && (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="h-8 px-3"
+                    onClick={handleExportPDF}
+                  >
+                    <Download className="w-3.5 h-3.5 mr-1.5" />
+                    <span className="text-xs">PDF</span>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Exporter en PDF pour les bénévoles</TooltipContent>
+              </Tooltip>
+              {effectiveIsAdmin && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="h-8 px-3"
+                      onClick={handleSharePublicLink}
+                    >
+                      <Share2 className="w-3.5 h-3.5 mr-1.5" />
+                      <span className="text-xs">Lien public</span>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Copier le lien public consultable</TooltipContent>
+                </Tooltip>
+              )}
+            </TooltipProvider>
+          )}
         </div>
         </div>
       </div>
 
 
       {/* Sections ou Vue membres */}
+      <div ref={exportRef} className="bg-background">
       {viewMode === 'members' ? (
         <MembersGrid
           sections={data.sections}
