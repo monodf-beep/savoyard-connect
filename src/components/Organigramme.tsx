@@ -1143,6 +1143,7 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
           </DragOverlay>
         </DndContext>
       )}
+      </div>
 
       </div>
 
