@@ -720,7 +720,7 @@ export const Organigramme: React.FC<OrganigrammeProps> = ({
     window.dispatchEvent(event);
   }, [totalMembers, getAllVacantPositions, data.sections]);
 
-  if (loading || authLoading) {
+  if (loading || (authLoading && !publicMode)) {
     return (
       <div className="flex min-h-[60vh] w-full items-center justify-center p-4">
         <div className="w-full max-w-3xl space-y-6">
