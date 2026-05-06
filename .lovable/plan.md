@@ -1,81 +1,79 @@
+# Migration Supabase externe → Lovable Cloud
 
+**Important** : Lovable Cloud ne peut pas être activé sur ce projet tant qu'il est connecté au Supabase externe `perfpsiibarwgvjtrlxr`. La "bascule" se fait donc en repartant d'un nouveau projet Lovable. Aucune migration "in-place" n'est possible.
 
-## Plan: Enrichir la Boîte à Outils avec un catalogue d'intégrations complémentaires
+Ce plan documente la procédure complète. Une grande partie est **manuelle** (côté Supabase Dashboard et console Lovable), Lovable ne peut pas tout automatiser.
 
-### Contexte
+---
 
-La page `/toolbox` actuelle contient 4 outils (HelloAsso, JeVeuxAider, Solidatech, Canva Pro). L'objectif est de la transformer en un véritable hub d'intégrations avec deux niveaux :
+## Étape 1 — Sauvegarde du Supabase actuel (obligatoire avant tout)
 
-1. **Outils connectables via webhook** (Slack, Discord, Notion, Google Workspace, etc.) : l'admin colle une URL webhook pour recevoir des notifications depuis Associacion
-2. **Outils recommandés** (liens externes avec guides) : outils complémentaires utiles aux associations
+Depuis le Dashboard Supabase actuel :
 
-### Approche technique
+1. **Backup base** : Settings → Database → Backups → "Create backup".
+2. **Dump SQL complet** (depuis votre machine, pas le sandbox) :
+   ```bash
+   pg_dump "postgresql://postgres:[PASSWORD]@db.perfpsiibarwgvjtrlxr.supabase.co:5432/postgres" \
+     --schema=public --no-owner --no-acl > schema_data.sql
+   ```
+3. **Export des utilisateurs auth** : Authentication → Users → Export CSV (ou `pg_dump` du schéma `auth` — attention, les hashs de mots de passe ne sont pas tous portables).
+4. **Export des fichiers Storage** des 4 buckets : `organization-logos`, `financial-documents`, `association-logos`, `association-documents` (script via API Supabase ou `rclone`).
+5. **Liste des secrets** à recopier : ANTHROPIC_API_KEY, OPENAI_API_KEY, RESEND_API_KEY, MAPBOX_PUBLIC_TOKEN, HELLOASSO_CLIENT_ID, HELLOASSO_CLIENT_SECRET, FIRECRAWL_API_KEY, TRANSCRIPT_WEBHOOK_SECRET.
 
-Puisque Associacion est un front-end React sans backend Node.js natif, les intégrations "MCP" réelles (OAuth, tokens) nécessiteraient des Edge Functions Supabase pour chaque service. C'est un chantier conséquent.
+## Étape 2 — Création du nouveau projet Lovable Cloud
 
-L'approche pragmatique en V1 :
-- **Webhooks sortants** : stocker une URL webhook (Slack, Discord, Zapier, n8n) par association dans Supabase, et l'appeler depuis le front ou une Edge Function quand un événement se produit (nouveau membre, nouveau projet, etc.)
-- **Catalogue enrichi** : ajouter visuellement tous les outils avec statut "Connecté" / "Configurer" / "Lien externe"
+1. Sur le dashboard Lovable, faites un **Remix** de ce projet (ou créez un nouveau projet vide).
+2. Sur le projet remixé, **supprimez la connexion Supabase externe** depuis Project Settings → Supabase.
+3. **Activez Lovable Cloud** depuis Cloud → Enable. Une nouvelle base Postgres managée est provisionnée.
 
-### Modifications prévues
+## Étape 3 — Recréation du schéma sur Lovable Cloud
 
-#### 1. Table Supabase `association_webhooks`
-Nouvelle table pour stocker les webhooks configurés par association :
-- `id`, `association_id`, `service` (slack, discord, notion, zapier, n8n), `webhook_url`, `is_active`, `events` (array des événements à notifier), `created_at`
+Deux approches selon votre confort :
 
-#### 2. Refonte de `src/pages/Toolbox.tsx`
-Restructurer la page en 4 catégories :
+- **A (recommandée pour vous)** : nous rejouons toutes les migrations via l'outil de migration Lovable, table par table, à partir des fichiers existants dans `supabase/migrations/`. C'est traçable et sûr.
+- **B (rapide mais risquée)** : import direct du `schema_data.sql` via le SQL Editor de Lovable Cloud. Risque : conflits sur extensions, schémas système, owners.
 
-- **Communication** : Slack, Discord, Microsoft Teams
-- **Productivité** : Notion, Google Workspace (Drive, Docs, Sheets), Trello
-- **Financement** : HelloAsso (existant), Stripe, PayPal
-- **Bénévolat & Ressources** : JeVeuxAider (existant), Solidatech (existant)
-- **Graphisme** : Canva Pro (existant), Figma
-- **Automatisation** : Zapier, n8n, Make
+## Étape 4 — Import des données
 
-Chaque carte d'intégration aura :
-- Logo coloré + nom + description
-- Badge "Recommandé" ou "Nouveau"
-- Statut : "Lien externe" (ouvre le site) ou "Webhook" (ouvre un dialog de configuration)
-- Note explicative sur la synergie avec Associacion
+- Import du contenu (people, sections, projects, associations, etc.) via `COPY ... FROM` ou via le SQL Editor.
+- **Auth users** : import via `INSERT` dans `auth.users` + envoi d'un email de réinitialisation de mot de passe à tous (les hashs externes ne sont pas garantis compatibles).
+- **Storage** : recréation des 4 buckets (avec mêmes policies public/privé) puis ré-upload de tous les fichiers.
 
-#### 3. Dialog de configuration webhook
-Un composant `WebhookConfigDialog` permettant à l'admin de :
-- Coller l'URL du webhook (Slack Incoming Webhook, Discord Webhook, etc.)
-- Choisir les événements à notifier (nouveau membre, nouveau projet, nouvelle tâche, etc.)
-- Tester la connexion (envoie un message de test)
-- Activer/désactiver
+## Étape 5 — Reconfiguration
 
-#### 4. Hook `useWebhooks`
-- CRUD sur la table `association_webhooks`
-- Fonction `triggerWebhook(service, event, payload)` pour envoyer des notifications
+- **Secrets** : ré-ajout des 8 secrets listés via l'outil Lovable Cloud.
+- **Edge functions** : redéployées automatiquement par Lovable depuis le code du repo (aucune action).
+- **Auth providers** : reconfigurer Google OAuth, redirect URLs, templates email.
+- **Intégrations externes** : mettre à jour les URLs de webhook (n8n, HelloAsso, transcript-webhook) côté outils tiers car l'URL projet change.
 
-#### 5. Bannière de réassurance
-Mise à jour du message pour insister sur la complémentarité : "Associacion ne remplace pas vos outils. Il les connecte."
+## Étape 6 — Domaine et go-live
 
-### Catalogue complet des intégrations V1
+- Republier le nouveau projet.
+- Re-pointer `associacion.eu` et le sous-domaine `organigramme-enstitut.lovable.app` sur le nouveau projet (Settings → Domains).
+- Geler les écritures sur l'ancien Supabase pendant la fenêtre de bascule pour éviter les pertes.
 
-| Outil | Type | Action |
-|-------|------|--------|
-| Slack | Webhook | Dialog config → notifications |
-| Discord | Webhook | Dialog config → notifications |
-| Microsoft Teams | Lien externe | Guide de setup |
-| Notion | Lien externe | Guide d'usage complémentaire |
-| Google Workspace | Lien externe | Guide de setup |
-| Trello | Lien externe | Guide d'usage complémentaire |
-| HelloAsso | Existant | Connecter compte |
-| Zapier | Webhook | Dialog config → automatisation |
-| n8n | Webhook | Dialog config → automatisation |
-| Make | Lien externe | Guide de setup |
-| Canva Pro | Existant | Demander accès |
-| JeVeuxAider | Existant | Publier mission |
-| Solidatech | Existant | Voir offres |
+---
 
-### Fichiers impactés
+## Détails techniques
 
-- **Nouveau** : `src/components/toolbox/WebhookConfigDialog.tsx`
-- **Nouveau** : `src/hooks/useWebhooks.ts`
-- **Modifié** : `src/pages/Toolbox.tsx` (refonte complète du catalogue)
-- **Migration SQL** : table `association_webhooks` + RLS policies
-- **Aucune modification** aux pages existantes, routes ou navigation
+- Lovable Cloud = Supabase managé par Lovable. Toutes les fonctionnalités utilisées (RLS, triggers, fonctions `SECURITY DEFINER`, RPC publiques pour l'organigramme public) sont compatibles.
+- Le code applicatif (`src/integrations/supabase/client.ts`, hooks, edge functions) **n'a pas besoin d'être modifié** : le client est régénéré automatiquement avec la nouvelle URL et anon key.
+- Les fichiers `.env` (`VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`, `VITE_SUPABASE_PROJECT_ID`) sont auto-régénérés par Lovable Cloud.
+- `src/integrations/supabase/types.ts` sera régénéré automatiquement après les premières migrations.
 
+## Risques et points d'attention
+
+1. **Mots de passe utilisateurs** : potentiellement perdus → forcer un reset email global.
+2. **Downtime** : prévoir une fenêtre de maintenance (idéalement 1-2h, pendant laquelle l'app est en lecture seule ou hors-ligne).
+3. **Webhooks tiers** (HelloAsso, n8n) : tout casser jusqu'à reconfiguration des nouvelles URLs.
+4. **Coût** : Lovable Cloud est en pricing usage-based, séparé des crédits Lovable. À surveiller selon le volume.
+5. **Pas de retour arrière facile** : une fois le DNS basculé, revenir = re-migration inverse.
+
+## Question avant de lancer
+
+Avant que je crée le nouveau projet et démarre, confirmez-moi :
+- Vous avez fait un **backup** de l'instance Supabase actuelle ?
+- Vous acceptez que les utilisateurs **réinitialisent leur mot de passe** ?
+- Vous avez identifié une **fenêtre de maintenance** acceptable ?
+
+Une fois confirmé, je peux commencer par l'étape 2 (préparer le remix) et l'étape 3 (rejouer le schéma migration par migration).
