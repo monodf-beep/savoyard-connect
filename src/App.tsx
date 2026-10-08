@@ -59,7 +59,7 @@ const queryClient = new QueryClient();
 // Build de démonstration hébergé sans réécriture d'URL : routeur en mémoire (voir .env.demo).
 const useMemoryRouter = import.meta.env.VITE_DEMO_MEMORY_ROUTER === 'true';
 const Router: any = useMemoryRouter ? MemoryRouter : BrowserRouter;
-const routerProps = useMemoryRouter ? { initialEntries: ['/finance'] } : {};
+const routerProps = useMemoryRouter ? { initialEntries: ['/finance?tab=projects'] } : {};
 
 const AppContent = () => {
   const { isAdmin, isSectionLeader, user } = useAuth();

@@ -28,7 +28,7 @@ import {
   Plus,
   Pencil
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Legend, CartesianGrid } from 'recharts';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -50,6 +50,7 @@ const Finance = () => {
   const { data: reports, isLoading: reportsLoading } = useFinancialReports();
   const { fundingProjects, stats, loading: projectsLoading } = useFundingProjects();
   const { isAdmin } = useAuth();
+  const [searchParams] = useSearchParams();
   const [selectedYear, setSelectedYear] = useState<number | null>(null);
   const [formOpen, setFormOpen] = useState(false);
   const [editingReport, setEditingReport] = useState<FinancialReport | null>(null);
@@ -245,7 +246,7 @@ const Finance = () => {
       </div>
 
       {/* Main Tabs */}
-      <Tabs defaultValue="overview" className="space-y-6">
+      <Tabs defaultValue={searchParams.get('tab') || 'overview'} className="space-y-6">
         <TabsList className="flex-wrap h-auto gap-1">
           <TabsTrigger value="overview">Vue d'ensemble</TabsTrigger>
           <TabsTrigger value="details">Compte de résultat</TabsTrigger>
