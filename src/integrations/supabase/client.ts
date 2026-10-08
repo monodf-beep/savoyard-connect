@@ -10,8 +10,10 @@ const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiO
 // import { supabase } from "@/integrations/supabase/client";
 
 // Mode développement : faux backend en mémoire (connexion fictive + données factices).
-// Jamais actif dans un build de production.
-const USE_MOCK = import.meta.env.VITE_MOCK_BACKEND === 'true' && !import.meta.env.PROD;
+// Jamais actif dans un build de production, sauf build de démonstration explicite (.env.demo).
+const USE_MOCK =
+  import.meta.env.VITE_MOCK_BACKEND === 'true' &&
+  (!import.meta.env.PROD || import.meta.env.VITE_ALLOW_MOCK_IN_BUILD === 'true');
 
 export const supabase: SupabaseClient<Database> = USE_MOCK
   ? (createMockClient() as unknown as SupabaseClient<Database>)
