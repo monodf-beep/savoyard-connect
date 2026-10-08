@@ -71,3 +71,11 @@ Yes, you can!
 To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
 
 Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+
+## Développement sans backend (mode fictif)
+
+`npm run dev` charge `.env.development` (`VITE_MOCK_BACKEND=true`) : l'app utilise un faux Supabase en mémoire
+(`src/integrations/supabase/mock/`) avec une connexion fictive (admin connecté par défaut) et des données factices.
+Aucun appel n'est fait au vrai Supabase. Les modifications sont gardées dans le `localStorage` ;
+`resetMockDb()` dans la console remet les données de départ. Pour utiliser le vrai backend, mettre `VITE_MOCK_BACKEND=false`.
+Ce mode est ignoré dans les builds de production.
